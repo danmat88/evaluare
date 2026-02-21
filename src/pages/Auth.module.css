@@ -1,35 +1,177 @@
+/* ── Split layout ── */
 .page {
   height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+}
+
+/* ────────────────────────────
+   LEFT — Branding Panel
+──────────────────────────── */
+.left {
+  position: relative;
+  background: linear-gradient(145deg, #090b14 0%, #0e1024 50%, #111230 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  position: relative;
-  padding: var(--sp-6);
-  background: var(--bg-void);
+  border-right: 1px solid rgba(241, 245, 249, 0.06);
 }
-.glow {
+
+.leftOrb1 {
   position: absolute;
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(0,229,255,0.065) 0%, transparent 70%);
+  width: 450px; height: 450px;
+  background: radial-gradient(circle, rgba(0,229,255,0.1) 0%, transparent 65%);
+  top: -120px; left: -120px;
+  pointer-events: none;
+  animation: orb-float 14s ease-in-out infinite;
+}
+.leftOrb2 {
+  position: absolute;
+  width: 380px; height: 380px;
+  background: radial-gradient(circle, rgba(168,85,247,0.1) 0%, transparent 65%);
+  bottom: -80px; right: -80px;
+  pointer-events: none;
+  animation: orb-float 18s ease-in-out infinite reverse;
+  animation-delay: -6s;
+}
+.leftOrb3 {
+  position: absolute;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(251,191,36,0.05) 0%, transparent 65%);
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
+  animation: orb-float 10s ease-in-out infinite;
+  animation-delay: -3s;
 }
+
+/* subtle grid on left */
+.leftGrid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(241,245,249,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(241,245,249,0.02) 1px, transparent 1px);
+  background-size: 52px 52px;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 40%, transparent 100%);
+}
+
+.leftContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+  padding: var(--sp-12);
+  position: relative;
+  z-index: 1;
+  max-width: 420px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.sigma {
+  font-family: var(--font-mono);
+  font-size: var(--fs-4xl);
+  font-weight: 700;
+  background: var(--grad-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(0,229,255,0.5));
+  animation: float 6s ease-in-out infinite;
+  line-height: 1;
+}
+
+.brandName {
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.tagline {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+.bullets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.bullet {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.bulletDot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--grad-primary);
+  flex-shrink: 0;
+  box-shadow: 0 0 8px rgba(0,229,255,0.6);
+}
+
+.leftFooter {
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+
+/* ────────────────────────────
+   RIGHT — Form Panel
+──────────────────────────── */
+.right {
+  position: relative;
+  background: var(--bg-void);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: var(--sp-8);
+}
+
 .grid {
   position: absolute; inset: 0;
   background-image:
-    linear-gradient(rgba(245,240,232,0.01) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(245,240,232,0.01) 1px, transparent 1px);
+    linear-gradient(rgba(241,245,249,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(241,245,249,0.015) 1px, transparent 1px);
   background-size: 44px 44px;
   pointer-events: none;
+  mask-image: radial-gradient(ellipse 60% 70% at 50% 50%, black 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 60% 70% at 50% 50%, black 40%, transparent 100%);
 }
-.card {
-  position: relative; z-index: 1;
-  width: 100%; max-width: 420px;
-  background: var(--bg-surface);
-  border: var(--border-subtle);
-  border-radius: var(--r-2xl);
-  padding: var(--sp-10) var(--sp-8);
-  box-shadow: var(--shadow-xl), 0 0 80px rgba(0,229,255,0.04);
+
+.formWrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Responsive ── */
+@media (max-width: 700px) {
+  .page { grid-template-columns: 1fr; }
+  .left { display: none; }
+  .right { padding: var(--sp-6) var(--sp-4); }
 }

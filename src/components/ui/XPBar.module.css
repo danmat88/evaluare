@@ -10,11 +10,12 @@
   display: flex;
   align-items: center;
   gap: var(--sp-1);
-  padding: 3px var(--sp-2);
-  background: rgba(255, 215, 0, 0.1);
-  border: 1px solid rgba(255, 215, 0, 0.25);
+  padding: 4px var(--sp-3);
+  background: rgba(251,191,36,0.08);
+  border: 1px solid rgba(251,191,36,0.22);
   border-radius: var(--r-full);
   flex-shrink: 0;
+  backdrop-filter: var(--blur-sm);
 }
 
 .levelNum {
@@ -22,7 +23,7 @@
   font-size: var(--fs-xs);
   font-weight: 700;
   color: var(--xp-gold);
-  text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+  text-shadow: 0 0 8px rgba(251,191,36,0.5);
   min-width: 14px;
   text-align: center;
 }
@@ -30,8 +31,8 @@
 .levelName {
   font-family: var(--font-body);
   font-size: 10px;
-  font-weight: 600;
-  color: rgba(255, 215, 0, 0.7);
+  font-weight: 500;
+  color: rgba(251,191,36,0.65);
   letter-spacing: 0.03em;
 }
 
@@ -40,12 +41,12 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
-  width: 90px;
+  width: 96px;
 }
 
 .xpTrack {
   height: 4px;
-  background: rgba(245, 240, 232, 0.08);
+  background: rgba(241,245,249,0.08);
   border-radius: var(--r-full);
   overflow: hidden;
 }
@@ -53,8 +54,8 @@
 .xpFill {
   height: 100%;
   border-radius: var(--r-full);
-  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-mint));
-  box-shadow: 0 0 6px rgba(0, 229, 255, 0.5);
+  background: var(--grad-primary);
+  box-shadow: 0 0 8px rgba(0,229,255,0.45);
 }
 
 .xpLabel {
@@ -73,19 +74,20 @@
   display: flex;
   align-items: center;
   gap: 3px;
-  padding: 3px var(--sp-2);
-  background: rgba(255, 107, 53, 0.12);
-  border: 1px solid rgba(255, 107, 53, 0.3);
+  padding: 4px var(--sp-2);
+  background: rgba(251,146,60,0.1);
+  border: 1px solid rgba(251,146,60,0.28);
   border-radius: var(--r-full);
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   font-weight: 700;
   color: var(--streak-fire);
+  backdrop-filter: var(--blur-sm);
 }
 
 .streakHot {
-  background: rgba(255, 140, 0, 0.15);
-  border-color: rgba(255, 140, 0, 0.4);
+  background: rgba(251,191,36,0.12);
+  border-color: rgba(251,191,36,0.35);
   color: var(--streak-hot);
   animation: streak-fire 0.8s ease infinite;
 }
@@ -100,8 +102,11 @@
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
   font-weight: 700;
-  color: var(--neon-mint);
-  text-shadow: 0 0 10px rgba(0, 255, 157, 0.6);
+  background: var(--grad-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 8px rgba(0,229,255,0.5));
   pointer-events: none;
   white-space: nowrap;
   z-index: var(--z-toast);

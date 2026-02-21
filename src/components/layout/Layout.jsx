@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { BookOpen, FlaskConical, LayoutDashboard, User, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
-import useAuthStore from '../../store/authStore';
+import { useAuth } from '../../contexts';
 import XPBar from '../ui/XPBar';
 import styles from './Layout.module.css';
 
@@ -13,7 +13,7 @@ const NAV = [
 ];
 
 const Layout = ({ children }) => {
-  const { profile, logout } = useAuthStore();
+  const { profile, logout } = useAuth();
   const navigate = useNavigate();
 
   return (

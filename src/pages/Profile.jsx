@@ -5,7 +5,7 @@ import ChalkText from '../components/blackboard/ChalkText';
 import Button from '../components/ui/Button';
 import AnimatedCounter from '../components/ui/AnimatedCounter';
 import Layout from '../components/layout/Layout';
-import useAuthStore from '../store/authStore';
+import { useAuth } from '../contexts';
 import useExerciseStore from '../store/exerciseStore';
 import { getUserTestResults } from '../firebase/results';
 import { getLevel, getLevelProgress } from '../components/ui/XPBar';
@@ -14,7 +14,7 @@ import styles from './Profile.module.css';
 const LEVEL_NAMES = ['Debutant','Elev','Sârguincios','Priceput','Avansat','Expert','Maestru','Profesor','Geniu','Olimpic'];
 
 const Profile = () => {
-  const { user, profile, logout } = useAuthStore();
+  const { user, profile, logout } = useAuth();
   const { xp, streak, bestStreak, totalCorrect, totalAnswered } = useExerciseStore();
   const [results, setResults] = useState([]);
 

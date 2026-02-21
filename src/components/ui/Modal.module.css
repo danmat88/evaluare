@@ -1,34 +1,67 @@
 .overlay {
   position: fixed; inset: 0;
-  background: rgba(0,0,0,0.75);
-  backdrop-filter: blur(8px);
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
   display: flex; align-items: center; justify-content: center;
   z-index: var(--z-modal); padding: var(--sp-6);
 }
+
 .modal {
-  background: var(--bg-raised);
-  border: var(--border-soft);
+  background: var(--glass-bg);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+  border: 1px solid rgba(241,245,249,0.1);
   border-radius: var(--r-2xl);
-  box-shadow: var(--shadow-xl), 0 0 60px rgba(0,229,255,0.04);
+  box-shadow: var(--shadow-xl), 0 0 80px rgba(0,0,0,0.3);
   width: 100%; max-height: 85vh;
   display: flex; flex-direction: column; overflow: hidden;
+  position: relative;
 }
+
+/* gradient top border */
+.modal::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: var(--grad-primary);
+  opacity: 0.5;
+  z-index: 1;
+}
+
 .sm  { max-width: 380px; }
 .md  { max-width: 540px; }
 .lg  { max-width: 720px; }
 .xl  { max-width: 920px; }
+
 .header {
   display: flex; align-items: center; justify-content: space-between;
   padding: var(--sp-5) var(--sp-6);
-  border-bottom: var(--border-dim);
+  border-bottom: 1px solid rgba(241,245,249,0.07);
   flex-shrink: 0;
 }
-.title { font-family: var(--font-chalk); font-size: var(--fs-lg); color: var(--chalk-white); }
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--chalk-white);
+  letter-spacing: -0.01em;
+}
+
 .closeBtn {
   display: flex; align-items: center; justify-content: center;
-  width: 28px; height: 28px;
-  border-radius: var(--r-sm); color: var(--text-muted);
+  width: 30px; height: 30px;
+  border-radius: var(--r-md);
+  color: var(--text-muted);
   transition: all var(--t-fast);
+  border: 1px solid transparent;
 }
-.closeBtn:hover { background: rgba(245,240,232,0.08); color: var(--text-primary); }
+.closeBtn:hover {
+  background: rgba(244,63,94,0.08);
+  border-color: rgba(244,63,94,0.2);
+  color: var(--neon-coral);
+}
+
 .body { padding: var(--sp-6); overflow-y: auto; flex: 1; }

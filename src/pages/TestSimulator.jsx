@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Award, ChevronRight } from 'lucide-react';
+import { Clock, Award, Layers } from 'lucide-react';
 import TestSimulatorComp from '../components/test/TestSimulator';
 import ChalkText from '../components/blackboard/ChalkText';
 import Button from '../components/ui/Button';
@@ -27,18 +27,18 @@ const TestSimulatorPage = () => {
           <div>
             <ChalkText size="2xl" color="yellow">Teste simulate</ChalkText>
             <ChalkText size="sm" color="muted">Pregătire completă · condiții reale de examen</ChalkText>
-          </div>
-          <div className={styles.bannerPills}>
-            {[
-              { icon: <Clock size={13}/>, text: '120 minute' },
-              { icon: <Award size={13}/>, text: '100p + 10 oficiu' },
-              { icon: <ChevronRight size={13}/>, text: 'Subiect I · II · III' },
-            ].map((b) => (
-              <span key={b.text} className={styles.pill}>
-                {b.icon}
-                <ChalkText size="xs" color="muted">{b.text}</ChalkText>
-              </span>
-            ))}
+            <div className={styles.bannerPills}>
+              {[
+                { icon: <Clock size={13}/>, text: '120 minute' },
+                { icon: <Award size={13}/>, text: '100p + 10 oficiu' },
+                { icon: <Layers size={13}/>, text: 'Subiect I · II · III' },
+              ].map((b) => (
+                <span key={b.text} className={styles.pill}>
+                  {b.icon}
+                  {b.text}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -54,19 +54,23 @@ const TestSimulatorPage = () => {
               <motion.div
                 key={test.id}
                 className={styles.card}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.07 }}
+                transition={{ delay: i * 0.07, ease: [0.21, 1.11, 0.81, 0.99] }}
               >
-                <div className={styles.cardTop}>
-                  <ChalkText size="xs" color="muted">VARIANTA {String(i+1).padStart(2,'0')}</ChalkText>
-                  <span className={styles.pts}>{test.totalPoints || 100}p</span>
+                <div className={styles.cardInner}>
+                  <div className={styles.cardTop}>
+                    <span className={styles.variantLabel}>VARIANTA {String(i+1).padStart(2,'0')}</span>
+                    <span className={styles.pts}>{test.totalPoints || 100}p</span>
+                  </div>
+                  <ChalkText size="lg" color="yellow">{test.title}</ChalkText>
+                  {test.description && <ChalkText size="sm" color="muted">{test.description}</ChalkText>}
                 </div>
-                <ChalkText size="lg" color="yellow">{test.title}</ChalkText>
-                {test.description && <ChalkText size="sm" color="muted">{test.description}</ChalkText>}
-                <Button variant="primary" size="sm" fullWidth onClick={() => loadTest(test.id)}>
-                  Începe testul →
-                </Button>
+                <div className={styles.cardFooter}>
+                  <Button variant="primary" size="sm" fullWidth onClick={() => loadTest(test.id)}>
+                    Începe testul →
+                  </Button>
+                </div>
               </motion.div>
             ))}
           </div>

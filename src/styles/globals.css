@@ -1,6 +1,6 @@
 @import './variables.css';
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import url('https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css');
 
 /* ── Hard viewport lock ── */
@@ -15,6 +15,7 @@ body {
   color: var(--text-primary);
   background: var(--bg-void);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   cursor: default;
 }
 
@@ -30,7 +31,8 @@ input, textarea { font-family: inherit; font-size: inherit; border: none; outlin
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(245, 240, 232, 0.12); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.2); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0, 229, 255, 0.3); }
 
 /* ── Selection ── */
 ::selection { background: rgba(0, 229, 255, 0.2); color: var(--chalk-white); }
@@ -38,6 +40,14 @@ input, textarea { font-family: inherit; font-size: inherit; border: none; outlin
 /* ── KaTeX ── */
 .katex { color: var(--chalk-white) !important; }
 .katex-display { margin: 0 !important; }
+
+/* ── Gradient text utility ── */
+.gradient-text {
+  background: var(--grad-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
 /* ────────────────────────────────────
    KEYFRAMES
@@ -87,16 +97,21 @@ input, textarea { font-family: inherit; font-size: inherit; border: none; outlin
   50%       { box-shadow: 0 0 24px rgba(0, 229, 255, 0.6); }
 }
 
+@keyframes glow-pulse-violet {
+  0%, 100% { box-shadow: 0 0 12px rgba(168, 85, 247, 0.3); }
+  50%       { box-shadow: 0 0 28px rgba(168, 85, 247, 0.65); }
+}
+
 @keyframes board-flash-green {
-  0%   { box-shadow: inset 0 0 0 2px rgba(0, 255, 157, 0), 0 0 0 rgba(0, 255, 157, 0); }
-  40%  { box-shadow: inset 0 0 0 2px rgba(0, 255, 157, 0.6), 0 0 40px rgba(0, 255, 157, 0.25); }
-  100% { box-shadow: inset 0 0 0 2px rgba(0, 255, 157, 0), 0 0 0 rgba(0, 255, 157, 0); }
+  0%   { box-shadow: inset 0 0 0 2px rgba(52, 211, 153, 0), 0 0 0 rgba(52, 211, 153, 0); }
+  40%  { box-shadow: inset 0 0 0 2px rgba(52, 211, 153, 0.6), 0 0 40px rgba(52, 211, 153, 0.25); }
+  100% { box-shadow: inset 0 0 0 2px rgba(52, 211, 153, 0), 0 0 0 rgba(52, 211, 153, 0); }
 }
 
 @keyframes board-flash-red {
-  0%   { box-shadow: inset 0 0 0 2px rgba(255, 77, 109, 0), 0 0 0 rgba(255, 77, 109, 0); }
-  40%  { box-shadow: inset 0 0 0 2px rgba(255, 77, 109, 0.6), 0 0 40px rgba(255, 77, 109, 0.2); }
-  100% { box-shadow: inset 0 0 0 2px rgba(255, 77, 109, 0), 0 0 0 rgba(255, 77, 109, 0); }
+  0%   { box-shadow: inset 0 0 0 2px rgba(244, 63, 94, 0), 0 0 0 rgba(244, 63, 94, 0); }
+  40%  { box-shadow: inset 0 0 0 2px rgba(244, 63, 94, 0.6), 0 0 40px rgba(244, 63, 94, 0.2); }
+  100% { box-shadow: inset 0 0 0 2px rgba(244, 63, 94, 0), 0 0 0 rgba(244, 63, 94, 0); }
 }
 
 @keyframes particle-burst {
@@ -127,4 +142,38 @@ input, textarea { font-family: inherit; font-size: inherit; border: none; outlin
 @keyframes counter-up {
   from { transform: translateY(8px); opacity: 0; }
   to   { transform: translateY(0);   opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-8px) rotate(1deg); }
+  66%       { transform: translateY(-4px) rotate(-1deg); }
+}
+
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes shimmer-sweep {
+  0%   { transform: translateX(-100%) skewX(-12deg); }
+  100% { transform: translateX(200%) skewX(-12deg); }
+}
+
+@keyframes border-glow {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 1; }
+}
+
+@keyframes mesh-rotate {
+  0%   { transform: rotate(0deg) scale(1.2); }
+  100% { transform: rotate(360deg) scale(1.2); }
+}
+
+@keyframes orb-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25%       { transform: translate(30px, -20px) scale(1.05); }
+  50%       { transform: translate(-15px, -35px) scale(0.97); }
+  75%       { transform: translate(-30px, 15px) scale(1.02); }
 }
