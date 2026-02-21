@@ -1,0 +1,86 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Overview */
+.overview {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-4);
+  background: rgba(0,229,255,0.04);
+  border: var(--border-cyan);
+  border-radius: var(--r-xl);
+  flex-shrink: 0;
+}
+
+.ring { position: relative; width: 76px; height: 76px; flex-shrink: 0; }
+
+.ringLabel {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.overviewText { display: flex; flex-direction: column; gap: var(--sp-1); }
+
+.overviewNum { display: flex; align-items: baseline; gap: var(--sp-1); }
+
+.bigNum {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: var(--chalk-white);
+}
+
+.levelRow { display: flex; align-items: center; gap: var(--sp-2); margin-top: var(--sp-1); }
+
+.levelDot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--neon-yellow);
+  box-shadow: 0 0 6px rgba(255,229,0,0.5);
+}
+
+/* Bars */
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.barRow {
+  display: grid;
+  grid-template-columns: 108px 1fr 38px;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.barLabel {
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barTrack {
+  height: 4px;
+  background: rgba(245,240,232,0.06);
+  border-radius: var(--r-full);
+  overflow: hidden;
+}
+
+.barFill { height: 100%; border-radius: var(--r-full); }
+
+.barPct {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-align: right;
+}

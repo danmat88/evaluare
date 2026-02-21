@@ -1,0 +1,13 @@
+.toast {
+  background: var(--bg-raised) !important;
+  color: var(--text-primary) !important;
+  border: var(--border-soft) !important;
+  border-radius: var(--r-lg) !important;
+  font-family: var(--font-body) !important;
+  font-size: var(--fs-sm) !important;
+  font-weight: 500 !important;
+  box-shadow: var(--shadow-lg) !important;
+  padding: var(--sp-3) var(--sp-5) !important;
+}
+.success { border-color: rgba(0, 255, 157, 0.3) !important; }
+.error   { border-color: rgba(255, 77, 109, 0.3) !important; }

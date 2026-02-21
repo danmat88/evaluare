@@ -1,0 +1,33 @@
+.chalk { font-family: var(--font-chalk); line-height: 1.3; }
+
+/* Colors */
+.c_white    { color: var(--chalk-white); }
+.c_yellow   { color: var(--neon-yellow); }
+.c_cyan     { color: var(--neon-cyan); }
+.c_coral    { color: var(--neon-coral); }
+.c_mint     { color: var(--neon-mint); }
+.c_lavender { color: var(--neon-lavender); }
+.c_orange   { color: var(--neon-orange); }
+.c_muted    { color: var(--text-secondary); }
+.c_blue     { color: var(--neon-cyan); }
+.c_red      { color: var(--neon-coral); }
+.c_green    { color: var(--neon-mint); }
+
+/* Glows */
+.glow_white    { text-shadow: 0 0 10px rgba(245,240,232,0.35); }
+.glow_yellow   { text-shadow: 0 0 14px rgba(255,229,0,0.65),   0 0 32px rgba(255,229,0,0.2); }
+.glow_cyan     { text-shadow: 0 0 14px rgba(0,229,255,0.65),   0 0 32px rgba(0,229,255,0.2); }
+.glow_mint     { text-shadow: 0 0 14px rgba(0,255,157,0.65),   0 0 32px rgba(0,255,157,0.2); }
+.glow_coral    { text-shadow: 0 0 14px rgba(255,77,109,0.65),  0 0 32px rgba(255,77,109,0.2); }
+.glow_green    { text-shadow: 0 0 14px rgba(0,255,157,0.65),   0 0 32px rgba(0,255,157,0.2); }
+
+/* Sizes */
+.s_xs   { font-size: var(--fs-xs); }
+.s_sm   { font-size: var(--fs-sm); }
+.s_base { font-size: var(--fs-base); }
+.s_md   { font-size: var(--fs-md); }
+.s_lg   { font-size: var(--fs-lg); }
+.s_xl   { font-size: var(--fs-xl); }
+.s_2xl  { font-size: var(--fs-2xl); }
+.s_3xl  { font-size: var(--fs-3xl); }
+.s_4xl  { font-size: var(--fs-4xl); }

@@ -1,0 +1,104 @@
+:root {
+  /* ── Core backgrounds ── */
+  --bg-void:    #060a06;
+  --bg-deep:    #0a100a;
+  --bg-board:   #0e160e;
+  --bg-surface: #141e14;
+  --bg-raised:  #1a261a;
+  --bg-glass:   rgba(14, 22, 14, 0.85);
+
+  /* ── Neon chalk palette ── */
+  --neon-cyan:    #00e5ff;
+  --neon-yellow:  #ffe500;
+  --neon-mint:    #00ff9d;
+  --neon-coral:   #ff4d6d;
+  --neon-orange:  #ff8c00;
+  --neon-lavender:#b388ff;
+  --chalk-white:  #f5f0e8;
+  --chalk-cream:  #e8e3d8;
+
+  /* ── Gamification colors ── */
+  --xp-gold:    #ffd700;
+  --xp-silver:  #c0c0c0;
+  --xp-bronze:  #cd7f32;
+  --streak-fire:#ff6b35;
+  --streak-hot: #ff9f1c;
+  --level-glow: rgba(255, 215, 0, 0.15);
+
+  /* ── Semantic ── */
+  --color-primary:     var(--neon-cyan);
+  --color-primary-bg:  rgba(0, 229, 255, 0.08);
+  --color-primary-glow:0 0 24px rgba(0, 229, 255, 0.35);
+
+  --color-success:     var(--neon-mint);
+  --color-success-bg:  rgba(0, 255, 157, 0.08);
+  --color-success-glow:0 0 20px rgba(0, 255, 157, 0.4);
+
+  --color-danger:      var(--neon-coral);
+  --color-danger-bg:   rgba(255, 77, 109, 0.08);
+  --color-danger-glow: 0 0 20px rgba(255, 77, 109, 0.4);
+
+  --color-accent:      var(--neon-yellow);
+  --color-accent-bg:   rgba(255, 229, 0, 0.08);
+  --color-accent-glow: 0 0 24px rgba(255, 229, 0, 0.35);
+
+  /* ── Text ── */
+  --text-primary:   #f5f0e8;
+  --text-secondary: #8ba88b;
+  --text-muted:     #4a634a;
+  --text-dim:       #2a3d2a;
+
+  /* ── Borders ── */
+  --border-dim:    1px solid rgba(245, 240, 232, 0.05);
+  --border-subtle: 1px solid rgba(245, 240, 232, 0.09);
+  --border-soft:   1px solid rgba(245, 240, 232, 0.15);
+  --border-medium: 1px solid rgba(245, 240, 232, 0.25);
+  --border-cyan:   1px solid rgba(0, 229, 255, 0.3);
+  --border-yellow: 1px solid rgba(255, 229, 0, 0.3);
+  --border-mint:   1px solid rgba(0, 255, 157, 0.3);
+  --border-coral:  1px solid rgba(255, 77, 109, 0.3);
+
+  /* ── Shadows ── */
+  --shadow-sm:  0 2px 8px rgba(0, 0, 0, 0.5);
+  --shadow-md:  0 4px 20px rgba(0, 0, 0, 0.6);
+  --shadow-lg:  0 8px 40px rgba(0, 0, 0, 0.7);
+  --shadow-xl:  0 16px 60px rgba(0, 0, 0, 0.8);
+
+  /* ── Spacing ── */
+  --sp-1: 4px;   --sp-2: 8px;   --sp-3: 12px;  --sp-4: 16px;
+  --sp-5: 20px;  --sp-6: 24px;  --sp-8: 32px;  --sp-10: 40px;
+  --sp-12: 48px; --sp-16: 64px;
+
+  /* ── Radii ── */
+  --r-sm: 6px;  --r-md: 10px; --r-lg: 14px;
+  --r-xl: 20px; --r-2xl: 28px; --r-full: 9999px;
+
+  /* ── Typography ── */
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-chalk:   'Caveat', cursive;
+  --font-mono:    'JetBrains Mono', monospace;
+  --font-body:    'Nunito', sans-serif;
+
+  --fs-xs:   0.6875rem;
+  --fs-sm:   0.8125rem;
+  --fs-base: 1rem;
+  --fs-md:   1.125rem;
+  --fs-lg:   1.375rem;
+  --fs-xl:   1.75rem;
+  --fs-2xl:  2.25rem;
+  --fs-3xl:  3rem;
+  --fs-4xl:  4rem;
+
+  /* ── Transitions ── */
+  --t-fast:   120ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-base:   220ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-slow:   380ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --t-bounce: 600ms cubic-bezier(0.68, -0.6, 0.32, 1.6);
+
+  /* ── Z-index ── */
+  --z-base: 1; --z-nav: 50; --z-modal: 200; --z-toast: 300; --z-particles: 400;
+
+  /* ── Layout ── */
+  --nav-height: 52px;
+}
