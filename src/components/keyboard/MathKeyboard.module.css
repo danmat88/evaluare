@@ -1,127 +1,220 @@
+/* ══════════════════════════════════════════
+   MATH KEYBOARD — Premium Dark Glass Design
+   ══════════════════════════════════════════ */
+
 .keyboard {
+  --kbd-accent: #00e5ff; /* overridden per tab via inline style */
+
   display: flex;
   flex-direction: column;
-  gap: var(--sp-2);
-  background: var(--bg-deep);
-  border: var(--border-dim);
+  gap: 8px;
+
+  /* Glass shell */
+  background: rgba(10, 12, 22, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(241,245,249,0.07);
   border-radius: var(--r-xl);
-  padding: var(--sp-3);
+  padding: 10px;
+
+  /* Dynamic glow at top = active tab color */
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.04),
+    0 8px 32px rgba(0,0,0,0.6);
+
   height: 100%;
+  position: relative;
+  overflow: hidden;
 }
 
-/* ── Tabs ── */
+/* Animated gradient top border that follows accent color */
+.keyboard::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--kbd-accent), transparent);
+  opacity: 0.7;
+  transition: background 0.25s ease;
+}
+
+/* ── Tab bar ── */
 .tabs {
   display: flex;
   gap: 2px;
-  background: var(--bg-void);
+  background: rgba(7, 8, 15, 0.7);
+  border: 1px solid rgba(241,245,249,0.05);
   border-radius: var(--r-md);
   padding: 3px;
   flex-shrink: 0;
 }
 
 .tab {
+  --tab-color: #94a3b8;
   flex: 1;
-  padding: 5px var(--sp-1);
+  padding: 6px 4px;
   border-radius: calc(var(--r-md) - 2px);
   font-family: var(--font-chalk);
-  font-size: var(--fs-base);
+  font-size: var(--fs-sm);
+  font-weight: 600;
   color: var(--text-muted);
-  transition: color var(--t-fast), background var(--t-fast);
+  transition: color var(--t-fast), background var(--t-fast), box-shadow var(--t-fast);
   text-align: center;
+  letter-spacing: 0.01em;
 }
 
-.tab:hover { color: var(--text-secondary); background: rgba(245,240,232,0.04); }
+.tab:hover {
+  color: var(--text-secondary);
+  background: rgba(241,245,249,0.04);
+}
 
 .tabActive {
-  background: var(--bg-raised);
-  color: var(--neon-cyan);
-  text-shadow: 0 0 8px rgba(0,229,255,0.4);
+  background: rgba(30, 34, 55, 0.9);
+  color: var(--tab-color);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--tab-color) 60%, transparent);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.04),
+    inset 0 1px 0 rgba(0,0,0,0.2),
+    0 0 0 1px rgba(241,245,249,0.06);
 }
 
-/* ── Grid ── */
+/* ── Grid of keys ── */
 .grid {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-1);
+  gap: 5px;
   flex: 1;
 }
 
 .row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--sp-1);
+  gap: 5px;
   flex: 1;
 }
 
-/* ── Keys ── */
+/* ── Base key ── */
 .key {
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--r-sm);
-  background: var(--bg-surface);
-  border: var(--border-dim);
-  border-bottom: 2px solid rgba(0,0,0,0.4);
-  color: var(--chalk-white);
-  font-family: var(--font-chalk);
-  font-size: var(--fs-base);
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  transition: background var(--t-fast), border-color var(--t-fast), transform 80ms ease, box-shadow 80ms ease;
+  user-select: none;
+  -webkit-user-select: none;
+
+  /* Base look — dark card with 3D bottom border */
+  background: rgba(22, 26, 44, 0.85);
+  border: 1px solid rgba(241,245,249,0.08);
+  border-bottom: 3px solid rgba(0,0,0,0.55);
+
+  /* Inset gloss */
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.04),
+    0 2px 4px rgba(0,0,0,0.3);
+
+  color: var(--chalk-white);
+  font-family: var(--font-chalk);
+  font-size: var(--fs-sm);
+
+  transition:
+    background var(--t-fast),
+    border-color var(--t-fast),
+    box-shadow var(--t-fast),
+    transform 80ms ease;
+
   flex: 1;
-  min-height: 36px;
+  min-height: 40px;
 }
 
-/* Glossy top edge */
+/* Subtle gloss on top half */
 .key::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 40%;
-  background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%);
+  inset: 0 0 50% 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%);
   border-radius: var(--r-sm) var(--r-sm) 0 0;
   pointer-events: none;
 }
 
 .key:hover {
-  background: var(--bg-raised);
-  border-color: rgba(245,240,232,0.15);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 0 1px rgba(0,229,255,0.1);
+  background: rgba(32, 37, 60, 0.95);
+  border-color: rgba(241,245,249,0.15);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 2px 8px rgba(0,0,0,0.4),
+    0 0 0 1px color-mix(in srgb, var(--kbd-accent) 20%, transparent);
 }
 
-.key:active, .pressing {
-  transform: translateY(2px) scale(0.97);
-  background: rgba(0,229,255,0.12);
-  border-color: rgba(0,229,255,0.35);
-  border-bottom-color: rgba(0,229,255,0.15);
-  box-shadow: 0 0 10px rgba(0,229,255,0.2);
+.key:active,
+.pressing {
+  transform: translateY(2px);
+  border-bottom-width: 1px;
+  background: color-mix(in srgb, var(--kbd-accent) 14%, rgba(22, 26, 44, 0.9));
+  border-color: color-mix(in srgb, var(--kbd-accent) 40%, transparent);
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,0.3),
+    0 0 12px color-mix(in srgb, var(--kbd-accent) 25%, transparent);
 }
 
-.keyFace { position: relative; z-index: 1; }
+.keyFace { position: relative; z-index: 1; line-height: 1; }
+
+/* Number keys — slightly lighter to pop as a "numpad" */
+.keyNum {
+  background: rgba(28, 32, 52, 0.9);
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--chalk-white);
+}
+.keyNum:hover { background: rgba(38, 43, 68, 0.95); }
 
 .wide { grid-column: span 2; }
 
-/* ── Control variants ── */
-.key_back  { color: var(--neon-orange); }
-.key_back:hover  { border-color: rgba(255,140,0,0.3); box-shadow: 0 0 8px rgba(255,140,0,0.15); }
+/* ── Control key variants ── */
+.key_back {
+  color: var(--neon-orange);
+  font-size: var(--fs-md);
+}
+.key_back:hover {
+  border-color: rgba(251,146,60,0.35);
+  background: rgba(251,146,60,0.08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 0 12px rgba(251,146,60,0.2);
+}
 
-.key_space { color: var(--text-muted); font-size: var(--fs-xs); letter-spacing: 0.1em; }
+.key_space {
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
 
 .key_clear {
   color: var(--neon-coral);
   font-family: var(--font-display);
   font-size: var(--fs-sm);
   font-weight: 700;
+  letter-spacing: 0.04em;
 }
-.key_clear:hover { border-color: rgba(255,77,109,0.35); box-shadow: 0 0 10px rgba(255,77,109,0.2); }
+.key_clear:hover {
+  border-color: rgba(244,63,94,0.4);
+  background: rgba(244,63,94,0.1);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 0 14px rgba(244,63,94,0.25);
+}
 
-/* ── Controls row ── */
+/* ── Control row ── */
 .controls {
   display: grid;
   grid-template-columns: 1fr 2fr 1fr;
-  gap: var(--sp-1);
-  padding-top: var(--sp-1);
-  border-top: var(--border-dim);
+  gap: 5px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(241,245,249,0.05);
   flex-shrink: 0;
+}
+
+.controls .key {
+  min-height: 38px;
 }

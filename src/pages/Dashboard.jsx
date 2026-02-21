@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { BookOpen, FlaskConical, ArrowRight, Zap, Target, TrendingUp } from 'lucide-react';
@@ -28,6 +29,35 @@ const STATS = [
   { icon: <Target size={16} />, label: 'Corecte',  key: 'totalCorrect', color: 'mint'   },
 ];
 
+/* ── Live clock ── */
+const LiveClock = () => {
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const hh = now.getHours().toString().padStart(2, '0');
+  const mm = now.getMinutes().toString().padStart(2, '0');
+  const ss = now.getSeconds().toString().padStart(2, '0');
+  const day = now.toLocaleDateString('ro-RO', { weekday: 'long' });
+  const date = now.toLocaleDateString('ro-RO', { day: 'numeric', month: 'long' });
+
+  return (
+    <div className={styles.clock}>
+      <div className={styles.clockFace}>
+        <span className={styles.clockHM}>{hh}<span className={styles.clockColon}>:</span>{mm}</span>
+        <span className={styles.clockSec}>{ss}</span>
+      </div>
+      <div className={styles.clockMeta}>
+        <span className={styles.clockDay}>{day}</span>
+        <span className={styles.clockDate}>{date}</span>
+      </div>
+    </div>
+  );
+};
+
+/* ── Dashboard ── */
 const Dashboard = () => {
   const { profile } = useAuth();
   const { xp, streak, totalCorrect } = useExerciseStore();
@@ -40,18 +70,24 @@ const Dashboard = () => {
     <Layout>
       <motion.div className={styles.page} variants={stagger} initial="initial" animate="animate">
 
-        {/* ① Greeting — col 1-3, row 1 */}
+        {/* ① Greeting — col 1-2, row 1 */}
         <motion.div className={styles.greeting} variants={up}>
           <div className={styles.greetingText}>
             <ChalkText size="xs" color="muted">{greeting.toUpperCase()},</ChalkText>
             <ChalkText size="2xl" color="yellow" glow>{name}!</ChalkText>
           </div>
-          <span className={styles.datePill}>
-            {new Date().toLocaleDateString('ro-RO', { weekday: 'long', day: 'numeric', month: 'long' })}
-          </span>
+          <p className={styles.greetingSub}>
+            Continuă să exersezi și vei fi pregătit pentru examen.
+          </p>
         </motion.div>
 
-        {/* ② Progress panel — col 4, rows 1-4 */}
+        {/* ② Clock widget — col 3, row 1 */}
+        <motion.div className={styles.clockCard} variants={up}>
+          <div className={styles.clockGlow} />
+          <LiveClock />
+        </motion.div>
+
+        {/* ③ Progress panel — col 4, rows 1-4 */}
         <motion.div
           className={styles.progressPanel}
           initial={{ opacity: 0, x: 14 }}
@@ -65,7 +101,7 @@ const Dashboard = () => {
           <ProgressDashboard profile={profile} xp={xp} />
         </motion.div>
 
-        {/* ③ Stat cells — each is a direct grid child */}
+        {/* ④ Stat cells — direct grid children */}
         {STATS.map((s, i) => (
           <motion.div key={s.label} className={`${styles.statCard} ${styles[`statCell${i}`]}`} variants={up}>
             <span className={`${styles.statIcon} ${styles[`iconBg_${s.color}`]}`}>{s.icon}</span>
@@ -74,7 +110,7 @@ const Dashboard = () => {
           </motion.div>
         ))}
 
-        {/* ④ Exercises nav — col 1-2, row 3 */}
+        {/* ⑤ Exercises nav — col 1-2, row 3 */}
         <motion.div className={styles.navExercises} variants={up}>
           <Link to="/exercitii" className={`${styles.navCard} ${styles.navCard_cyan}`}>
             <div className={`${styles.navIcon} ${styles.navIconCyan}`}><BookOpen size={22} /></div>
@@ -86,7 +122,7 @@ const Dashboard = () => {
           </Link>
         </motion.div>
 
-        {/* ⑤ Tests nav — col 3, row 3 */}
+        {/* ⑥ Tests nav — col 3, row 3 */}
         <motion.div className={styles.navTests} variants={up}>
           <Link to="/teste" className={`${styles.navCard} ${styles.navCard_yellow}`}>
             <div className={`${styles.navIcon} ${styles.navIconYellow}`}><FlaskConical size={22} /></div>
@@ -98,7 +134,7 @@ const Dashboard = () => {
           </Link>
         </motion.div>
 
-        {/* ⑥ Daily tip — col 1-3, row 4 */}
+        {/* ⑦ Daily tip — col 1-3, row 4 */}
         <motion.div className={styles.tipCard} variants={up}>
           <div className={styles.tipHeader}>
             <span className={styles.tipIcon}>💡</span>
