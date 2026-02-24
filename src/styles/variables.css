@@ -147,6 +147,7 @@ html[data-theme='dark'] {
   /* Typography */
   --font-display: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
   --font-chalk: 'Caveat', cursive;
+  --font-symbol: 'Cambria Math', 'Segoe UI Symbol', 'Noto Sans Symbols 2', 'Noto Sans Math', serif;
   --font-mono: 'JetBrains Mono', monospace;
   --font-body: 'Inter', 'Nunito', sans-serif;
 

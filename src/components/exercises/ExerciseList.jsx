@@ -1,25 +1,30 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ChevronRight,
   ChevronLeft,
+  ChevronRight,
+  Equal,
+  FilterX,
+  Hash,
+  Layers,
+  Maximize2,
+  Minimize2,
+  Percent,
+  Play,
   Search,
   Shuffle,
-  FilterX,
-  Layers,
   Sigma,
-  Hash,
-  Equal,
-  TrendingUp,
-  Percent,
+  Star,
   Target,
+  TrendingUp,
   Box,
-  Circle,
+  CircleDot,
   Zap,
 } from 'lucide-react';
 import ExerciseCard from './ExerciseCard';
 import useExerciseStore from '../../store/exerciseStore';
+import { STORAGE_KEYS, safeReadJSON, safeWriteJSON, todayStamp } from '../../utils/storage';
 import styles from './ExerciseList.module.css';
 
 const CHAPTERS = [
@@ -32,7 +37,7 @@ const CHAPTERS = [
   { id: 'probabilitati', label: 'Prob.', icon: <Percent size={14} /> },
   { id: 'triunghiuri', label: 'Triunghiuri', icon: <Target size={14} /> },
   { id: 'patrulatere', label: 'Patrulatere', icon: <Box size={14} /> },
-  { id: 'cerc', label: 'Cerc', icon: <Circle size={14} /> },
+  { id: 'cerc', label: 'Cerc', icon: <CircleDot size={14} /> },
   { id: 'corpuri', label: 'Corpuri', icon: <Box size={14} /> },
   { id: 'trigonometrie', label: 'Trigo', icon: <Zap size={14} /> },
 ];
@@ -44,19 +49,38 @@ const DIFFICULTIES = [
   { id: 3, label: 'Greu' },
 ];
 
+const VIEW_MODES = [
+  { id: 'all', label: 'Toate' },
+  { id: 'favorites', label: 'Favorite' },
+  { id: 'pending', label: 'Nerezolvate' },
+  { id: 'solved', label: 'Rezolvate' },
+];
+
 const normalize = (value) =>
   String(value || '')
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 
+const toSet = (value) => new Set(Array.isArray(value) ? value : []);
+
 const ExerciseList = ({ exercises = [], loading }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const searchRef = useRef(null);
+
   const [chapter, setChapter] = useState(null);
   const [difficulty, setDifficulty] = useState(0);
   const [query, setQuery] = useState('');
+  const [viewMode, setViewMode] = useState('all');
   const [idx, setIdx] = useState(0);
+  const [pendingResumeId, setPendingResumeId] = useState(null);
+
+  const [favoriteIds, setFavoriteIds] = useState(() => toSet(safeReadJSON(STORAGE_KEYS.favorites, [])));
+  const [solvedIds, setSolvedIds] = useState(() => toSet(safeReadJSON(STORAGE_KEYS.solved, [])));
+  const [lastExercise, setLastExercise] = useState(() => safeReadJSON(STORAGE_KEYS.lastExercise, null));
+  const [focusMode, setFocusMode] = useState(() => Boolean(safeReadJSON(STORAGE_KEYS.focusMode, false)));
+
   const { totalCorrect, streak } = useExerciseStore();
 
   const filtered = useMemo(() => {
@@ -65,14 +89,44 @@ const ExerciseList = ({ exercises = [], loading }) => {
     return exercises.filter((exercise) => {
       if (chapter && exercise.chapter !== chapter) return false;
       if (difficulty && (exercise.difficulty || 1) !== difficulty) return false;
+
+      if (viewMode === 'favorites' && !favoriteIds.has(exercise.id)) return false;
+      if (viewMode === 'solved' && !solvedIds.has(exercise.id)) return false;
+      if (viewMode === 'pending' && solvedIds.has(exercise.id)) return false;
+
       if (!q) return true;
 
       const haystack = normalize(`${exercise.text} ${exercise.chapter} ${exercise.answer}`);
       return haystack.includes(q);
     });
-  }, [exercises, chapter, difficulty, query]);
+  }, [chapter, difficulty, exercises, favoriteIds, query, solvedIds, viewMode]);
 
   const current = filtered[idx] ?? null;
+  const isFavorite = current ? favoriteIds.has(current.id) : false;
+
+  useEffect(() => {
+    safeWriteJSON(STORAGE_KEYS.favorites, Array.from(favoriteIds));
+  }, [favoriteIds]);
+
+  useEffect(() => {
+    safeWriteJSON(STORAGE_KEYS.solved, Array.from(solvedIds));
+  }, [solvedIds]);
+
+  useEffect(() => {
+    safeWriteJSON(STORAGE_KEYS.focusMode, focusMode);
+  }, [focusMode]);
+
+  useEffect(() => {
+    if (!current) return;
+    const snapshot = {
+      id: current.id,
+      chapter: current.chapter || null,
+      difficulty: current.difficulty || 1,
+      savedAt: Date.now(),
+    };
+    setLastExercise(snapshot);
+    safeWriteJSON(STORAGE_KEYS.lastExercise, snapshot);
+  }, [current]);
 
   const changeChapter = (id) => {
     setChapter(id);
@@ -83,6 +137,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
     setChapter(null);
     setDifficulty(0);
     setQuery('');
+    setViewMode('all');
     setIdx(0);
   };
 
@@ -110,9 +165,67 @@ const ExerciseList = ({ exercises = [], loading }) => {
     });
   }, [filtered.length]);
 
+  const toggleFavoriteCurrent = useCallback(() => {
+    if (!current) return;
+    setFavoriteIds((prevSet) => {
+      const nextSet = new Set(prevSet);
+      if (nextSet.has(current.id)) nextSet.delete(current.id);
+      else nextSet.add(current.id);
+      return nextSet;
+    });
+  }, [current]);
+
+  const resumeLastExercise = useCallback(() => {
+    if (!lastExercise?.id) return;
+    setQuery('');
+    setDifficulty(0);
+    setViewMode('all');
+    setChapter(lastExercise.chapter && CHAPTERS.some((ch) => ch.id === lastExercise.chapter) ? lastExercise.chapter : null);
+    setPendingResumeId(lastExercise.id);
+    setIdx(0);
+  }, [lastExercise]);
+
+  const onExerciseResult = useCallback(({ exerciseId, correct }) => {
+    if (correct) {
+      setSolvedIds((prevSet) => {
+        if (prevSet.has(exerciseId)) return prevSet;
+        const nextSet = new Set(prevSet);
+        nextSet.add(exerciseId);
+        return nextSet;
+      });
+    }
+
+    const today = todayStamp();
+    const stored = safeReadJSON(STORAGE_KEYS.dailyActivity, { date: today, attempted: [], correct: [] });
+    const base = stored?.date === today ? stored : { date: today, attempted: [], correct: [] };
+
+    const attemptedSet = new Set(Array.isArray(base.attempted) ? base.attempted : []);
+    attemptedSet.add(exerciseId);
+
+    const correctSet = new Set(Array.isArray(base.correct) ? base.correct : []);
+    if (correct) correctSet.add(exerciseId);
+
+    safeWriteJSON(STORAGE_KEYS.dailyActivity, {
+      date: today,
+      attempted: Array.from(attemptedSet),
+      correct: Array.from(correctSet),
+    });
+  }, []);
+
   useEffect(() => {
     setIdx((currentIdx) => Math.min(currentIdx, Math.max(filtered.length - 1, 0)));
   }, [filtered.length]);
+
+  useEffect(() => {
+    if (!pendingResumeId) return;
+    if (!filtered.length) return;
+
+    const resumeIndex = filtered.findIndex((exercise) => exercise.id === pendingResumeId);
+    if (resumeIndex >= 0) {
+      setIdx(resumeIndex);
+    }
+    setPendingResumeId(null);
+  }, [filtered, pendingResumeId]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -136,20 +249,49 @@ const ExerciseList = ({ exercises = [], loading }) => {
   }, [chapter, navigate, location.pathname, location.search]);
 
   useEffect(() => {
+    const isTypingTarget = (target) => {
+      if (!target || typeof target.matches !== 'function') return false;
+      return target.matches('input, textarea, [contenteditable=true]');
+    };
+
     const fn = (e) => {
-      if (e.key === 'ArrowRight' && !e.target.matches('input,textarea')) next();
-      if (e.key === 'ArrowLeft' && !e.target.matches('input,textarea')) prev();
+      if (e.key === 'ArrowRight' && !isTypingTarget(e.target)) next();
+      if (e.key === 'ArrowLeft' && !isTypingTarget(e.target)) prev();
+
+      if (e.key === '/' && !isTypingTarget(e.target)) {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+
+      if (e.key.toLowerCase() === 'f' && !isTypingTarget(e.target)) {
+        e.preventDefault();
+        toggleFavoriteCurrent();
+      }
+
+      if (e.key.toLowerCase() === 'r' && !isTypingTarget(e.target)) {
+        e.preventDefault();
+        jumpRandom();
+      }
+
+      if (e.key.toLowerCase() === 'm' && !isTypingTarget(e.target)) {
+        e.preventDefault();
+        setFocusMode((v) => !v);
+      }
     };
 
     window.addEventListener('keydown', fn);
     return () => window.removeEventListener('keydown', fn);
-  }, [next, prev]);
+  }, [jumpRandom, next, prev, toggleFavoriteCurrent]);
 
   return (
-    <div className={styles.layout}>
+    <div className={`${styles.layout} ${focusMode ? styles.layoutFocus : ''}`}>
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
           <span className={styles.sidebarTitle}>Capitole</span>
+          <div className={styles.sidebarMeta}>
+            <span className={styles.sidebarMetaChip}>{favoriteIds.size} fav</span>
+            <span className={styles.sidebarMetaChip}>{solvedIds.size} ok</span>
+          </div>
         </div>
 
         <div className={styles.chapterList}>
@@ -193,15 +335,43 @@ const ExerciseList = ({ exercises = [], loading }) => {
             </div>
 
             <div className={styles.navRow}>
-              <button className={styles.navBtn} onClick={prev} disabled={idx === 0}>
+              <button className={styles.navBtn} onClick={prev} disabled={idx === 0} title="Anterior (sageta stanga)">
                 <ChevronLeft size={14} />
               </button>
+
               <div className={styles.counter}>
                 <span className={styles.counterCurrent}>{filtered.length > 0 ? idx + 1 : '0'}</span>
                 <span className={styles.counterTotal}>/ {filtered.length}</span>
               </div>
-              <button className={styles.navBtn} onClick={next} disabled={idx >= filtered.length - 1}>
+
+              <button className={styles.navBtn} onClick={next} disabled={idx >= filtered.length - 1} title="Urmator (sageta dreapta)">
                 <ChevronRight size={14} />
+              </button>
+
+              <button
+                className={`${styles.navBtn} ${isFavorite ? styles.navBtnActive : ''}`}
+                onClick={toggleFavoriteCurrent}
+                disabled={!current}
+                title="Favorite (F)"
+              >
+                <Star size={13} fill={isFavorite ? 'currentColor' : 'none'} />
+              </button>
+
+              <button
+                className={styles.navBtn}
+                onClick={resumeLastExercise}
+                disabled={!lastExercise?.id}
+                title="Continua ultimul exercitiu"
+              >
+                <Play size={13} />
+              </button>
+
+              <button
+                className={`${styles.navBtn} ${focusMode ? styles.navBtnActive : ''}`}
+                onClick={() => setFocusMode((v) => !v)}
+                title="Mod focus (M)"
+              >
+                {focusMode ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
               </button>
             </div>
           </div>
@@ -210,6 +380,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
             <label className={styles.searchBox}>
               <Search size={14} />
               <input
+                ref={searchRef}
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -217,12 +388,30 @@ const ExerciseList = ({ exercises = [], loading }) => {
               />
             </label>
 
+            <div className={styles.viewPills}>
+              {VIEW_MODES.map((mode) => (
+                <button
+                  key={mode.id}
+                  className={`${styles.viewBtn} ${viewMode === mode.id ? styles.viewBtnActive : ''}`}
+                  onClick={() => {
+                    setViewMode(mode.id);
+                    setIdx(0);
+                  }}
+                >
+                  {mode.label}
+                </button>
+              ))}
+            </div>
+
             <div className={styles.diffPills}>
               {DIFFICULTIES.map((lvl) => (
                 <button
                   key={lvl.id}
                   className={`${styles.diffBtn} ${difficulty === lvl.id ? styles.diffBtnActive : ''}`}
-                  onClick={() => setDifficulty(lvl.id)}
+                  onClick={() => {
+                    setDifficulty(lvl.id);
+                    setIdx(0);
+                  }}
                 >
                   {lvl.label}
                 </button>
@@ -230,13 +419,13 @@ const ExerciseList = ({ exercises = [], loading }) => {
             </div>
 
             <div className={styles.filterActions}>
-              <button className={styles.iconBtn} onClick={jumpRandom} disabled={filtered.length < 2} title="Exercitiu aleatoriu">
+              <button className={styles.iconBtn} onClick={jumpRandom} disabled={filtered.length < 2} title="Exercitiu aleatoriu (R)">
                 <Shuffle size={13} />
               </button>
               <button
                 className={styles.iconBtn}
                 onClick={clearFilters}
-                disabled={!chapter && !difficulty && !query}
+                disabled={!chapter && !difficulty && !query && viewMode === 'all'}
                 title="Reseteaza filtrele"
               >
                 <FilterX size={13} />
@@ -244,7 +433,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
             </div>
 
             <div className={styles.shortcuts}>
-              <span className={styles.shortcutHint}>Navigare cu tastele stanga/dreapta</span>
+              <span className={styles.shortcutHint}>Shortcut-uri: ←/→, /, F, R, M</span>
             </div>
           </div>
         </div>
@@ -274,7 +463,11 @@ const ExerciseList = ({ exercises = [], loading }) => {
                 exit={{ opacity: 0, x: -16 }}
                 transition={{ duration: 0.18 }}
               >
-                <ExerciseCard exercise={current} onNext={idx < filtered.length - 1 ? next : null} />
+                <ExerciseCard
+                  exercise={current}
+                  onResult={onExerciseResult}
+                  onNext={idx < filtered.length - 1 ? next : null}
+                />
               </motion.div>
             </AnimatePresence>
           )}

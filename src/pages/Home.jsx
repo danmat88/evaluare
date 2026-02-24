@@ -1,6 +1,17 @@
-import { useState } from 'react';
+ï»¿import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MoonStar, Sun, BookOpen, FlaskConical, Target, Trophy, Sigma, Layers, ClipboardCheck, Grid2x2 } from 'lucide-react';
+import {
+  MoonStar,
+  Sun,
+  BookOpen,
+  FlaskConical,
+  Target,
+  Trophy,
+  Sigma,
+  Layers,
+  ClipboardCheck,
+  Grid2x2,
+} from 'lucide-react';
 import LoginForm from '../components/auth/LoginForm';
 import RegisterForm from '../components/auth/RegisterForm';
 import { useTheme } from '../contexts';
@@ -8,7 +19,7 @@ import styles from './Home.module.css';
 
 const FEATURES = [
   { icon: <BookOpen size={18} />, title: 'Toate capitolele', sub: 'Algebra + Geometrie EN', color: 'cyan' },
-  { icon: <FlaskConical size={18} />, title: 'Teste simulate', sub: '2 ore · 100 puncte', color: 'violet' },
+  { icon: <FlaskConical size={18} />, title: 'Teste simulate', sub: '2 ore - 100 puncte', color: 'violet' },
   { icon: <Target size={18} />, title: 'Solutii animate', sub: 'Pas cu pas pe tabla', color: 'yellow' },
   { icon: <Trophy size={18} />, title: 'Sistem XP', sub: 'Niveluri + realizari', color: 'mint' },
 ];
@@ -51,13 +62,13 @@ const Home = () => {
             <span className={styles.sigma}><Sigma size={32} /></span>
             <div className={styles.badge}>
               <span className={styles.badgeDot} />
-              Evaluarea Nationala 2026 · Matematica
+              Evaluarea Nationala 2026 - Matematica
             </div>
           </motion.div>
 
           <motion.h1 className={styles.headline} variants={up}>
             <span className={styles.headlineGradient}>EN Matematica</span>
-            <span className={styles.headlineSub}>Clasa a VIII-a · Interactiv</span>
+            <span className={styles.headlineSub}>Clasa a VIII-a - Interactiv</span>
           </motion.h1>
 
           <motion.p className={styles.tagline} variants={up}>
@@ -100,7 +111,7 @@ const Home = () => {
 
           <div className={styles.authBrand}>
             <span className={styles.authSigma}><Sigma size={24} /></span>
-            <span className={styles.authBrandName}>EN·Math</span>
+            <span className={styles.authBrandName}>EN.Math</span>
           </div>
 
           <div className={styles.tabBar} role="tablist">

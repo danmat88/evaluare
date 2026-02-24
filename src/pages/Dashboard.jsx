@@ -1,13 +1,28 @@
-import { useState, useEffect, useMemo } from 'react';
+ï»¿import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { BookOpen, FlaskConical, ArrowRight, Zap, Target, TrendingUp, Flame, Clock3 } from 'lucide-react';
+import {
+  ArrowRight,
+  BookOpen,
+  Bookmark,
+  CircleGauge,
+  Clock3,
+  Flame,
+  FlaskConical,
+  Play,
+  Target,
+  TrendingUp,
+  Zap,
+} from 'lucide-react';
 import ProgressDashboard from '../components/progress/ProgressDashboard';
 import AnimatedCounter from '../components/ui/AnimatedCounter';
 import Layout from '../components/layout/Layout';
 import { useAuth } from '../contexts';
 import useExerciseStore from '../store/exerciseStore';
+import { STORAGE_KEYS, safeReadJSON, todayStamp } from '../utils/storage';
 import styles from './Dashboard.module.css';
+
+const DAILY_GOAL = 12;
 
 const stagger = { animate: { transition: { staggerChildren: 0.06 } } };
 const up = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
@@ -16,8 +31,8 @@ const TIPS = [
   'La ecuatii de gradul II, verifica mereu discriminantul Delta = b^2 - 4ac.',
   'Teorema lui Pitagora: in triunghi dreptunghic, a^2 + b^2 = c^2.',
   'Suma unghiurilor unui triunghi este intotdeauna 180 grade.',
-  'Pentru progresii aritmetice: a_n = a_1 + (n-1)·r.',
-  'Aria cercului: A = pi·r^2, iar lungimea cercului este 2·pi·r.',
+  'Pentru progresii aritmetice: a_n = a_1 + (n-1) * r.',
+  'Aria cercului: A = pi * r^2, iar lungimea cercului este 2 * pi * r.',
 ];
 
 const dailyTip = TIPS[new Date().getDay() % TIPS.length];
@@ -74,11 +89,44 @@ const Dashboard = () => {
   const { profile } = useAuth();
   const { xp, streak, totalCorrect } = useExerciseStore();
   const values = { xp, streak, totalCorrect };
+
+  const [favoritesCount, setFavoritesCount] = useState(0);
+  const [dailyCorrect, setDailyCorrect] = useState(0);
+  const [dailyAttempted, setDailyAttempted] = useState(0);
+  const [lastExercise, setLastExercise] = useState(null);
+
   const name = profile?.name?.split(' ')[0] || 'elev';
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Buna dimineata' : hour < 18 ? 'Buna ziua' : 'Buna seara';
 
+  const refreshJourney = useCallback(() => {
+    const today = todayStamp();
+
+    const favorites = safeReadJSON(STORAGE_KEYS.favorites, []);
+    setFavoritesCount(Array.isArray(favorites) ? favorites.length : 0);
+
+    const daily = safeReadJSON(STORAGE_KEYS.dailyActivity, { date: today, attempted: [], correct: [] });
+    const normalized = daily?.date === today ? daily : { date: today, attempted: [], correct: [] };
+
+    setDailyCorrect(Array.isArray(normalized.correct) ? normalized.correct.length : 0);
+    setDailyAttempted(Array.isArray(normalized.attempted) ? normalized.attempted.length : 0);
+
+    const last = safeReadJSON(STORAGE_KEYS.lastExercise, null);
+    setLastExercise(last && typeof last === 'object' ? last : null);
+  }, []);
+
+  useEffect(() => {
+    refreshJourney();
+    window.addEventListener('focus', refreshJourney);
+    window.addEventListener('storage', refreshJourney);
+    return () => {
+      window.removeEventListener('focus', refreshJourney);
+      window.removeEventListener('storage', refreshJourney);
+    };
+  }, [refreshJourney]);
+
   const progress = useMemo(() => profile?.progress || {}, [profile?.progress]);
+
   const weakest = useMemo(() => {
     let minPct = 101;
     let found = null;
@@ -93,6 +141,10 @@ const Dashboard = () => {
 
     return found;
   }, [progress]);
+
+  const goalPct = Math.min(Math.round((dailyCorrect / DAILY_GOAL) * 100), 100);
+  const remaining = Math.max(DAILY_GOAL - dailyCorrect, 0);
+  const resumeLink = lastExercise?.chapter ? `/exercitii?capitol=${lastExercise.chapter}` : '/exercitii';
 
   return (
     <Layout>
@@ -136,7 +188,7 @@ const Dashboard = () => {
             <div className={`${styles.navIcon} ${styles.navIconCyan}`}><BookOpen size={22} /></div>
             <div className={styles.navBody}>
               <span className={styles.navTitle}>Exercitii</span>
-              <span className={styles.navDesc}>Pe capitole · solutii animate</span>
+              <span className={styles.navDesc}>Pe capitole, solutii animate, tastatura matematica</span>
             </div>
             <ArrowRight size={16} className={styles.arrow} />
           </Link>
@@ -147,10 +199,42 @@ const Dashboard = () => {
             <div className={`${styles.navIcon} ${styles.navIconYellow}`}><FlaskConical size={22} /></div>
             <div className={styles.navBody}>
               <span className={styles.navTitle}>Test simulat</span>
-              <span className={styles.navDesc}>Subiect I+II+III · 2 ore</span>
+              <span className={styles.navDesc}>Subiect I + II + III, 2 ore, corectare instant</span>
             </div>
             <ArrowRight size={16} className={styles.arrow} />
           </Link>
+        </motion.div>
+
+        <motion.div className={styles.journeyCard} variants={up}>
+          <div className={styles.journeyHead}>
+            <CircleGauge size={15} />
+            <span className={styles.sectionLabel}>Plan zilnic</span>
+          </div>
+
+          <div className={styles.journeyStats}>
+            <span className={styles.journeyChip}><Target size={12} /> {dailyCorrect}/{DAILY_GOAL} corecte azi</span>
+            <span className={styles.journeyChip}><BookOpen size={12} /> {dailyAttempted} incercate azi</span>
+            <span className={styles.journeyChip}><Bookmark size={12} /> {favoritesCount} favorite</span>
+          </div>
+
+          <div className={styles.goalTrack}>
+            <motion.div
+              className={styles.goalFill}
+              initial={{ width: 0 }}
+              animate={{ width: `${goalPct}%` }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+            />
+          </div>
+
+          <div className={styles.journeyFooter}>
+            <span className={styles.journeyHint}>
+              {remaining > 0 ? `Mai ai ${remaining} exercitii corecte pana la obiectivul zilnic.` : 'Obiectivul zilnic este atins. Continua!'}
+            </span>
+            <Link to={resumeLink} className={styles.journeyAction}>
+              <Play size={13} />
+              {lastExercise ? 'Continua ultimul exercitiu' : 'Incepe o sesiune noua'}
+            </Link>
+          </div>
         </motion.div>
 
         <motion.div className={styles.tipCard} variants={up}>
@@ -165,7 +249,7 @@ const Dashboard = () => {
               <Target size={14} className={styles.tipHintIcon} />
               <span className={styles.tipHintText}>
                 Exerseaza mai mult la <strong>{weakest.label}</strong>
-                {' '}— {progress[weakest.id] || 0}/{weakest.total} exercitii completate.
+                {' '}| {progress[weakest.id] || 0}/{weakest.total} exercitii completate.
               </span>
               <Link className={styles.tipAction} to={`/exercitii?capitol=${weakest.id}`}>
                 Incepe acum

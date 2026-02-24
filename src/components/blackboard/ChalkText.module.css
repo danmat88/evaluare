@@ -1,4 +1,7 @@
-.chalk { font-family: var(--font-chalk); line-height: 1.3; }
+.chalk {
+  font-family: var(--font-chalk), var(--font-symbol), var(--font-body), sans-serif;
+  line-height: 1.3;
+}
 
 /* Colors */
 .c_white    { color: var(--chalk-white); }

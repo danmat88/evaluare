@@ -143,7 +143,7 @@
 }
 
 .answerText {
-  font-family: var(--font-chalk);
+  font-family: var(--font-chalk), var(--font-symbol), var(--font-body), sans-serif;
   font-size: var(--fs-xl);
   color: var(--chalk-white);
   min-height: 1.3em;

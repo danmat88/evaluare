@@ -76,7 +76,7 @@ const LoginForm = ({ onSwitch }) => {
       </Button>
 
       <p className={styles.footer}>
-        <ChalkText size="sm" color="muted">Nu ai cont?&nbsp;</ChalkText>
+        <ChalkText size="sm" color="muted">Nu ai cont inca.&nbsp;</ChalkText>
         <button type="button" className={styles.switchBtn} onClick={onSwitch}>
           <ChalkText size="sm" color="cyan">Inregistreaza-te</ChalkText>
         </button>

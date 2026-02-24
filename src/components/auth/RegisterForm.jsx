@@ -85,7 +85,7 @@ const RegisterForm = ({ onSwitch }) => {
       </Button>
 
       <p className={styles.footer}>
-        <ChalkText size="sm" color="muted">Ai deja cont?&nbsp;</ChalkText>
+        <ChalkText size="sm" color="muted">Ai deja cont.&nbsp;</ChalkText>
         <button type="button" className={styles.switchBtn} onClick={onSwitch}>
           <ChalkText size="sm" color="cyan">Conecteaza-te</ChalkText>
         </button>

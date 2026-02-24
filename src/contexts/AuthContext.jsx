@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import {
   subscribeToAuth,
   subscribeToProfile,
@@ -15,19 +15,14 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Tracks which uid we've already hydrated the store for, so we only
-  // pull from Firestore once per login session (not on every snapshot).
+  // Hydrate the local store once per login session.
   const hydratedUid = useRef(null);
 
-  // ── Effect 1: auth state + real-time profile listener ─────────────────
-  // When the user logs in we attach an onSnapshot on their Firestore doc so
-  // profile (progress, testsCompleted, xp, etc.) always stays fresh without
-  // any manual re-fetching.
+  // Effect 1: auth state + real-time profile listener.
   useEffect(() => {
     let profileUnsub = null;
 
     const authUnsub = subscribeToAuth((firebaseUser) => {
-      // Tear down the previous profile listener on every auth change
       if (profileUnsub) {
         profileUnsub();
         profileUnsub = null;
@@ -44,10 +39,15 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setProfile(null);
         hydratedUid.current = null;
-        // Reset gamification state when logged out
+
         useExerciseStore.setState({
-          xp: 0, streak: 0, bestStreak: 0, totalCorrect: 0, totalAnswered: 0,
+          xp: 0,
+          streak: 0,
+          bestStreak: 0,
+          totalCorrect: 0,
+          totalAnswered: 0,
         });
+
         setLoading(false);
       }
     });
@@ -58,10 +58,7 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  // ── Effect 2: hydrate exercise store once per login ────────────────────
-  // profile is populated asynchronously (after the onSnapshot fires), so we
-  // depend on both user and profile. The ref guard ensures we only hydrate
-  // once per session even though profile snapshots keep arriving.
+  // Effect 2: hydrate exercise stats from profile once.
   useEffect(() => {
     if (!user || !profile || hydratedUid.current === user.uid) return;
     hydratedUid.current = user.uid;
@@ -75,9 +72,7 @@ export const AuthProvider = ({ children }) => {
     });
   }, [user, profile]);
 
-  // ── Effect 3: debounce-write store changes back to Firestore ──────────
-  // Every time xp / streak / etc. changes in the store we schedule a write.
-  // 1.5 s debounce prevents hammering Firestore on rapid answers.
+  // Effect 3: debounce-write store changes back to Firestore.
   useEffect(() => {
     if (!user?.uid) return;
 
@@ -102,7 +97,6 @@ export const AuthProvider = ({ children }) => {
     };
   }, [user]);
 
-  // auth listener handles all state — no manual setUser/setProfile needed
   const login = (data) => loginUser(data);
   const register = (data) => registerUser(data);
   const logout = () => logoutUser();

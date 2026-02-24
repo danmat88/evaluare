@@ -48,7 +48,7 @@
   flex: 1;
   padding: 6px 4px;
   border-radius: calc(var(--r-md) - 2px);
-  font-family: var(--font-chalk);
+  font-family: var(--font-body);
   font-size: var(--fs-sm);
   font-weight: 600;
   color: var(--text-muted);
@@ -98,7 +98,7 @@
   background: var(--kbd-key-bg);
 
   color: var(--chalk-white);
-  font-family: var(--font-chalk);
+  font-family: var(--font-mono), var(--font-symbol), var(--font-body), monospace;
   font-size: var(--fs-sm);
 
   box-shadow:
