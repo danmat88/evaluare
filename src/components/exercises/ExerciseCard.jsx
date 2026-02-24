@@ -51,7 +51,7 @@ const ExerciseCard = ({ exercise, onResult, onNext }) => {
   const [xpFloat, setXpFloat]         = useState(null);
   const boardRef = useRef(null);
 
-  const { submitAnswer: storeSubmit, streak } = useExerciseStore();
+  const { streak } = useExerciseStore();
   const { user } = useAuth();
 
   const handleKey       = (v) => !submitted && setAnswer((a) => a + v);

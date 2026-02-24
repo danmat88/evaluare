@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import ChalkText from '../blackboard/ChalkText';
 import Button from '../ui/Button';
 import { useAuth } from '../../contexts';
-import { notify } from '../ui/Toast';
+import { notify } from '../ui/notify';
 import styles from './AuthForm.module.css';
 
 const schema = z.object({

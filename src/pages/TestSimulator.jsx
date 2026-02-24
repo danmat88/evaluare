@@ -10,7 +10,7 @@ import styles from './TestSimulator.module.css';
 
 const TestSimulatorPage = () => {
   const { tests, currentTest, loading, loadTests, loadTest } = useTestStore();
-  useEffect(() => { loadTests(); }, []);
+  useEffect(() => { loadTests(); }, [loadTests]);
 
   if (currentTest) {
     return (

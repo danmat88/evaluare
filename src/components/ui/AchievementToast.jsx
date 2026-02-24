@@ -16,10 +16,13 @@ const ACHIEVEMENTS = [
 let shownIds = new Set();
 
 const AchievementToast = () => {
-  const state = useExerciseStore();
+  const totalCorrect = useExerciseStore((s) => s.totalCorrect);
+  const streak = useExerciseStore((s) => s.streak);
+  const xp = useExerciseStore((s) => s.xp);
   const [queue, setQueue] = useState([]);
 
   useEffect(() => {
+    const state = { totalCorrect, streak, xp };
     const newOnes = ACHIEVEMENTS.filter(
       (a) => !shownIds.has(a.id) && a.condition(state)
     );
@@ -27,7 +30,7 @@ const AchievementToast = () => {
       newOnes.forEach((a) => shownIds.add(a.id));
       setQueue((q) => [...q, ...newOnes]);
     }
-  }, [state.totalCorrect, state.streak, state.xp]);
+  }, [totalCorrect, streak, xp]);
 
   // Auto-dismiss first item after 3.5s
   useEffect(() => {

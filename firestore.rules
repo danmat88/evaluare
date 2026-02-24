@@ -20,7 +20,8 @@ service cloud.firestore {
         // Prevent clients from arbitrarily setting fields outside the schema
         && request.resource.data.keys().hasOnly([
              'name', 'email', 'createdAt', 'progress',
-             'testsCompleted', 'totalScore'
+             'testsCompleted', 'totalScore',
+             'xp', 'streak', 'bestStreak', 'totalCorrect', 'totalAnswered'
            ]);
     }
 
@@ -55,7 +56,7 @@ service cloud.firestore {
       allow read:   if isAuth() && resource.data.uid == request.auth.uid;
       allow create: if isAuth() && request.resource.data.uid == request.auth.uid
         && request.resource.data.keys().hasOnly([
-             'uid', 'testId', 'score', 'totalPoints', 'percentage',
+             'uid', 'testId', 'title', 'score', 'totalPoints', 'percentage',
              'answers', 'timeSpent', 'createdAt'
            ]);
       allow update, delete: if false;

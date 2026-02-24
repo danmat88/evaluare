@@ -12,7 +12,7 @@ const useTimer = (active) => {
       clearInterval(intervalRef.current);
     }
     return () => clearInterval(intervalRef.current);
-  }, [active]);
+  }, [active, tickTimer]);
 };
 
 export default useTimer;

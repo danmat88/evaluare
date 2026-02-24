@@ -22,7 +22,7 @@ const useExercises = (chapter = null) => {
   useEffect(() => {
     if (chapter) loadChapter(chapter);
     else loadAll();
-  }, [chapter]);
+  }, [chapter, loadChapter, loadAll]);
 
   return {
     exercises,

@@ -7,7 +7,7 @@ import Layout from '../components/layout/Layout';
 import { useAuth } from '../contexts';
 import useExerciseStore from '../store/exerciseStore';
 import { getUserTestResults } from '../firebase/results';
-import { getLevel, getLevelProgress } from '../components/ui/XPBar';
+import { getLevel, getLevelProgress } from '../utils/xp';
 import styles from './Profile.module.css';
 
 const LEVEL_NAMES = ['Debutant','Elev','Sârguincios','Priceput','Avansat','Expert','Maestru','Profesor','Geniu','Olimpic'];
@@ -45,7 +45,7 @@ const fmtTime = (secs) => {
 
 const Profile = () => {
   const { user, profile, logout } = useAuth();
-  const { xp, streak, bestStreak, totalCorrect, totalAnswered } = useExerciseStore();
+  const { xp, bestStreak, totalCorrect, totalAnswered } = useExerciseStore();
   const [results, setResults] = useState([]);
 
   useEffect(() => {
@@ -55,7 +55,7 @@ const Profile = () => {
   const level    = getLevel(xp);
   const pct      = getLevelProgress(xp);
   const accuracy = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0;
-  const progress = profile?.progress || {};
+  const progress = useMemo(() => profile?.progress || {}, [profile?.progress]);
 
   const weakest = useMemo(() => {
     let minPct = 101;

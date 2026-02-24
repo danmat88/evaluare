@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   subscribeToAuth,
   subscribeToProfile,
@@ -8,11 +8,10 @@ import {
   updateUserStats,
 } from '../firebase/auth';
 import useExerciseStore from '../store/exerciseStore';
-
-const AuthContext = createContext(null);
+import { AuthContext } from './AuthContextValue';
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser]       = useState(null);
+  const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -29,7 +28,10 @@ export const AuthProvider = ({ children }) => {
 
     const authUnsub = subscribeToAuth((firebaseUser) => {
       // Tear down the previous profile listener on every auth change
-      if (profileUnsub) { profileUnsub(); profileUnsub = null; }
+      if (profileUnsub) {
+        profileUnsub();
+        profileUnsub = null;
+      }
 
       if (firebaseUser) {
         setUser(firebaseUser);
@@ -58,48 +60,52 @@ export const AuthProvider = ({ children }) => {
 
   // ── Effect 2: hydrate exercise store once per login ────────────────────
   // profile is populated asynchronously (after the onSnapshot fires), so we
-  // depend on both user?.uid and profile. The ref guard ensures we only
-  // hydrate once per session even though profile snapshots keep arriving.
+  // depend on both user and profile. The ref guard ensures we only hydrate
+  // once per session even though profile snapshots keep arriving.
   useEffect(() => {
     if (!user || !profile || hydratedUid.current === user.uid) return;
     hydratedUid.current = user.uid;
 
     useExerciseStore.setState({
-      xp:            profile.xp            ?? 0,
-      streak:        profile.streak        ?? 0,
-      bestStreak:    profile.bestStreak    ?? 0,
-      totalCorrect:  profile.totalCorrect  ?? 0,
+      xp: profile.xp ?? 0,
+      streak: profile.streak ?? 0,
+      bestStreak: profile.bestStreak ?? 0,
+      totalCorrect: profile.totalCorrect ?? 0,
       totalAnswered: profile.totalAnswered ?? 0,
     });
-  }, [user?.uid, profile]);
+  }, [user, profile]);
 
   // ── Effect 3: debounce-write store changes back to Firestore ──────────
   // Every time xp / streak / etc. changes in the store we schedule a write.
   // 1.5 s debounce prevents hammering Firestore on rapid answers.
   useEffect(() => {
-    if (!user) return;
+    if (!user?.uid) return;
 
+    const uid = user.uid;
     let timer;
     const unsub = useExerciseStore.subscribe((state) => {
       clearTimeout(timer);
       timer = setTimeout(() => {
-        updateUserStats(user.uid, {
-          xp:            state.xp,
-          streak:        state.streak,
-          bestStreak:    state.bestStreak,
-          totalCorrect:  state.totalCorrect,
+        updateUserStats(uid, {
+          xp: state.xp,
+          streak: state.streak,
+          bestStreak: state.bestStreak,
+          totalCorrect: state.totalCorrect,
           totalAnswered: state.totalAnswered,
         }).catch(() => {});
       }, 1500);
     });
 
-    return () => { clearTimeout(timer); unsub(); };
-  }, [user?.uid]);
+    return () => {
+      clearTimeout(timer);
+      unsub();
+    };
+  }, [user]);
 
   // auth listener handles all state — no manual setUser/setProfile needed
-  const login    = (data) => loginUser(data);
+  const login = (data) => loginUser(data);
   const register = (data) => registerUser(data);
-  const logout   = () => logoutUser();
+  const logout = () => logoutUser();
 
   return (
     <AuthContext.Provider
@@ -108,10 +114,4 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used inside <AuthProvider>');
-  return ctx;
 };

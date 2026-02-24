@@ -78,7 +78,7 @@ const Dashboard = () => {
   const name = profile?.name?.split(' ')[0] || 'elev';
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bună dimineața' : hour < 18 ? 'Bună ziua' : 'Bună seara';
-  const progress = profile?.progress || {};
+  const progress = useMemo(() => profile?.progress || {}, [profile?.progress]);
   const weakest = useMemo(() => {
     let minPct = 101;
     let found  = null;
@@ -87,7 +87,7 @@ const Dashboard = () => {
       if (pct < minPct) { minPct = pct; found = ch; }
     }
     return found;
-  }, [profile]);
+  }, [progress]);
 
   return (
     <Layout>
@@ -181,3 +181,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

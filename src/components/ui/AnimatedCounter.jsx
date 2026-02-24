@@ -5,9 +5,14 @@ const AnimatedCounter = ({ value = 0, duration = 900, className }) => {
   const startRef = useRef(null);
   const rafRef   = useRef(null);
   const fromRef  = useRef(0);
+  const displayRef = useRef(0);
 
   useEffect(() => {
-    fromRef.current = display;
+    displayRef.current = display;
+  }, [display]);
+
+  useEffect(() => {
+    fromRef.current = displayRef.current;
     startRef.current = null;
 
     const animate = (ts) => {

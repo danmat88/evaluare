@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import ChalkText from '../blackboard/ChalkText';
 import AnimatedCounter from '../ui/AnimatedCounter';
-import { getLevel, getLevelProgress } from '../ui/XPBar';
+import { getLevel } from '../../utils/xp';
 import styles from './ProgressDashboard.module.css';
 
 const CHAPTERS = [
@@ -50,7 +50,6 @@ const ProgressDashboard = ({ profile, xp = 0 }) => {
   const totalAll    = CHAPTERS.reduce((a, c) => a + c.total, 0);
   const overall     = totalAll > 0 ? Math.round((totalSolved / totalAll) * 100) : 0;
   const level       = getLevel(xp);
-  const lvlPct      = getLevelProgress(xp);
   const r = 30;
   const circ = 2 * Math.PI * r;
 
