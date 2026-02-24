@@ -49,14 +49,14 @@
 .avatar {
   position: relative;
   z-index: 2;
-  width: 72px; height: 72px;
+  width: 76px; height: 76px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(0,229,255,0.12), rgba(168,85,247,0.12));
+  background: linear-gradient(135deg, rgba(0,229,255,0.14), rgba(168,85,247,0.14));
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 0 0 2px rgba(0,229,255,0.35), 0 0 30px rgba(0,229,255,0.15);
+  animation: avatar-glow-cycle 3.5s ease-in-out infinite;
 }
 
 .info {
@@ -107,7 +107,7 @@
 }
 
 .xpBar {
-  width: 120px; height: 5px;
+  width: 130px; height: 6px;
   background: rgba(241,245,249,0.08);
   border-radius: var(--r-full);
   overflow: hidden;
@@ -117,7 +117,7 @@
   height: 100%;
   background: var(--grad-primary);
   border-radius: var(--r-full);
-  box-shadow: 0 0 8px rgba(0,229,255,0.5);
+  box-shadow: 0 0 10px rgba(0,229,255,0.6), 0 0 20px rgba(168,85,247,0.3);
 }
 
 /* ── Stats bento ── */
@@ -151,17 +151,19 @@
   opacity: 0.3;
 }
 
-.statCard:hover { transform: translateY(-3px); }
-.statCard:hover.c_yellow { border-color: rgba(251,191,36,0.3); box-shadow: 0 8px 24px rgba(251,191,36,0.08); }
-.statCard:hover.c_coral  { border-color: rgba(244,63,94,0.3);  box-shadow: 0 8px 24px rgba(244,63,94,0.08); }
-.statCard:hover.c_cyan   { border-color: rgba(0,229,255,0.3);  box-shadow: 0 8px 24px rgba(0,229,255,0.08); }
-.statCard:hover.c_mint   { border-color: rgba(52,211,153,0.3); box-shadow: 0 8px 24px rgba(52,211,153,0.08); }
+.statCard:hover { transform: translateY(-4px); }
+.statCard:hover.c_yellow { border-color: rgba(251,191,36,0.35); box-shadow: 0 10px 28px rgba(251,191,36,0.12); background: rgba(251,191,36,0.04); }
+.statCard:hover.c_coral  { border-color: rgba(244,63,94,0.35);  box-shadow: 0 10px 28px rgba(244,63,94,0.12);  background: rgba(244,63,94,0.04); }
+.statCard:hover.c_cyan   { border-color: rgba(0,229,255,0.35);  box-shadow: 0 10px 28px rgba(0,229,255,0.12);  background: rgba(0,229,255,0.04); }
+.statCard:hover.c_mint   { border-color: rgba(52,211,153,0.35); box-shadow: 0 10px 28px rgba(52,211,153,0.12); background: rgba(52,211,153,0.04); }
 
 .statIcon { display: flex; margin-bottom: 2px; }
 .statVal {
   font-family: var(--font-mono);
-  font-size: var(--fs-xl);
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
   font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
 }
 
 .c_yellow { color: var(--neon-yellow); text-shadow: 0 0 12px rgba(251,191,36,0.35); }
@@ -198,14 +200,16 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--sp-3) var(--sp-4);
-  background: rgba(7,8,15,0.4);
+  background: rgba(7,8,15,0.45);
   border: 1px solid rgba(241,245,249,0.06);
   border-radius: var(--r-lg);
-  transition: background var(--t-fast), border-color var(--t-fast);
+  transition: background var(--t-base), border-color var(--t-base), box-shadow var(--t-base), transform var(--t-base);
 }
 .histItem:hover {
-  background: rgba(22,25,41,0.6);
-  border-color: rgba(241,245,249,0.1);
+  background: rgba(22,25,41,0.7);
+  border-color: rgba(0,229,255,0.2);
+  box-shadow: 0 4px 16px rgba(0,229,255,0.06);
+  transform: translateX(3px);
 }
 
 .logout { align-self: flex-start; }

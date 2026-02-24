@@ -28,6 +28,7 @@ const ExerciseCard = ({ exercise, onResult, onNext }) => {
   const [flash, setFlash]             = useState(null);
   const [showParticles, setShowParticles] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
+  const [xpFloat, setXpFloat]         = useState(null);
   const boardRef = useRef(null);
 
   const { submitAnswer: storeSubmit, streak } = useExerciseStore();
@@ -54,12 +55,14 @@ const ExerciseCard = ({ exercise, onResult, onNext }) => {
     }
 
     // Update store XP/streak
+    let earnedXp = 0;
     useExerciseStore.setState((s) => {
       const newStreak = isCorrect ? s.streak + 1 : 0;
       let xpGain = isCorrect ? 10 : 0;
       if (newStreak === 3) xpGain += 5;
       if (newStreak === 5) xpGain += 10;
       if (newStreak > 5 && newStreak % 5 === 0) xpGain += 10;
+      earnedXp = xpGain;
       return {
         answered: true, correct: isCorrect,
         streak: newStreak,
@@ -70,6 +73,11 @@ const ExerciseCard = ({ exercise, onResult, onNext }) => {
         totalAnswered: s.totalAnswered + 1,
       };
     });
+
+    if (isCorrect && earnedXp > 0) {
+      setXpFloat(earnedXp);
+      setTimeout(() => setXpFloat(null), 1100);
+    }
 
     onResult?.({ exerciseId: exercise.id, correct: isCorrect });
   };
@@ -119,6 +127,19 @@ const ExerciseCard = ({ exercise, onResult, onNext }) => {
 
             {/* Answer area */}
             <div className={styles.answerArea}>
+              <AnimatePresence>
+                {xpFloat && (
+                  <motion.div
+                    key="xp-float"
+                    className={styles.xpFloat}
+                    initial={{ opacity: 1, y: 0 }}
+                    animate={{ opacity: 0, y: -56 }}
+                    transition={{ duration: 1.05, ease: 'easeOut' }}
+                  >
+                    +{xpFloat} XP
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <ChalkText size="xs" color="muted">RĂSPUNS</ChalkText>
               <div className={`${styles.answerBox} ${submitted ? (correct ? styles.answerOk : styles.answerErr) : answer ? styles.answerFilled : ''}`}>
                 <span className={styles.answerText}>

@@ -34,7 +34,7 @@
   position: absolute;
   top: 0; left: 0; right: 0; height: 1px;
   background: linear-gradient(90deg, var(--neon-yellow), var(--neon-cyan));
-  opacity: 0.4;
+  opacity: 0.55;
 }
 /* Decorative orb inside greeting */
 .greeting::after {
@@ -60,14 +60,27 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(0,229,255,0.05), rgba(168,85,247,0.05));
-  border: 1px solid rgba(0,229,255,0.12);
+  background: linear-gradient(135deg, rgba(0,229,255,0.06), rgba(168,85,247,0.06));
+  border: 1px solid rgba(0,229,255,0.14);
   backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
   border-radius: var(--r-xl);
   position: relative;
   overflow: hidden;
   padding: var(--sp-4);
+  transition: border-color var(--t-base), box-shadow var(--t-base);
+}
+.clockCard:hover {
+  border-color: rgba(0,229,255,0.25);
+  box-shadow: 0 0 30px rgba(0,229,255,0.08);
+}
+/* Centered radial glow overlay */
+.clockCard::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 80% at 50% 50%, rgba(0,229,255,0.05) 0%, transparent 70%);
+  pointer-events: none;
 }
 .clockGlow {
   position: absolute;
@@ -174,9 +187,12 @@
   border-radius: var(--r-xl);
   position: relative;
   overflow: hidden;
-  transition: background var(--t-fast), transform var(--t-fast), border-color var(--t-fast);
+  transition: background var(--t-fast), transform var(--t-fast), border-color var(--t-fast), box-shadow var(--t-fast);
 }
-.statCard:hover { background: rgba(22,25,41,0.8); transform: translateY(-2px); }
+.statCard:hover { background: rgba(22,25,41,0.85); transform: translateY(-2px) scale(1.02); }
+.statCell0:hover { box-shadow: 0 8px 32px rgba(251,191,36,0.18); border-color: rgba(251,191,36,0.25) !important; }
+.statCell1:hover { box-shadow: 0 8px 32px rgba(244, 63,94,0.18);  border-color: rgba(244,63,94,0.25)  !important; }
+.statCell2:hover { box-shadow: 0 8px 32px rgba(52,211,153,0.18);  border-color: rgba(52,211,153,0.25) !important; }
 
 /* Each stat cell spans col 1, 2, or 3 in row 2 */
 .statCell0 { grid-column: 1;     grid-row: 2; }
@@ -192,13 +208,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px; height: 32px;
+  width: 36px; height: 36px;
   border-radius: var(--r-md);
+  font-size: var(--fs-lg);
+  transition: transform var(--t-base);
 }
+.statCard:hover .statIcon { transform: scale(1.15); }
 .statNum {
   font-family: var(--font-mono);
-  font-size: var(--fs-xl);
+  font-size: clamp(1.6rem, 2.8vw, 2.2rem);
   font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
 }
 
 .c_yellow { color: var(--neon-yellow); text-shadow: 0 0 16px rgba(251,191,36,0.45); }
@@ -252,11 +273,11 @@
 .navCard:hover::after { opacity: 1; }
 .navCard:hover .arrow { transform: translateX(4px); }
 
-.navCard_cyan:hover  { border-color: rgba(0,229,255,0.28); box-shadow: 0 4px 24px rgba(0,229,255,0.09); }
+.navCard_cyan:hover  { border-color: rgba(0,229,255,0.3); box-shadow: 0 6px 30px rgba(0,229,255,0.13); background: linear-gradient(135deg, rgba(0,229,255,0.07), rgba(22,25,41,0.9)); }
 .navCard_cyan::after { background: var(--grad-primary); }
 .navCard_cyan:hover .arrow { color: var(--neon-cyan); }
 
-.navCard_yellow:hover  { border-color: rgba(251,191,36,0.28); box-shadow: 0 4px 24px rgba(251,191,36,0.07); }
+.navCard_yellow:hover  { border-color: rgba(251,191,36,0.3); box-shadow: 0 6px 30px rgba(251,191,36,0.11); background: linear-gradient(135deg, rgba(251,191,36,0.07), rgba(22,25,41,0.9)); }
 .navCard_yellow::after { background: var(--grad-accent); }
 .navCard_yellow:hover .arrow { color: var(--neon-yellow); }
 
@@ -278,8 +299,8 @@
   grid-row: 4;
   align-self: end;
   padding: var(--sp-4) var(--sp-5);
-  background: linear-gradient(135deg, rgba(168,85,247,0.07), rgba(99,102,241,0.04));
-  border: 1px solid rgba(168,85,247,0.18);
+  background: linear-gradient(135deg, rgba(168,85,247,0.08), rgba(99,102,241,0.05));
+  border: 1px solid rgba(168,85,247,0.2);
   backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
   border-radius: var(--r-xl);
@@ -288,12 +309,35 @@
   gap: var(--sp-2);
   position: relative;
   overflow: hidden;
+  transition: border-color var(--t-base), box-shadow var(--t-base);
+}
+.tipCard:hover {
+  border-color: rgba(168,85,247,0.3);
+  box-shadow: 0 4px 20px rgba(168,85,247,0.08);
 }
 .tipCard::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(168,85,247,0.55), transparent);
+  background: linear-gradient(90deg, transparent, rgba(168,85,247,0.65), transparent);
+}
+/* Decorative corner symbol */
+.tipCard::after {
+  content: '∑';
+  position: absolute;
+  right: var(--sp-5);
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-mono);
+  font-size: 3.5rem;
+  font-weight: 700;
+  background: var(--grad-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  opacity: 0.06;
+  pointer-events: none;
+  user-select: none;
 }
 .tipHeader { display: flex; align-items: center; gap: var(--sp-2); }
 .tipIcon { font-size: var(--fs-base); }

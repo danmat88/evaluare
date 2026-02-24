@@ -177,3 +177,44 @@ input, textarea { font-family: inherit; font-size: inherit; border: none; outlin
   50%       { transform: translate(-15px, -35px) scale(0.97); }
   75%       { transform: translate(-30px, 15px) scale(1.02); }
 }
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.45; }
+  50%       { opacity: 0.9;  }
+}
+
+@keyframes slide-in-up {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+@keyframes card-entrance {
+  0%   { opacity: 0; transform: translateY(18px) scale(0.95); }
+  65%  { opacity: 1; transform: translateY(-2px) scale(1.005); }
+  100% { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+@keyframes avatar-glow-cycle {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(0,229,255,0.45), 0 0 28px rgba(0,229,255,0.18); }
+  50%       { box-shadow: 0 0 0 2px rgba(168,85,247,0.55), 0 0 28px rgba(168,85,247,0.22); }
+}
+
+@keyframes auth-card-glow {
+  0%, 100% { box-shadow: 0 8px 40px rgba(0,0,0,0.45), 0 0 50px rgba(0,229,255,0.05); }
+  50%       { box-shadow: 0 8px 40px rgba(0,0,0,0.45), 0 0 50px rgba(168,85,247,0.08); }
+}
+
+@keyframes answer-ready-pulse {
+  0%, 100% { border-color: rgba(0,229,255,0.22); border-bottom-color: rgba(0,229,255,0.38); }
+  50%       { border-color: rgba(0,229,255,0.42); border-bottom-color: rgba(0,229,255,0.65); box-shadow: 0 0 0 3px rgba(0,229,255,0.06); }
+}
+
+@keyframes stat-appear {
+  from { opacity: 0; transform: scale(0.85) translateY(6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes tip-slide-in {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}

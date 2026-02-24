@@ -43,10 +43,15 @@ const TestSimulatorPage = () => {
         </div>
 
         {loading ? (
-          <div className={styles.loading}>
-            <motion.span animate={{ opacity: [0.4,1,0.4] }} transition={{ duration: 1.4, repeat: Infinity }}>
-              <ChalkText size="lg" color="yellow">Se încarcă...</ChalkText>
-            </motion.span>
+          <div className={styles.grid}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className={styles.skeletonCard} style={{ animationDelay: `${i * 0.12}s` }}>
+                <div className={styles.skTop} />
+                <div className={styles.skTitle} />
+                <div className={styles.skMeta} />
+                <div className={styles.skFooter} />
+              </div>
+            ))}
           </div>
         ) : (
           <div className={styles.grid}>
