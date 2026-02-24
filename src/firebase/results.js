@@ -28,10 +28,11 @@ export const saveExerciseResult = async (uid, { exerciseId, chapter, correct, ti
   });
 };
 
-export const saveTestResult = async (uid, { testId, score, totalPoints, answers, timeSpent }) => {
+export const saveTestResult = async (uid, { testId, title, score, totalPoints, answers, timeSpent }) => {
   await addDoc(collection(db, 'testResults'), {
     uid,
     testId,
+    title: title || 'Test simulat',
     score,
     totalPoints,
     percentage: Math.round((score / totalPoints) * 100),

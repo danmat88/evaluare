@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { BookOpen, FlaskConical, ArrowRight, Zap, Target, TrendingUp } from 'lucide-react';
@@ -21,6 +21,20 @@ const TIPS = [
 ];
 
 const dailyTip = TIPS[new Date().getDay() % TIPS.length];
+
+const CHAPTERS = [
+  { id: 'multimi',       label: 'Mulțimi',       total: 10 },
+  { id: 'numere',        label: 'Numere',         total: 15 },
+  { id: 'ecuatii',       label: 'Ecuații',        total: 20 },
+  { id: 'functii',       label: 'Funcții',        total: 15 },
+  { id: 'progresii',     label: 'Progresii',      total: 10 },
+  { id: 'probabilitati', label: 'Probabilități',  total: 8  },
+  { id: 'triunghiuri',   label: 'Triunghiuri',    total: 18 },
+  { id: 'patrulatere',   label: 'Patrulatere',    total: 12 },
+  { id: 'cerc',          label: 'Cerc',           total: 10 },
+  { id: 'corpuri',       label: 'Corpuri',        total: 10 },
+  { id: 'trigonometrie', label: 'Trigonometrie',  total: 8  },
+];
 
 const STATS = [
   { icon: <Zap size={16} />,    label: 'XP Total', key: 'xp',          color: 'yellow' },
@@ -64,6 +78,16 @@ const Dashboard = () => {
   const name = profile?.name?.split(' ')[0] || 'elev';
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bună dimineața' : hour < 18 ? 'Bună ziua' : 'Bună seara';
+  const progress = profile?.progress || {};
+  const weakest = useMemo(() => {
+    let minPct = 101;
+    let found  = null;
+    for (const ch of CHAPTERS) {
+      const pct = ch.total > 0 ? ((progress[ch.id] || 0) / ch.total) * 100 : 0;
+      if (pct < minPct) { minPct = pct; found = ch; }
+    }
+    return found;
+  }, [profile]);
 
   return (
     <Layout>
@@ -140,6 +164,15 @@ const Dashboard = () => {
             <span className={styles.tipLabel}>SFAT AL ZILEI</span>
           </div>
           <span className={styles.tipText}>{dailyTip}</span>
+          {weakest && (
+            <div className={styles.tipHint}>
+              <span className={styles.tipHintIcon}>🎯</span>
+              <span className={styles.tipHintText}>
+                Exersează mai mult la <strong>{weakest.label}</strong>
+                {' '}— {progress[weakest.id] || 0}/{weakest.total} exerciții completate.
+              </span>
+            </div>
+          )}
         </motion.div>
 
       </motion.div>

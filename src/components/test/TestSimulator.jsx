@@ -70,7 +70,7 @@ const TestSimulator = () => {
           </span>
           <TestTimer />
           {!started
-            ? <Button variant="primary" size="sm" onClick={startTest}>Începe testul</Button>
+            ? <Button variant="primary" size="sm" onClick={() => startTest(user?.uid)}>Începe testul</Button>
             : <Button variant="danger" size="sm" icon={<Send size={13} />} onClick={() => finishTest(user?.uid)}>Predă</Button>
           }
         </div>

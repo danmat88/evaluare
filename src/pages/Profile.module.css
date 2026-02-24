@@ -212,6 +212,246 @@
   transform: translateX(3px);
 }
 
+/* ── Avatar letter ── */
+.avatarLetter {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 20px rgba(0,229,255,0.5);
+}
+
+/* ── Profile name / email ── */
+.profileName {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2.5vw, 1.6rem);
+  font-weight: 800;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 20px rgba(251,191,36,0.3);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.profileEmail {
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+/* ── XP label ── */
+.xpLabel {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+/* ── Stat card overrides (children inherit color from card) ── */
+.statIcon { display: flex; color: inherit; }
+.statVal  { font-family: var(--font-mono); font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: 700; line-height: 1; letter-spacing: -0.02em; color: inherit; }
+.statLbl  { font-family: var(--font-body); font-size: var(--fs-xs); color: var(--text-muted); text-align: center; }
+
+/* ── Section wrapper ── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-xl);
+  padding: var(--sp-5);
+  backdrop-filter: var(--blur-sm);
+  position: relative;
+}
+.section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: var(--grad-primary);
+  opacity: 0.2;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sectionLabel {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.histCount {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  background: rgba(241,245,249,0.06);
+  border: 1px solid rgba(241,245,249,0.1);
+  border-radius: var(--r-full);
+  padding: 2px var(--sp-3);
+}
+
+/* ── Empty state ── */
+.histEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-8) var(--sp-4);
+  text-align: center;
+}
+.histEmptyIcon { font-size: 2.5rem; opacity: 0.5; }
+.histEmptyTitle {
+  font-family: var(--font-display);
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.histEmptyDesc {
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ── History list ── */
+.histList { display: flex; flex-direction: column; gap: var(--sp-2); }
+
+.histItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-3) var(--sp-4);
+  background: rgba(7,8,15,0.45);
+  border: 1px solid rgba(241,245,249,0.06);
+  border-radius: var(--r-lg);
+  gap: var(--sp-3);
+  transition: background var(--t-base), border-color var(--t-base), transform var(--t-base);
+}
+.histItem:hover {
+  background: rgba(22,25,41,0.7);
+  border-color: rgba(0,229,255,0.2);
+  transform: translateX(3px);
+}
+
+.histLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex: 1;
+  min-width: 0;
+}
+
+/* Grade badge */
+.histGrade {
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  line-height: 1;
+  min-width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.gradeTop  { color: var(--neon-mint);   text-shadow: 0 0 10px rgba(52,211,153,0.5); }
+.gradeMid  { color: var(--neon-cyan);   text-shadow: 0 0 10px rgba(0,229,255,0.5);  }
+.gradeWarn { color: var(--neon-yellow); text-shadow: 0 0 10px rgba(251,191,36,0.5); }
+.gradeLow  { color: var(--neon-coral);  text-shadow: 0 0 10px rgba(244,63,94,0.5);  }
+
+.histInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.histTitle {
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.histMeta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+.histDot { opacity: 0.4; }
+
+.histRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.histPct {
+  font-family: var(--font-mono);
+  font-size: var(--fs-base);
+  font-weight: 700;
+}
+.histPctGood { color: var(--neon-mint);  }
+.histPctBad  { color: var(--neon-coral); }
+.histDate {
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ── Weakest chapter hint ── */
+.hintCard {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
+  background: linear-gradient(135deg, rgba(251,191,36,0.06), rgba(251,146,60,0.04));
+  border: 1px solid rgba(251,191,36,0.2);
+  border-radius: var(--r-xl);
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--t-base), box-shadow var(--t-base);
+}
+.hintCard::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(251,191,36,0.6), transparent);
+}
+.hintCard:hover {
+  border-color: rgba(251,191,36,0.35);
+  box-shadow: 0 4px 20px rgba(251,191,36,0.08);
+}
+.hintIcon { color: var(--neon-yellow); flex-shrink: 0; margin-top: 2px; }
+.hintBody { display: flex; flex-direction: column; gap: 2px; }
+.hintLabel {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--neon-yellow);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+.hintChapter {
+  font-family: var(--font-display);
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.hintSub {
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
 .logout { align-self: flex-start; }
 
 @media (max-width: 520px) {

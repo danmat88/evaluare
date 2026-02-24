@@ -13,6 +13,7 @@ const useTestStore = create((set, get) => ({
   finished: false,
   results: null,
   loading: false,
+  uid: null,
 
   loadTests: async () => {
     set({ loading: true });
@@ -26,7 +27,7 @@ const useTestStore = create((set, get) => ({
     set({ currentTest: test, loading: false, answers: {}, finished: false, results: null });
   },
 
-  startTest: () => set({ started: true, timeLeft: TEST_DURATION }),
+  startTest: (uid) => set({ started: true, timeLeft: TEST_DURATION, uid: uid || null }),
 
   setAnswer: (exerciseId, answer) =>
     set((state) => ({
@@ -36,14 +37,14 @@ const useTestStore = create((set, get) => ({
   tickTimer: () =>
     set((state) => {
       if (state.timeLeft <= 1) {
-        get().finishTest();
+        get().finishTest(get().uid);
         return { timeLeft: 0 };
       }
       return { timeLeft: state.timeLeft - 1 };
     }),
 
   finishTest: async (uid) => {
-    const { currentTest, answers } = get();
+    const { currentTest, answers, timeLeft } = get();
     if (!currentTest) return;
 
     let score = 0;
@@ -58,22 +59,24 @@ const useTestStore = create((set, get) => ({
       });
     });
 
+    const timeSpent = TEST_DURATION - timeLeft;
     const results = { score, totalPoints, percentage: Math.round((score / totalPoints) * 100) };
     set({ finished: true, results });
 
     if (uid) {
       await saveTestResult(uid, {
         testId: currentTest.id,
+        title: currentTest.title || 'Test simulat',
         score,
         totalPoints,
         answers,
-        timeSpent: TEST_DURATION - get().timeLeft,
+        timeSpent,
       });
     }
   },
 
   resetTest: () =>
-    set({ currentTest: null, answers: {}, timeLeft: TEST_DURATION, started: false, finished: false, results: null }),
+    set({ currentTest: null, answers: {}, timeLeft: TEST_DURATION, started: false, finished: false, results: null, uid: null }),
 }));
 
 export default useTestStore;
