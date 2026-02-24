@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MoonStar, Sun } from 'lucide-react';
 import LoginForm from '../components/auth/LoginForm';
 import RegisterForm from '../components/auth/RegisterForm';
+import { useTheme } from '../contexts';
 import styles from './Home.module.css';
 
 const FEATURES = [
@@ -25,9 +27,19 @@ const up = {
 
 const Home = () => {
   const [tab, setTab] = useState('login');
+  const { isDark, toggle } = useTheme();
 
   return (
     <div className={styles.page}>
+      <button
+        className={styles.themeToggle}
+        onClick={toggle}
+        aria-label={isDark ? 'Activeaza tema luminoasa' : 'Activeaza tema intunecata'}
+        title={isDark ? 'Tema luminoasa' : 'Tema intunecata'}
+      >
+        {isDark ? <Sun size={15} /> : <MoonStar size={15} />}
+        <span>{isDark ? 'Light' : 'Dark'}</span>
+      </button>
       {/* ── Left — branding ── */}
       <div className={styles.left}>
         <div className={styles.orb1} />
@@ -135,3 +147,5 @@ const Home = () => {
 };
 
 export default Home;
+
+

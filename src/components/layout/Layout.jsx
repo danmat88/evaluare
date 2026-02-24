@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { BookOpen, FlaskConical, LayoutDashboard, User, LogOut } from 'lucide-react';
+import { BookOpen, FlaskConical, LayoutDashboard, User, LogOut, MoonStar, Sun } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useAuth } from '../../contexts';
+import { useAuth, useTheme } from '../../contexts';
 import XPBar from '../ui/XPBar';
 import styles from './Layout.module.css';
 
@@ -14,7 +14,13 @@ const NAV = [
 
 const Layout = ({ children }) => {
   const { profile, logout } = useAuth();
+  const { isDark, toggle } = useTheme();
   const navigate = useNavigate();
+  const todayLabel = new Intl.DateTimeFormat('ro-RO', {
+    weekday: 'short',
+    day: '2-digit',
+    month: 'short',
+  }).format(new Date());
 
   return (
     <div className={styles.shell}>
@@ -41,8 +47,18 @@ const Layout = ({ children }) => {
 
         {/* Right: XP + name + logout */}
         <div className={styles.right}>
+          <span className={styles.today}>{todayLabel}</span>
           <XPBar />
           <div className={styles.divider} />
+          <button
+            className={styles.themeBtn}
+            onClick={toggle}
+            aria-label={isDark ? 'Activeaza tema luminoasa' : 'Activeaza tema intunecata'}
+            title={isDark ? 'Tema luminoasa' : 'Tema intunecata'}
+          >
+            {isDark ? <Sun size={14} /> : <MoonStar size={14} />}
+            <span>{isDark ? 'Light' : 'Dark'}</span>
+          </button>
           <span className={styles.username}>{profile?.name?.split(' ')[0]}</span>
           <button className={styles.logoutBtn} onClick={async () => { await logout(); navigate('/'); }} title="Deconectare">
             <LogOut size={14} />

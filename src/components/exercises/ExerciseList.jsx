@@ -1,54 +1,141 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Search, Shuffle, FilterX } from 'lucide-react';
 import ExerciseCard from './ExerciseCard';
 import useExerciseStore from '../../store/exerciseStore';
 import styles from './ExerciseList.module.css';
 
 const CHAPTERS = [
-  { id: null,            emoji: '⭐', label: 'Toate' },
-  { id: 'multimi',       emoji: '∅',  label: 'Mulțimi' },
-  { id: 'numere',        emoji: '∞',  label: 'Numere' },
-  { id: 'ecuatii',       emoji: '=',  label: 'Ecuații' },
-  { id: 'functii',       emoji: 'f',  label: 'Funcții' },
-  { id: 'progresii',     emoji: '…',  label: 'Progresii' },
-  { id: 'probabilitati', emoji: '%',  label: 'Prob.' },
-  { id: 'triunghiuri',   emoji: '△',  label: 'Triunghiuri' },
-  { id: 'patrulatere',   emoji: '□',  label: 'Patrulatere' },
-  { id: 'cerc',          emoji: '○',  label: 'Cerc' },
-  { id: 'corpuri',       emoji: '▲',  label: 'Corpuri' },
-  { id: 'trigonometrie', emoji: '~',  label: 'Trigo' },
+  { id: null, label: 'Toate', emoji: 'star' },
+  { id: 'multimi', label: 'Multimi', emoji: 'set' },
+  { id: 'numere', label: 'Numere', emoji: 'inf' },
+  { id: 'ecuatii', label: 'Ecuatii', emoji: '=' },
+  { id: 'functii', label: 'Functii', emoji: 'f' },
+  { id: 'progresii', label: 'Progresii', emoji: '...' },
+  { id: 'probabilitati', label: 'Prob.', emoji: '%' },
+  { id: 'triunghiuri', label: 'Triunghiuri', emoji: 'tri' },
+  { id: 'patrulatere', label: 'Patrulatere', emoji: 'sq' },
+  { id: 'cerc', label: 'Cerc', emoji: 'o' },
+  { id: 'corpuri', label: 'Corpuri', emoji: '3d' },
+  { id: 'trigonometrie', label: 'Trigo', emoji: '~' },
 ];
 
+const DIFFICULTIES = [
+  { id: 0, label: 'Toate' },
+  { id: 1, label: 'Usor' },
+  { id: 2, label: 'Mediu' },
+  { id: 3, label: 'Greu' },
+];
+
+const normalize = (value) =>
+  String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
 const ExerciseList = ({ exercises = [], loading }) => {
-  const [chapter, setChapter]   = useState(null);
-  const [idx, setIdx]           = useState(0);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [chapter, setChapter] = useState(null);
+  const [difficulty, setDifficulty] = useState(0);
+  const [query, setQuery] = useState('');
+  const [idx, setIdx] = useState(0);
   const { totalCorrect, streak } = useExerciseStore();
 
-  const filtered = chapter ? exercises.filter((e) => e.chapter === chapter) : exercises;
-  const current  = filtered[idx] ?? null;
+  const filtered = useMemo(() => {
+    const q = normalize(query.trim());
 
-  const changeChapter = (id) => { setChapter(id); setIdx(0); };
-  const next = useCallback(() => setIdx((i) => Math.min(i + 1, filtered.length - 1)), [filtered.length]);
-  const prev = useCallback(() => setIdx((i) => Math.max(i - 1, 0)), []);
+    return exercises.filter((exercise) => {
+      if (chapter && exercise.chapter !== chapter) return false;
+      if (difficulty && (exercise.difficulty || 1) !== difficulty) return false;
+      if (!q) return true;
 
-  // Keyboard shortcuts
+      const haystack = normalize(`${exercise.text} ${exercise.chapter} ${exercise.answer}`);
+      return haystack.includes(q);
+    });
+  }, [exercises, chapter, difficulty, query]);
+
+  const current = filtered[idx] ?? null;
+
+  const changeChapter = (id) => {
+    setChapter(id);
+    setIdx(0);
+  };
+
+  const clearFilters = () => {
+    setChapter(null);
+    setDifficulty(0);
+    setQuery('');
+    setIdx(0);
+  };
+
+  const next = useCallback(() => {
+    setIdx((i) => Math.min(i + 1, Math.max(filtered.length - 1, 0)));
+  }, [filtered.length]);
+
+  const prev = useCallback(() => {
+    setIdx((i) => Math.max(i - 1, 0));
+  }, []);
+
+  const jumpRandom = useCallback(() => {
+    if (!filtered.length) return;
+    if (filtered.length === 1) {
+      setIdx(0);
+      return;
+    }
+
+    setIdx((currentIdx) => {
+      let nextIdx = currentIdx;
+      while (nextIdx === currentIdx) {
+        nextIdx = Math.floor(Math.random() * filtered.length);
+      }
+      return nextIdx;
+    });
+  }, [filtered.length]);
+
+  useEffect(() => {
+    setIdx((currentIdx) => Math.min(currentIdx, Math.max(filtered.length - 1, 0)));
+  }, [filtered.length]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const chapterParam = params.get('capitol');
+    if (chapterParam && CHAPTERS.some((ch) => ch.id === chapterParam)) {
+      setChapter(chapterParam);
+      setIdx(0);
+    }
+  }, [location.search]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (chapter) params.set('capitol', chapter);
+    else params.delete('capitol');
+
+    const nextSearch = params.toString();
+    const currentSearch = location.search.startsWith('?') ? location.search.slice(1) : location.search;
+    if (nextSearch !== currentSearch) {
+      navigate({ pathname: location.pathname, search: nextSearch ? `?${nextSearch}` : '' }, { replace: true });
+    }
+  }, [chapter, navigate, location.pathname, location.search]);
+
   useEffect(() => {
     const fn = (e) => {
       if (e.key === 'ArrowRight' && !e.target.matches('input,textarea')) next();
-      if (e.key === 'ArrowLeft'  && !e.target.matches('input,textarea')) prev();
+      if (e.key === 'ArrowLeft' && !e.target.matches('input,textarea')) prev();
     };
+
     window.addEventListener('keydown', fn);
     return () => window.removeEventListener('keydown', fn);
   }, [next, prev]);
 
   return (
     <div className={styles.layout}>
-      {/* ── Chapter sidebar ── */}
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
           <span className={styles.sidebarTitle}>CAPITOLE</span>
         </div>
+
         <div className={styles.chapterList}>
           {CHAPTERS.map((ch) => {
             const count = ch.id ? exercises.filter((e) => e.chapter === ch.id).length : exercises.length;
@@ -60,15 +147,12 @@ const ExerciseList = ({ exercises = [], loading }) => {
               >
                 <span className={styles.chEmoji}>{ch.emoji}</span>
                 <span className={styles.chLabel}>{ch.label}</span>
-                {count > 0 && (
-                  <span className={styles.chCount}>{count}</span>
-                )}
+                {count > 0 && <span className={styles.chCount}>{count}</span>}
               </button>
             );
           })}
         </div>
 
-        {/* Mini stats */}
         <div className={styles.miniStats}>
           <div className={styles.miniStat}>
             <span className={`${styles.miniStatNum} ${styles.miniStatNum_mint}`}>{totalCorrect}</span>
@@ -81,43 +165,85 @@ const ExerciseList = ({ exercises = [], loading }) => {
         </div>
       </aside>
 
-      {/* ── Main ── */}
       <div className={styles.main}>
-        {/* Header with nav */}
         <div className={styles.header}>
-          <div className={styles.breadcrumb}>
-            <span className={styles.breadcrumbText}>
-              {chapter ? CHAPTERS.find((c) => c.id === chapter)?.label : 'Toate capitolele'}
-            </span>
-            {chapter && <ChevronRight size={12} className={styles.chevron} />}
-          </div>
-          <div className={styles.navRow}>
-            <button className={styles.navBtn} onClick={prev} disabled={idx === 0}>←</button>
-            <div className={styles.counter}>
-              <span className={styles.counterCurrent}>{filtered.length > 0 ? idx + 1 : '0'}</span>
-              <span className={styles.counterTotal}>/ {filtered.length}</span>
+          <div className={styles.headerTop}>
+            <div className={styles.breadcrumb}>
+              <span className={styles.breadcrumbText}>
+                {chapter ? CHAPTERS.find((c) => c.id === chapter)?.label : 'Toate capitolele'}
+              </span>
+              {chapter && <ChevronRight size={12} className={styles.chevron} />}
+              <span className={styles.resultsMeta}>{filtered.length} exercitii</span>
             </div>
-            <button className={styles.navBtn} onClick={next} disabled={idx >= filtered.length - 1}>→</button>
+
+            <div className={styles.navRow}>
+              <button className={styles.navBtn} onClick={prev} disabled={idx === 0}>?</button>
+              <div className={styles.counter}>
+                <span className={styles.counterCurrent}>{filtered.length > 0 ? idx + 1 : '0'}</span>
+                <span className={styles.counterTotal}>/ {filtered.length}</span>
+              </div>
+              <button className={styles.navBtn} onClick={next} disabled={idx >= filtered.length - 1}>?</button>
+            </div>
           </div>
-          <div className={styles.shortcuts}>
-            <span className={styles.shortcutHint}>← → navigare</span>
+
+          <div className={styles.filterRow}>
+            <label className={styles.searchBox}>
+              <Search size={14} />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Cauta exercitii, raspunsuri sau capitole"
+              />
+            </label>
+
+            <div className={styles.diffPills}>
+              {DIFFICULTIES.map((lvl) => (
+                <button
+                  key={lvl.id}
+                  className={`${styles.diffBtn} ${difficulty === lvl.id ? styles.diffBtnActive : ''}`}
+                  onClick={() => setDifficulty(lvl.id)}
+                >
+                  {lvl.label}
+                </button>
+              ))}
+            </div>
+
+            <div className={styles.filterActions}>
+              <button className={styles.iconBtn} onClick={jumpRandom} disabled={filtered.length < 2} title="Exercitiu aleatoriu">
+                <Shuffle size={13} />
+              </button>
+              <button
+                className={styles.iconBtn}
+                onClick={clearFilters}
+                disabled={!chapter && !difficulty && !query}
+                title="Reseteaza filtrele"
+              >
+                <FilterX size={13} />
+              </button>
+            </div>
+
+            <div className={styles.shortcuts}>
+              <span className={styles.shortcutHint}>? ? navigare</span>
+            </div>
           </div>
         </div>
 
-        {/* Exercise area */}
         <div className={styles.exerciseArea}>
           {loading && (
             <div className={styles.state}>
               <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity }}>
-                <span className={styles.stateText}>Se încarcă...</span>
+                <span className={styles.stateText}>Se incarca...</span>
               </motion.div>
             </div>
           )}
+
           {!loading && !current && (
             <div className={styles.state}>
-              <span className={styles.stateText}>Niciun exercițiu găsit.</span>
+              <span className={styles.stateText}>Niciun exercitiu gasit pentru filtrele curente.</span>
             </div>
           )}
+
           {!loading && current && (
             <AnimatePresence mode="wait">
               <motion.div

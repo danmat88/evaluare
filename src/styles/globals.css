@@ -3,45 +3,130 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import url('https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css');
 
-/* ── Hard viewport lock ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* Base reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-html { height: 100%; overflow: hidden; font-size: 16px; }
+html {
+  height: 100%;
+  overflow: hidden;
+  font-size: 16px;
+}
 
 body {
   height: 100%;
   overflow: hidden;
   font-family: var(--font-body);
   color: var(--text-primary);
-  background: var(--bg-void);
+  background: var(--page-gradient);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   cursor: default;
+  transition: color var(--t-base), background var(--t-slow);
+  position: relative;
 }
 
-#root { height: 100%; overflow: hidden; display: flex; flex-direction: column; }
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+  background-size: 52px 52px;
+  opacity: var(--mesh-opacity);
+  mask-image: radial-gradient(circle at 50% 25%, black 0%, black 45%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle at 50% 25%, black 0%, black 45%, transparent 100%);
+  z-index: -1;
+}
 
-/* ── Resets ── */
-ul, ol { list-style: none; }
-img, svg { display: block; max-width: 100%; }
-a { color: var(--neon-cyan); text-decoration: none; }
-button { cursor: pointer; border: none; background: none; font-family: inherit; }
-input, textarea { font-family: inherit; font-size: inherit; border: none; outline: none; background: none; }
+#root {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
 
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 3px; height: 3px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.2); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(0, 229, 255, 0.3); }
+ul,
+ol {
+  list-style: none;
+}
 
-/* ── Selection ── */
-::selection { background: rgba(0, 229, 255, 0.2); color: var(--chalk-white); }
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
 
-/* ── KaTeX ── */
-.katex { color: var(--chalk-white) !important; }
-.katex-display { margin: 0 !important; }
+a {
+  color: var(--neon-cyan);
+  text-decoration: none;
+  transition: color var(--t-fast);
+}
 
-/* ── Gradient text utility ── */
+a:hover {
+  color: var(--neon-indigo);
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+  outline: none;
+  background: none;
+}
+
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--neon-cyan) 62%, transparent);
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text-muted) 35%, transparent);
+  border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--neon-cyan) 38%, transparent);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--neon-cyan) 24%, transparent);
+  color: var(--chalk-white);
+}
+
+.katex {
+  color: var(--chalk-white) !important;
+}
+
+.katex-display {
+  margin: 0 !important;
+}
+
 .gradient-text {
   background: var(--grad-primary);
   -webkit-background-clip: text;
@@ -49,10 +134,19 @@ input, textarea { font-family: inherit; font-size: inherit; border: none; outlin
   background-clip: text;
 }
 
-/* ────────────────────────────────────
-   KEYFRAMES
-──────────────────────────────────── */
+/* Motion safety */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
+/* Keyframes */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -218,3 +312,4 @@ input, textarea { font-family: inherit; font-size: inherit; border: none; outlin
   from { opacity: 0; transform: translateX(-8px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+
