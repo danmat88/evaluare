@@ -5,7 +5,7 @@ import {
   updateProfile,
   onAuthStateChanged,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './config';
 
 export const registerUser = async ({ name, email, password }) => {
@@ -46,3 +46,9 @@ export const getUserProfile = async (uid) => {
 
 export const subscribeToAuth = (callback) =>
   onAuthStateChanged(auth, callback);
+
+/** Real-time listener on the user's Firestore document. */
+export const subscribeToProfile = (uid, callback) =>
+  onSnapshot(doc(db, 'users', uid), (snap) => {
+    callback(snap.exists() ? snap.data() : null);
+  });
