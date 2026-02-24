@@ -1,12 +1,13 @@
-import { useState, useCallback } from 'react';
+﻿import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import styles from './MathKeyboard.module.css';
 
-/* ─── Tab definitions ─── */
 const TABS = [
   {
-    id: 'num', label: '123', color: '#00e5ff',
+    id: 'num',
+    label: '123',
+    color: '#00e5ff',
     rows: [
       ['7', '8', '9', '+'],
       ['4', '5', '6', '−'],
@@ -15,7 +16,9 @@ const TABS = [
     ],
   },
   {
-    id: 'ops', label: '= ≠', color: '#a855f7',
+    id: 'ops',
+    label: '= ≠',
+    color: '#a855f7',
     rows: [
       ['=', '≠', '<', '>'],
       ['≤', '≥', '±', '%'],
@@ -24,16 +27,20 @@ const TABS = [
     ],
   },
   {
-    id: 'alg', label: 'xⁿ', color: '#fbbf24',
+    id: 'alg',
+    label: 'xⁿ',
+    color: '#fbbf24',
     rows: [
       ['x²', 'x³', 'xⁿ', '√'],
-      ['∛',  'lg', 'log', 'ln'],
+      ['∛', 'lg', 'log', 'ln'],
       ['sin', 'cos', 'tg', 'ctg'],
       ['x', 'y', 'n', 'a'],
     ],
   },
   {
-    id: 'geo', label: '△', color: '#34d399',
+    id: 'geo',
+    label: '△',
+    color: '#34d399',
     rows: [
       ['°', 'π', '∠', '△'],
       ['∥', '⊥', '≅', '~'],
@@ -42,7 +49,9 @@ const TABS = [
     ],
   },
   {
-    id: 'sets', label: '∈', color: '#f43f5e',
+    id: 'sets',
+    label: '∈',
+    color: '#f43f5e',
     rows: [
       ['∈', '∉', '⊂', '⊃'],
       ['∪', '∩', '∅', '\\'],
@@ -52,7 +61,6 @@ const TABS = [
   },
 ];
 
-/* ─── Individual key ─── */
 const IS_DIGIT = /^[0-9]$/;
 
 const Key = ({ label, onPress, variant = 'normal', wide, isNum }) => {
@@ -61,7 +69,6 @@ const Key = ({ label, onPress, variant = 'normal', wide, isNum }) => {
   const handleClick = useCallback(() => {
     setPressing(true);
     setTimeout(() => setPressing(false), 140);
-    /* Normalize minus sign for calculation */
     onPress?.(label === '−' ? '-' : label);
   }, [label, onPress]);
 
@@ -83,17 +90,12 @@ const Key = ({ label, onPress, variant = 'normal', wide, isNum }) => {
   );
 };
 
-/* ─── Main keyboard ─── */
 const MathKeyboard = ({ onKey, onBackspace, onClear, className }) => {
   const [activeTab, setActiveTab] = useState('num');
   const tab = TABS.find((t) => t.id === activeTab);
 
   return (
-    <div
-      className={clsx(styles.keyboard, className)}
-      style={{ '--kbd-accent': tab.color }}
-    >
-      {/* Tab bar */}
+    <div className={clsx(styles.keyboard, className)} style={{ '--kbd-accent': tab.color }}>
       <div className={styles.tabs}>
         {TABS.map((t) => (
           <button
@@ -108,7 +110,6 @@ const MathKeyboard = ({ onKey, onBackspace, onClear, className }) => {
         ))}
       </div>
 
-      {/* Key grid */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
@@ -121,22 +122,16 @@ const MathKeyboard = ({ onKey, onBackspace, onClear, className }) => {
           {tab.rows.map((row, ri) => (
             <div key={ri} className={styles.row}>
               {row.map((k) => (
-                <Key
-                  key={k}
-                  label={k}
-                  onPress={onKey}
-                  isNum={IS_DIGIT.test(k)}
-                />
+                <Key key={k} label={k} onPress={onKey} isNum={IS_DIGIT.test(k)} />
               ))}
             </div>
           ))}
         </motion.div>
       </AnimatePresence>
 
-      {/* Control row */}
       <div className={styles.controls}>
         <Key label="⌫" onPress={onBackspace} variant="back" />
-        <Key label="SPAȚIU" onPress={() => onKey?.(' ')} variant="space" wide />
+        <Key label="SPATIU" onPress={() => onKey?.(' ')} variant="space" wide />
         <Key label="C" onPress={onClear} variant="clear" />
       </div>
     </div>

@@ -12,6 +12,36 @@ html[data-theme='dark'] {
   --bg-card-soft: rgba(23, 37, 56, 0.75);
   --bg-card-strong: rgba(12, 19, 32, 0.9);
 
+  /* Blackboard */
+  --board-frame-bg: linear-gradient(145deg, #1c1208 0%, #0f1a09 100%);
+  --board-frame-edge: linear-gradient(135deg, rgba(139, 90, 43, 0.5), rgba(101, 67, 33, 0.25), rgba(139, 90, 43, 0.5));
+  --board-surface-grad: linear-gradient(155deg, #172317 0%, #111d11 45%, #0d180d 100%);
+  --board-surface-vignette-a: rgba(32, 55, 25, 0.8);
+  --board-surface-vignette-b: rgba(18, 38, 16, 0.7);
+  --board-rule-color: rgba(245, 240, 232, 0.01);
+  --board-noise-opacity: 0.035;
+
+  /* Math keyboard */
+  --kbd-shell-bg: rgba(10, 12, 22, 0.95);
+  --kbd-shell-border: rgba(241, 245, 249, 0.07);
+  --kbd-shell-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --kbd-tabs-bg: rgba(7, 8, 15, 0.7);
+  --kbd-tabs-border: rgba(241, 245, 249, 0.05);
+  --kbd-tab-hover-bg: rgba(241, 245, 249, 0.04);
+  --kbd-tab-active-bg: rgba(30, 34, 55, 0.9);
+  --kbd-tab-active-border: rgba(241, 245, 249, 0.06);
+  --kbd-key-bg: rgba(22, 26, 44, 0.85);
+  --kbd-key-bg-hover: rgba(32, 37, 60, 0.95);
+  --kbd-key-num-bg: rgba(28, 32, 52, 0.9);
+  --kbd-key-num-hover: rgba(38, 43, 68, 0.95);
+  --kbd-key-border: rgba(241, 245, 249, 0.08);
+  --kbd-key-border-hover: rgba(241, 245, 249, 0.15);
+  --kbd-key-bottom-border: rgba(0, 0, 0, 0.55);
+  --kbd-key-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --kbd-key-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --kbd-key-gloss: rgba(255, 255, 255, 0.05);
+  --kbd-controls-border: rgba(241, 245, 249, 0.05);
+
   /* Brand palette */
   --neon-cyan: #22d3ee;
   --neon-violet: #6d28d9;
@@ -166,6 +196,34 @@ html[data-theme='light'] {
   --bg-glass: rgba(255, 255, 255, 0.78);
   --bg-card-soft: rgba(255, 255, 255, 0.86);
   --bg-card-strong: rgba(255, 255, 255, 0.96);
+
+  --board-frame-bg: linear-gradient(145deg, #e2c7a4 0%, #c79d6f 100%);
+  --board-frame-edge: linear-gradient(135deg, rgba(201, 155, 102, 0.55), rgba(164, 116, 66, 0.25), rgba(201, 155, 102, 0.55));
+  --board-surface-grad: linear-gradient(155deg, #edf8ee 0%, #d9eedb 48%, #cce6ce 100%);
+  --board-surface-vignette-a: rgba(98, 145, 103, 0.34);
+  --board-surface-vignette-b: rgba(80, 128, 89, 0.28);
+  --board-rule-color: rgba(15, 23, 42, 0.04);
+  --board-noise-opacity: 0.025;
+
+  --kbd-shell-bg: rgba(255, 255, 255, 0.95);
+  --kbd-shell-border: rgba(15, 23, 42, 0.12);
+  --kbd-shell-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
+  --kbd-tabs-bg: rgba(226, 236, 249, 0.68);
+  --kbd-tabs-border: rgba(15, 23, 42, 0.1);
+  --kbd-tab-hover-bg: rgba(15, 23, 42, 0.06);
+  --kbd-tab-active-bg: rgba(255, 255, 255, 0.95);
+  --kbd-tab-active-border: rgba(15, 23, 42, 0.14);
+  --kbd-key-bg: rgba(247, 250, 255, 0.96);
+  --kbd-key-bg-hover: rgba(236, 243, 253, 0.98);
+  --kbd-key-num-bg: rgba(240, 247, 255, 0.96);
+  --kbd-key-num-hover: rgba(229, 238, 250, 1);
+  --kbd-key-border: rgba(15, 23, 42, 0.12);
+  --kbd-key-border-hover: rgba(15, 23, 42, 0.2);
+  --kbd-key-bottom-border: rgba(148, 163, 184, 0.6);
+  --kbd-key-shadow: 0 2px 4px rgba(15, 23, 42, 0.08);
+  --kbd-key-shadow-hover: 0 4px 10px rgba(15, 23, 42, 0.12);
+  --kbd-key-gloss: rgba(255, 255, 255, 0.65);
+  --kbd-controls-border: rgba(15, 23, 42, 0.08);
 
   --neon-cyan: #0891b2;
   --neon-violet: #4338ca;

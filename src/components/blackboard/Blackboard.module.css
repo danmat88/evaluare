@@ -1,5 +1,5 @@
 .frame {
-  background: linear-gradient(145deg, #1c1208 0%, #0f1a09 100%);
+  background: var(--board-frame-bg);
   border-radius: var(--r-xl);
   padding: 3px;
   box-shadow: var(--shadow-xl);
@@ -13,7 +13,7 @@
   position: absolute;
   inset: -1px;
   border-radius: calc(var(--r-xl) + 1px);
-  background: linear-gradient(135deg, rgba(139,90,43,0.5), rgba(101,67,33,0.25), rgba(139,90,43,0.5));
+  background: var(--board-frame-edge);
   z-index: -1;
 }
 
@@ -28,14 +28,23 @@
 .surface {
   border-radius: calc(var(--r-xl) - 3px);
   background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E"),
-    radial-gradient(ellipse at 20% 15%, rgba(32,55,25,0.8) 0%, transparent 55%),
-    radial-gradient(ellipse at 80% 85%, rgba(18,38,16,0.7) 0%, transparent 55%),
-    linear-gradient(155deg, #172317 0%, #111d11 45%, #0d180d 100%);
+    radial-gradient(ellipse at 20% 15%, var(--board-surface-vignette-a) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 85%, var(--board-surface-vignette-b) 0%, transparent 55%),
+    var(--board-surface-grad);
   padding: var(--sp-5);
   height: 100%;
   position: relative;
   overflow: hidden;
+}
+
+.surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: var(--board-noise-opacity);
+  mix-blend-mode: multiply;
+  pointer-events: none;
 }
 
 /* Chalk ruled lines */
@@ -47,10 +56,15 @@
     0deg,
     transparent,
     transparent 29px,
-    rgba(245,240,232,0.01) 29px,
-    rgba(245,240,232,0.01) 30px
+    var(--board-rule-color) 29px,
+    var(--board-rule-color) 30px
   );
   pointer-events: none;
+}
+
+.surface > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Variant: flat */
