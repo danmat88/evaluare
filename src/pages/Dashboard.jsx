@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { BookOpen, FlaskConical, ArrowRight, Zap, Target, TrendingUp } from 'lucide-react';
+import { BookOpen, FlaskConical, ArrowRight, Zap, Target, TrendingUp, Flame, Clock3 } from 'lucide-react';
 import ProgressDashboard from '../components/progress/ProgressDashboard';
 import AnimatedCounter from '../components/ui/AnimatedCounter';
 import Layout from '../components/layout/Layout';
@@ -13,11 +13,11 @@ const stagger = { animate: { transition: { staggerChildren: 0.06 } } };
 const up = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
 
 const TIPS = [
-  'La ecuatii de gradul II, verifica mereu discriminantul ? = b² - 4ac.',
-  'Teorema lui Pitagora: in triunghi dreptunghic, a² + b² = c².',
-  'Suma unghiurilor unui triunghi este intotdeauna 180°.',
+  'La ecuatii de gradul II, verifica mereu discriminantul Delta = b^2 - 4ac.',
+  'Teorema lui Pitagora: in triunghi dreptunghic, a^2 + b^2 = c^2.',
+  'Suma unghiurilor unui triunghi este intotdeauna 180 grade.',
   'Pentru progresii aritmetice: a_n = a_1 + (n-1)·r.',
-  'Aria cercului: A = p·r², iar lungimea cercului este 2·p·r.',
+  'Aria cercului: A = pi·r^2, iar lungimea cercului este 2·pi·r.',
 ];
 
 const dailyTip = TIPS[new Date().getDay() % TIPS.length];
@@ -38,7 +38,7 @@ const CHAPTERS = [
 
 const STATS = [
   { icon: <Zap size={16} />, label: 'XP Total', key: 'xp', color: 'yellow' },
-  { icon: '??', label: 'Serie', key: 'streak', color: 'coral' },
+  { icon: <Flame size={16} />, label: 'Serie', key: 'streak', color: 'coral' },
   { icon: <Target size={16} />, label: 'Corecte', key: 'totalCorrect', color: 'mint' },
 ];
 
@@ -82,6 +82,7 @@ const Dashboard = () => {
   const weakest = useMemo(() => {
     let minPct = 101;
     let found = null;
+
     for (const ch of CHAPTERS) {
       const pct = ch.total > 0 ? ((progress[ch.id] || 0) / ch.total) * 100 : 0;
       if (pct < minPct) {
@@ -89,6 +90,7 @@ const Dashboard = () => {
         found = ch;
       }
     }
+
     return found;
   }, [progress]);
 
@@ -116,7 +118,7 @@ const Dashboard = () => {
         >
           <div className={styles.progressHeader}>
             <TrendingUp size={13} />
-            <span className={styles.sectionLabel}>PROGRES CAPITOLE</span>
+            <span className={styles.sectionLabel}>Progres capitole</span>
           </div>
           <ProgressDashboard profile={profile} xp={xp} />
         </motion.div>
@@ -153,14 +155,14 @@ const Dashboard = () => {
 
         <motion.div className={styles.tipCard} variants={up}>
           <div className={styles.tipHeader}>
-            <span className={styles.tipIcon}>??</span>
-            <span className={styles.tipLabel}>SFAT AL ZILEI</span>
+            <Clock3 size={14} className={styles.tipIcon} />
+            <span className={styles.tipLabel}>Sfatul zilei</span>
           </div>
           <span className={styles.tipText}>{dailyTip}</span>
 
           {weakest && (
             <div className={styles.tipHint}>
-              <span className={styles.tipHintIcon}>??</span>
+              <Target size={14} className={styles.tipHintIcon} />
               <span className={styles.tipHintText}>
                 Exerseaza mai mult la <strong>{weakest.label}</strong>
                 {' '}— {progress[weakest.id] || 0}/{weakest.total} exercitii completate.

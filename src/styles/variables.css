@@ -147,6 +147,12 @@ html[data-theme='dark'] {
 
   /* Layout */
   --nav-height: 66px;
+  --content-max: 1280px;
+  --content-wide: 1160px;
+  --content-standard: 980px;
+  --content-narrow: 760px;
+  --page-pad: 20px;
+  --panel-gap: 12px;
 }
 
 html[data-theme='light'] {

@@ -1,7 +1,8 @@
-import { useForm } from 'react-hook-form';
+﻿import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
+import { UserPlus } from 'lucide-react';
 import ChalkText from '../blackboard/ChalkText';
 import Button from '../ui/Button';
 import { useAuth } from '../../contexts';
@@ -9,33 +10,38 @@ import { notify } from '../ui/notify';
 import styles from './AuthForm.module.css';
 
 const schema = z.object({
-  name:            z.string().min(2, 'Introdu numele'),
-  email:           z.string().email('Email invalid'),
-  password:        z.string().min(6, 'Minim 6 caractere'),
+  name: z.string().min(2, 'Introdu numele'),
+  email: z.string().email('Email invalid'),
+  password: z.string().min(6, 'Minim 6 caractere'),
   confirmPassword: z.string(),
 }).refine((d) => d.password === d.confirmPassword, {
-  message: 'Parolele nu se potrivesc', path: ['confirmPassword'],
+  message: 'Parolele nu se potrivesc',
+  path: ['confirmPassword'],
 });
 
 const FIELDS = [
-  { name: 'name',            type: 'text',     label: 'NUME',            ph: 'Prenume și Nume' },
-  { name: 'email',           type: 'email',    label: 'EMAIL',           ph: 'adresa@email.ro' },
-  { name: 'password',        type: 'password', label: 'PAROLĂ',          ph: '••••••••' },
-  { name: 'confirmPassword', type: 'password', label: 'CONFIRMĂ PAROLA', ph: '••••••••' },
+  { name: 'name', type: 'text', label: 'NUME', ph: 'Prenume si Nume' },
+  { name: 'email', type: 'email', label: 'EMAIL', ph: 'adresa@email.ro' },
+  { name: 'password', type: 'password', label: 'PAROLA', ph: '********' },
+  { name: 'confirmPassword', type: 'password', label: 'CONFIRMA PAROLA', ph: '********' },
 ];
 
 const RegisterForm = ({ onSwitch }) => {
   const { register: registerUser } = useAuth();
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({
     resolver: zodResolver(schema),
   });
 
   const onSubmit = async (data) => {
     try {
       await registerUser(data);
-      /* AuthContext.register sets user+profile → isAuthenticated → Public guard redirects */
+      /* AuthContext.register sets user+profile -> isAuthenticated -> Public guard redirects */
     } catch {
-      notify.error('Înregistrarea a eșuat. Încearcă din nou.');
+      notify.error('Inregistrarea a esuat. Incearca din nou.');
     }
   };
 
@@ -50,7 +56,7 @@ const RegisterForm = ({ onSwitch }) => {
       transition={{ duration: 0.22 }}
     >
       <div className={styles.heading}>
-        <ChalkText color="yellow" size="xl" glow>Hai la tablă!</ChalkText>
+        <ChalkText color="yellow" size="xl" glow>Hai la tabla!</ChalkText>
         <ChalkText color="muted" size="sm">Cont gratuit, progres nelimitat</ChalkText>
       </div>
 
@@ -74,14 +80,14 @@ const RegisterForm = ({ onSwitch }) => {
         ))}
       </div>
 
-      <Button type="submit" variant="primary" size="lg" fullWidth loading={isSubmitting}>
-        Creează cont →
+      <Button type="submit" variant="primary" size="lg" fullWidth loading={isSubmitting} icon={<UserPlus size={14} />}>
+        Creeaza cont
       </Button>
 
       <p className={styles.footer}>
         <ChalkText size="sm" color="muted">Ai deja cont?&nbsp;</ChalkText>
         <button type="button" className={styles.switchBtn} onClick={onSwitch}>
-          <ChalkText size="sm" color="cyan">Conectează-te</ChalkText>
+          <ChalkText size="sm" color="cyan">Conecteaza-te</ChalkText>
         </button>
       </p>
     </motion.form>

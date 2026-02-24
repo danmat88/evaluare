@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, Zap } from 'lucide-react';
 import useExerciseStore from '../../store/exerciseStore';
 import { getLevel, getLevelProgress } from '../../utils/xp';
 import styles from './XPBar.module.css';
 
-const LEVEL_NAMES = ['Debutant','Elev','Sârguincios','Priceput','Avansat','Expert','Maestru','Profesor','Geniu','Olimpic'];
+const LEVEL_NAMES = ['Debutant', 'Elev', 'Sarguincios', 'Priceput', 'Avansat', 'Expert', 'Maestru', 'Profesor', 'Geniu', 'Olimpic'];
 
 const XPBar = () => {
   const { xp, streak, lastXpGain } = useExerciseStore();
@@ -24,13 +24,11 @@ const XPBar = () => {
 
   return (
     <div className={styles.bar}>
-      {/* Level badge */}
       <div className={styles.level}>
         <span className={styles.levelNum}>{level}</span>
-        <span className={styles.levelName}>{LEVEL_NAMES[level]}</span>
+        <span className={styles.levelName}>{LEVEL_NAMES[Math.min(level, LEVEL_NAMES.length - 1)]}</span>
       </div>
 
-      {/* XP progress */}
       <div className={styles.xpSection}>
         <div className={styles.xpTrack}>
           <motion.div
@@ -45,7 +43,6 @@ const XPBar = () => {
         </div>
       </div>
 
-      {/* Streak */}
       {streak > 0 && (
         <motion.div
           className={`${styles.streak} ${streak >= 5 ? styles.streakHot : ''}`}
@@ -58,7 +55,6 @@ const XPBar = () => {
         </motion.div>
       )}
 
-      {/* Floating XP gain */}
       <AnimatePresence>
         {showFloat && lastXpGain > 0 && (
           <motion.div

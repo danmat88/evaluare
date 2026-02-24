@@ -1,22 +1,22 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MoonStar, Sun } from 'lucide-react';
+import { MoonStar, Sun, BookOpen, FlaskConical, Target, Trophy, Sigma, Layers, ClipboardCheck, Grid2x2 } from 'lucide-react';
 import LoginForm from '../components/auth/LoginForm';
 import RegisterForm from '../components/auth/RegisterForm';
 import { useTheme } from '../contexts';
 import styles from './Home.module.css';
 
 const FEATURES = [
-  { icon: '📐', title: 'Toate capitolele', sub: 'Algebră + Geometrie EN', color: 'cyan' },
-  { icon: '⏱',  title: 'Teste simulate',  sub: '2 ore · 100 puncte',    color: 'violet' },
-  { icon: '🪄',  title: 'Soluții animate', sub: 'Pas cu pas pe tablă',   color: 'yellow' },
-  { icon: '🏆',  title: 'Sistem XP',       sub: 'Niveluri + realizări',  color: 'mint' },
+  { icon: <BookOpen size={18} />, title: 'Toate capitolele', sub: 'Algebra + Geometrie EN', color: 'cyan' },
+  { icon: <FlaskConical size={18} />, title: 'Teste simulate', sub: '2 ore � 100 puncte', color: 'violet' },
+  { icon: <Target size={18} />, title: 'Solutii animate', sub: 'Pas cu pas pe tabla', color: 'yellow' },
+  { icon: <Trophy size={18} />, title: 'Sistem XP', sub: 'Niveluri + realizari', color: 'mint' },
 ];
 
 const STATS = [
-  { num: '500+', label: 'Exerciții' },
-  { num: '20+',  label: 'Teste' },
-  { num: '10',   label: 'Capitole' },
+  { num: '500+', label: 'Exercitii', icon: <Grid2x2 size={13} /> },
+  { num: '20+', label: 'Teste', icon: <ClipboardCheck size={13} /> },
+  { num: '10', label: 'Capitole', icon: <Layers size={13} /> },
 ];
 
 const stagger = { animate: { transition: { staggerChildren: 0.07 } } };
@@ -40,53 +40,44 @@ const Home = () => {
         {isDark ? <Sun size={15} /> : <MoonStar size={15} />}
         <span>{isDark ? 'Light' : 'Dark'}</span>
       </button>
-      {/* ── Left — branding ── */}
+
       <div className={styles.left}>
         <div className={styles.orb1} />
         <div className={styles.orb2} />
         <div className={styles.gridBg} />
 
         <motion.div className={styles.leftContent} variants={stagger} initial="initial" animate="animate">
-
-          {/* ① Brand row: sigma mark + badge pill */}
           <motion.div className={styles.brandRow} variants={up}>
-            <span className={styles.sigma}>∑</span>
+            <span className={styles.sigma}><Sigma size={32} /></span>
             <div className={styles.badge}>
               <span className={styles.badgeDot} />
-              Evaluarea Națională 2025 · Matematică
+              Evaluarea Nationala 2026 � Matematica
             </div>
           </motion.div>
 
-          {/* ② Hero headline — main focal point */}
           <motion.h1 className={styles.headline} variants={up}>
-            <span className={styles.headlineGradient}>EN Matematică</span>
-            <span className={styles.headlineSub}>Clasa a VIII-a · Interactiv</span>
+            <span className={styles.headlineGradient}>EN Matematica</span>
+            <span className={styles.headlineSub}>Clasa a VIII-a � Interactiv</span>
           </motion.h1>
 
-          {/* ③ Tagline */}
           <motion.p className={styles.tagline} variants={up}>
-            Exersează exerciții interactive, descoperă rezolvări animate pas cu pas
-            și testează-te cu simulări complete de examen în condiții reale.
+            Exerseaza exercitii interactive, urmareste rezolvari pas cu pas si testeaza-te
+            cu simulari complete de examen in conditii reale.
           </motion.p>
 
-          {/* ④ Stat chips — social proof */}
           <motion.div className={styles.statRow} variants={up}>
             {STATS.map((s) => (
               <span key={s.label} className={styles.statChip}>
+                <span className={styles.statIcon}>{s.icon}</span>
                 <span className={styles.statNum}>{s.num}</span>
                 <span className={styles.statLabel}>{s.label}</span>
               </span>
             ))}
           </motion.div>
 
-          {/* ⑤ Feature cards */}
           <motion.div className={styles.features} variants={stagger}>
             {FEATURES.map((f) => (
-              <motion.div
-                key={f.title}
-                className={`${styles.feat} ${styles[`feat_${f.color}`]}`}
-                variants={up}
-              >
+              <motion.div key={f.title} className={`${styles.feat} ${styles[`feat_${f.color}`]}`} variants={up}>
                 <span className={`${styles.featIcon} ${styles[`featIcon_${f.color}`]}`}>{f.icon}</span>
                 <div className={styles.featText}>
                   <span className={styles.featTitle}>{f.title}</span>
@@ -95,11 +86,9 @@ const Home = () => {
               </motion.div>
             ))}
           </motion.div>
-
         </motion.div>
       </div>
 
-      {/* ── Right — auth panel ── */}
       <div className={styles.right}>
         <motion.div
           className={styles.authCard}
@@ -110,8 +99,8 @@ const Home = () => {
           <div className={styles.cardGlow} />
 
           <div className={styles.authBrand}>
-            <span className={styles.authSigma}>∑</span>
-            <span className={styles.authBrandName}>EN·Math</span>
+            <span className={styles.authSigma}><Sigma size={24} /></span>
+            <span className={styles.authBrandName}>EN�Math</span>
           </div>
 
           <div className={styles.tabBar} role="tablist">
@@ -129,7 +118,7 @@ const Home = () => {
               className={`${styles.tab} ${tab === 'register' ? styles.tabActive : ''}`}
               onClick={() => setTab('register')}
             >
-              Înregistrare
+              Inregistrare
             </button>
           </div>
 
@@ -147,5 +136,3 @@ const Home = () => {
 };
 
 export default Home;
-
-

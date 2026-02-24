@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Award, Layers } from 'lucide-react';
+import { Award, Clock, Layers, Play } from 'lucide-react';
 import TestSimulatorComp from '../components/test/TestSimulator';
 import ChalkText from '../components/blackboard/ChalkText';
 import Button from '../components/ui/Button';
@@ -10,7 +10,10 @@ import styles from './TestSimulator.module.css';
 
 const TestSimulatorPage = () => {
   const { tests, currentTest, loading, loadTests, loadTest } = useTestStore();
-  useEffect(() => { loadTests(); }, [loadTests]);
+
+  useEffect(() => {
+    loadTests();
+  }, [loadTests]);
 
   if (currentTest) {
     return (
@@ -26,12 +29,12 @@ const TestSimulatorPage = () => {
         <div className={styles.header}>
           <div>
             <ChalkText size="2xl" color="yellow">Teste simulate</ChalkText>
-            <ChalkText size="sm" color="muted">Pregătire completă · condiții reale de examen</ChalkText>
+            <ChalkText size="sm" color="muted">Pregatire completa - conditii reale de examen</ChalkText>
             <div className={styles.bannerPills}>
               {[
-                { icon: <Clock size={13}/>, text: '120 minute' },
-                { icon: <Award size={13}/>, text: '100p + 10 oficiu' },
-                { icon: <Layers size={13}/>, text: 'Subiect I · II · III' },
+                { icon: <Clock size={13} />, text: '120 minute' },
+                { icon: <Award size={13} />, text: '100p + 10 oficiu' },
+                { icon: <Layers size={13} />, text: 'Subiect I - II - III' },
               ].map((b) => (
                 <span key={b.text} className={styles.pill}>
                   {b.icon}
@@ -65,15 +68,16 @@ const TestSimulatorPage = () => {
               >
                 <div className={styles.cardInner}>
                   <div className={styles.cardTop}>
-                    <span className={styles.variantLabel}>VARIANTA {String(i+1).padStart(2,'0')}</span>
+                    <span className={styles.variantLabel}>VARIANTA {String(i + 1).padStart(2, '0')}</span>
                     <span className={styles.pts}>{test.totalPoints || 100}p</span>
                   </div>
                   <ChalkText size="lg" color="yellow">{test.title}</ChalkText>
                   {test.description && <ChalkText size="sm" color="muted">{test.description}</ChalkText>}
                 </div>
+
                 <div className={styles.cardFooter}>
-                  <Button variant="primary" size="sm" fullWidth onClick={() => loadTest(test.id)}>
-                    Începe testul →
+                  <Button variant="primary" size="sm" fullWidth icon={<Play size={13} />} onClick={() => loadTest(test.id)}>
+                    Incepe testul
                   </Button>
                 </div>
               </motion.div>

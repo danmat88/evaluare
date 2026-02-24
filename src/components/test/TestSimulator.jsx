@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+ï»¿import { useState, useEffect } from 'react';
 import { BlockMath } from 'react-katex';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckSquare, Send, SkipForward, CircleAlert } from 'lucide-react';
+import { Check, CheckSquare, Send, SkipForward, CircleAlert } from 'lucide-react';
 import Blackboard from '../blackboard/Blackboard';
 import ChalkText from '../blackboard/ChalkText';
 import MathKeyboard from '../keyboard/MathKeyboard';
@@ -115,7 +115,11 @@ const TestSimulator = () => {
               >
                 <span className={styles.exNum}>{i + 1}</span>
                 {ex.points && <span className={styles.exPts}>{ex.points}p</span>}
-                {done && <span className={styles.exCheck}>?</span>}
+                {done && (
+                  <span className={styles.exCheck}>
+                    <Check size={11} strokeWidth={2.6} />
+                  </span>
+                )}
               </button>
             );
           })}
@@ -135,7 +139,7 @@ const TestSimulator = () => {
                 <div className={styles.boardInner}>
                   <div className={styles.exMeta}>
                     <ChalkText size="xs" color="yellow">
-                      Subiectul {subjectIdx + 1} · Exercitiul {exIdx + 1}
+                      Subiectul {subjectIdx + 1} - Exercitiul {exIdx + 1}
                     </ChalkText>
                     {exercise.points && (
                       <ChalkText size="xs" color="muted">{exercise.points} puncte</ChalkText>

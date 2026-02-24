@@ -1,24 +1,40 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Search, Shuffle, FilterX } from 'lucide-react';
+import {
+  ChevronRight,
+  ChevronLeft,
+  Search,
+  Shuffle,
+  FilterX,
+  Layers,
+  Sigma,
+  Hash,
+  Equal,
+  TrendingUp,
+  Percent,
+  Target,
+  Box,
+  Circle,
+  Zap,
+} from 'lucide-react';
 import ExerciseCard from './ExerciseCard';
 import useExerciseStore from '../../store/exerciseStore';
 import styles from './ExerciseList.module.css';
 
 const CHAPTERS = [
-  { id: null, label: 'Toate', emoji: 'star' },
-  { id: 'multimi', label: 'Multimi', emoji: 'set' },
-  { id: 'numere', label: 'Numere', emoji: 'inf' },
-  { id: 'ecuatii', label: 'Ecuatii', emoji: '=' },
-  { id: 'functii', label: 'Functii', emoji: 'f' },
-  { id: 'progresii', label: 'Progresii', emoji: '...' },
-  { id: 'probabilitati', label: 'Prob.', emoji: '%' },
-  { id: 'triunghiuri', label: 'Triunghiuri', emoji: 'tri' },
-  { id: 'patrulatere', label: 'Patrulatere', emoji: 'sq' },
-  { id: 'cerc', label: 'Cerc', emoji: 'o' },
-  { id: 'corpuri', label: 'Corpuri', emoji: '3d' },
-  { id: 'trigonometrie', label: 'Trigo', emoji: '~' },
+  { id: null, label: 'Toate', icon: <Layers size={14} /> },
+  { id: 'multimi', label: 'Multimi', icon: <Sigma size={14} /> },
+  { id: 'numere', label: 'Numere', icon: <Hash size={14} /> },
+  { id: 'ecuatii', label: 'Ecuatii', icon: <Equal size={14} /> },
+  { id: 'functii', label: 'Functii', icon: <TrendingUp size={14} /> },
+  { id: 'progresii', label: 'Progresii', icon: <ChevronRight size={14} /> },
+  { id: 'probabilitati', label: 'Prob.', icon: <Percent size={14} /> },
+  { id: 'triunghiuri', label: 'Triunghiuri', icon: <Target size={14} /> },
+  { id: 'patrulatere', label: 'Patrulatere', icon: <Box size={14} /> },
+  { id: 'cerc', label: 'Cerc', icon: <Circle size={14} /> },
+  { id: 'corpuri', label: 'Corpuri', icon: <Box size={14} /> },
+  { id: 'trigonometrie', label: 'Trigo', icon: <Zap size={14} /> },
 ];
 
 const DIFFICULTIES = [
@@ -133,7 +149,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
     <div className={styles.layout}>
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
-          <span className={styles.sidebarTitle}>CAPITOLE</span>
+          <span className={styles.sidebarTitle}>Capitole</span>
         </div>
 
         <div className={styles.chapterList}>
@@ -145,7 +161,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
                 className={`${styles.chBtn} ${chapter === ch.id ? styles.chBtnActive : ''}`}
                 onClick={() => changeChapter(ch.id)}
               >
-                <span className={styles.chEmoji}>{ch.emoji}</span>
+                <span className={styles.chEmoji}>{ch.icon}</span>
                 <span className={styles.chLabel}>{ch.label}</span>
                 {count > 0 && <span className={styles.chCount}>{count}</span>}
               </button>
@@ -177,12 +193,16 @@ const ExerciseList = ({ exercises = [], loading }) => {
             </div>
 
             <div className={styles.navRow}>
-              <button className={styles.navBtn} onClick={prev} disabled={idx === 0}>?</button>
+              <button className={styles.navBtn} onClick={prev} disabled={idx === 0}>
+                <ChevronLeft size={14} />
+              </button>
               <div className={styles.counter}>
                 <span className={styles.counterCurrent}>{filtered.length > 0 ? idx + 1 : '0'}</span>
                 <span className={styles.counterTotal}>/ {filtered.length}</span>
               </div>
-              <button className={styles.navBtn} onClick={next} disabled={idx >= filtered.length - 1}>?</button>
+              <button className={styles.navBtn} onClick={next} disabled={idx >= filtered.length - 1}>
+                <ChevronRight size={14} />
+              </button>
             </div>
           </div>
 
@@ -224,7 +244,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
             </div>
 
             <div className={styles.shortcuts}>
-              <span className={styles.shortcutHint}>? ? navigare</span>
+              <span className={styles.shortcutHint}>Navigare cu tastele stanga/dreapta</span>
             </div>
           </div>
         </div>

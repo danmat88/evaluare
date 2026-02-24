@@ -175,8 +175,15 @@
   position: absolute;
   top: 2px;
   right: 3px;
-  font-size: 8px;
   color: var(--neon-mint);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.exCheck svg {
+  width: 10px;
+  height: 10px;
 }
 
 .exArea {

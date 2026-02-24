@@ -1,6 +1,7 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BlockMath } from 'react-katex';
+import { ArrowRight, Check, ListChecks } from 'lucide-react';
 import ChalkText from '../blackboard/ChalkText';
 import Button from '../ui/Button';
 import styles from './SolutionReveal.module.css';
@@ -39,7 +40,7 @@ const SolutionReveal = ({ steps = [], onClose }) => {
 
         {visible === 0 && (
           <div className={styles.empty}>
-            <ChalkText color="muted" size="sm">Apasă „Pasul următor" pentru a vedea rezolvarea.</ChalkText>
+            <ChalkText color="muted" size="sm">Apasa "Pasul urmator" pentru a vedea rezolvarea.</ChalkText>
           </div>
         )}
       </div>
@@ -50,19 +51,23 @@ const SolutionReveal = ({ steps = [], onClose }) => {
             <span key={i} className={`${styles.dot} ${i < visible ? styles.dotFilled : ''}`} />
           ))}
         </div>
+
         <div className={styles.btns}>
           {visible < steps.length && (
             <>
-              <Button variant="secondary" size="sm" onClick={() => setVisible((v) => v + 1)}>
-                Pasul {visible + 1} →
+              <Button variant="secondary" size="sm" icon={<ArrowRight size={13} />} onClick={() => setVisible((v) => v + 1)}>
+                Pasul {visible + 1}
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => setVisible(steps.length)}>
-                Arată tot
+              <Button variant="ghost" size="sm" icon={<ListChecks size={13} />} onClick={() => setVisible(steps.length)}>
+                Arata tot
               </Button>
             </>
           )}
+
           {visible === steps.length && steps.length > 0 && (
-            <Button variant="success" onClick={onClose}>Am înțeles ✓</Button>
+            <Button variant="success" icon={<Check size={13} />} onClick={onClose}>
+              Am inteles
+            </Button>
           )}
         </div>
       </div>
