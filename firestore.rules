@@ -1,0 +1,65 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──────────────────────────────────────────────────────────
+    function isAuth() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
+    // ── users/{uid} ───────────────────────────────────────────────────────
+    // Users can read/write only their own profile document.
+    match /users/{uid} {
+      allow read:   if isOwner(uid);
+      allow create: if isOwner(uid);
+      allow update: if isOwner(uid)
+        // Prevent clients from arbitrarily setting fields outside the schema
+        && request.resource.data.keys().hasOnly([
+             'name', 'email', 'createdAt', 'progress',
+             'testsCompleted', 'totalScore'
+           ]);
+    }
+
+    // ── exercises/{exerciseId} ────────────────────────────────────────────
+    // Any authenticated user can read exercises. Only admin SDK (seed) can write.
+    match /exercises/{exerciseId} {
+      allow read:  if isAuth();
+      allow write: if false;   // write only via Admin SDK / seed script
+    }
+
+    // ── tests/{testId} ────────────────────────────────────────────────────
+    // Any authenticated user can read tests. Only admin SDK can write.
+    match /tests/{testId} {
+      allow read:  if isAuth();
+      allow write: if false;
+    }
+
+    // ── results/{resultId} ───────────────────────────────────────────────
+    // Users can create results for themselves; they can only read their own.
+    match /results/{resultId} {
+      allow read:   if isAuth() && resource.data.uid == request.auth.uid;
+      allow create: if isAuth() && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+             'uid', 'exerciseId', 'chapter', 'correct', 'timeSpent', 'createdAt'
+           ]);
+      allow update, delete: if false;
+    }
+
+    // ── testResults/{resultId} ────────────────────────────────────────────
+    // Same pattern as results.
+    match /testResults/{resultId} {
+      allow read:   if isAuth() && resource.data.uid == request.auth.uid;
+      allow create: if isAuth() && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+             'uid', 'testId', 'score', 'totalPoints', 'percentage',
+             'answers', 'timeSpent', 'createdAt'
+           ]);
+      allow update, delete: if false;
+    }
+
+  }
+}

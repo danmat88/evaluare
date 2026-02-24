@@ -9,12 +9,12 @@ import TestTimer from './TestTimer';
 import TestResults from './TestResults';
 import Button from '../ui/Button';
 import useTestStore from '../../store/testStore';
-import useAuthStore from '../../store/authStore';
+import { useAuth } from '../../contexts';
 import styles from './TestSimulator.module.css';
 
 const TestSimulator = () => {
   const { currentTest, started, finished, answers, setAnswer, startTest, finishTest } = useTestStore();
-  const user = useAuthStore((s) => s.user);
+  const { user } = useAuth();
   const [subjectIdx, setSubjectIdx] = useState(0);
   const [exIdx, setExIdx]           = useState(0);
 

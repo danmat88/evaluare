@@ -5,7 +5,9 @@ import {
   logoutUser,
   registerUser,
   getUserProfile,
+  updateUserStats,
 } from '../firebase/auth';
+import useExerciseStore from '../store/exerciseStore';
 
 const AuthContext = createContext(null);
 
@@ -13,6 +15,39 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser]       = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Hydrate the exercise store from the Firestore profile, so XP/streak
+  // survive page refreshes. Then subscribe to store changes and write them
+  // back with a short debounce so every answer is persisted automatically.
+  useEffect(() => {
+    if (!user || !profile) return;
+
+    // Hydrate store from saved profile values
+    useExerciseStore.setState({
+      xp:           profile.xp           ?? 0,
+      streak:       profile.streak       ?? 0,
+      bestStreak:   profile.bestStreak   ?? 0,
+      totalCorrect: profile.totalCorrect ?? 0,
+      totalAnswered:profile.totalAnswered?? 0,
+    });
+
+    // Subscribe and debounce-write any changes back to Firestore
+    let timer;
+    const unsub = useExerciseStore.subscribe((state) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        updateUserStats(user.uid, {
+          xp:            state.xp,
+          streak:        state.streak,
+          bestStreak:    state.bestStreak,
+          totalCorrect:  state.totalCorrect,
+          totalAnswered: state.totalAnswered,
+        }).catch(() => {}); // fire-and-forget — don't block the UI
+      }, 1500);
+    });
+
+    return () => { clearTimeout(timer); unsub(); };
+  }, [user?.uid]); // re-run only when the logged-in user changes
 
   useEffect(() => {
     const unsub = subscribeToAuth(async (firebaseUser) => {
@@ -23,6 +58,10 @@ export const AuthProvider = ({ children }) => {
       } else {
         setUser(null);
         setProfile(null);
+        // Reset store when user logs out
+        useExerciseStore.setState({
+          xp: 0, streak: 0, bestStreak: 0, totalCorrect: 0, totalAnswered: 0,
+        });
       }
       setLoading(false);
     });

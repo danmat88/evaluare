@@ -10,6 +10,8 @@ import Modal from '../ui/Modal';
 import Button from '../ui/Button';
 import Particles from '../ui/Particles';
 import useExerciseStore from '../../store/exerciseStore';
+import { useAuth } from '../../contexts';
+import { saveExerciseResult } from '../../firebase/results';
 import styles from './ExerciseCard.module.css';
 
 const DIFF_LABEL = ['', '★ Ușor', '★★ Mediu', '★★★ Greu'];
@@ -50,6 +52,7 @@ const ExerciseCard = ({ exercise, onResult, onNext }) => {
   const boardRef = useRef(null);
 
   const { submitAnswer: storeSubmit, streak } = useExerciseStore();
+  const { user } = useAuth();
 
   const handleKey       = (v) => !submitted && setAnswer((a) => a + v);
   const handleBackspace = ()  => !submitted && setAnswer((a) => a.slice(0, -1));
@@ -95,6 +98,16 @@ const ExerciseCard = ({ exercise, onResult, onNext }) => {
     if (isCorrect && earnedXp > 0) {
       setXpFloat(earnedXp);
       setTimeout(() => setXpFloat(null), 1100);
+    }
+
+    // Persist chapter progress to Firestore (fire-and-forget)
+    if (user?.uid) {
+      saveExerciseResult(user.uid, {
+        exerciseId: exercise.id,
+        chapter:    exercise.chapter,
+        correct:    isCorrect,
+        timeSpent:  0,
+      }).catch(() => {});
     }
 
     onResult?.({ exerciseId: exercise.id, correct: isCorrect });

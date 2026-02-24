@@ -5,7 +5,7 @@ import {
   updateProfile,
   onAuthStateChanged,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './config';
 
 export const registerUser = async ({ name, email, password }) => {
@@ -19,10 +19,20 @@ export const registerUser = async ({ name, email, password }) => {
     progress: {},
     testsCompleted: 0,
     totalScore: 0,
+    // Gamification — persisted so they survive page refresh
+    xp: 0,
+    streak: 0,
+    bestStreak: 0,
+    totalCorrect: 0,
+    totalAnswered: 0,
   });
 
   return credential.user;
 };
+
+/** Persist gamification stats back to Firestore (called on every exercise answer). */
+export const updateUserStats = (uid, { xp, streak, bestStreak, totalCorrect, totalAnswered }) =>
+  updateDoc(doc(db, 'users', uid), { xp, streak, bestStreak, totalCorrect, totalAnswered });
 
 export const loginUser = ({ email, password }) =>
   signInWithEmailAndPassword(auth, email, password);
