@@ -35,23 +35,39 @@ const Home = () => {
         <div className={styles.gridBg} />
 
         <motion.div className={styles.leftContent} variants={stagger} initial="initial" animate="animate">
-          <motion.div className={styles.badge} variants={up}>
-            <span className={styles.badgeDot} />
-            Evaluarea Națională 2025 · Matematică
+
+          {/* ① Brand row: sigma mark + badge pill */}
+          <motion.div className={styles.brandRow} variants={up}>
+            <span className={styles.sigma}>∑</span>
+            <div className={styles.badge}>
+              <span className={styles.badgeDot} />
+              Evaluarea Națională 2025 · Matematică
+            </div>
           </motion.div>
 
-          <motion.div className={styles.sigma} variants={up}>∑</motion.div>
-
+          {/* ② Hero headline — main focal point */}
           <motion.h1 className={styles.headline} variants={up}>
             <span className={styles.headlineGradient}>EN Matematică</span>
             <span className={styles.headlineSub}>Clasa a VIII-a · Interactiv</span>
           </motion.h1>
 
+          {/* ③ Tagline */}
           <motion.p className={styles.tagline} variants={up}>
             Exersează exerciții interactive, descoperă rezolvări animate pas cu pas
             și testează-te cu simulări complete de examen în condiții reale.
           </motion.p>
 
+          {/* ④ Stat chips — social proof */}
+          <motion.div className={styles.statRow} variants={up}>
+            {STATS.map((s) => (
+              <span key={s.label} className={styles.statChip}>
+                <span className={styles.statNum}>{s.num}</span>
+                <span className={styles.statLabel}>{s.label}</span>
+              </span>
+            ))}
+          </motion.div>
+
+          {/* ⑤ Feature cards */}
           <motion.div className={styles.features} variants={stagger}>
             {FEATURES.map((f) => (
               <motion.div
@@ -59,7 +75,7 @@ const Home = () => {
                 className={`${styles.feat} ${styles[`feat_${f.color}`]}`}
                 variants={up}
               >
-                <span className={styles.featIcon}>{f.icon}</span>
+                <span className={`${styles.featIcon} ${styles[`featIcon_${f.color}`]}`}>{f.icon}</span>
                 <div className={styles.featText}>
                   <span className={styles.featTitle}>{f.title}</span>
                   <span className={styles.featSub}>{f.sub}</span>
@@ -68,15 +84,6 @@ const Home = () => {
             ))}
           </motion.div>
 
-          <motion.div className={styles.statRow} variants={up}>
-            {STATS.map((s, i) => (
-              <span key={s.label}>
-                <span className={styles.statNum}>{s.num}</span>
-                <span className={styles.statLabel}>&nbsp;{s.label}</span>
-                {i < STATS.length - 1 && <span className={styles.statSep}>·</span>}
-              </span>
-            ))}
-          </motion.div>
         </motion.div>
       </div>
 
