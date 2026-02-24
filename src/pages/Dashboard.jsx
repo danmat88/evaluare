@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
+  BarChart3,
   BookOpen,
   Bookmark,
   CircleGauge,
@@ -94,6 +95,7 @@ const Dashboard = () => {
   const [dailyCorrect, setDailyCorrect] = useState(0);
   const [dailyAttempted, setDailyAttempted] = useState(0);
   const [lastExercise, setLastExercise] = useState(null);
+  const [activityHistory, setActivityHistory] = useState({});
 
   const name = profile?.name?.split(' ')[0] || 'elev';
   const hour = new Date().getHours();
@@ -113,6 +115,9 @@ const Dashboard = () => {
 
     const last = safeReadJSON(STORAGE_KEYS.lastExercise, null);
     setLastExercise(last && typeof last === 'object' ? last : null);
+
+    const history = safeReadJSON(STORAGE_KEYS.activityHistory, {});
+    setActivityHistory(history && typeof history === 'object' ? history : {});
   }, []);
 
   useEffect(() => {
@@ -145,6 +150,35 @@ const Dashboard = () => {
   const goalPct = Math.min(Math.round((dailyCorrect / DAILY_GOAL) * 100), 100);
   const remaining = Math.max(DAILY_GOAL - dailyCorrect, 0);
   const resumeLink = lastExercise?.chapter ? `/exercitii?capitol=${lastExercise.chapter}` : '/exercitii';
+
+  const weekSeries = useMemo(() => {
+    const now = new Date();
+    const rows = [];
+
+    for (let i = 6; i >= 0; i -= 1) {
+      const d = new Date(now);
+      d.setDate(now.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      const rec = activityHistory?.[key] || {};
+      rows.push({
+        key,
+        day: d.toLocaleDateString('ro-RO', { weekday: 'short' }).replace('.', ''),
+        attempted: Number(rec.attempted || 0),
+        correct: Number(rec.correct || 0),
+      });
+    }
+
+    return rows;
+  }, [activityHistory]);
+
+  const maxWeekCorrect = Math.max(1, ...weekSeries.map((row) => row.correct));
+  const weekActiveDays = weekSeries.filter((row) => row.attempted > 0).length;
+  const weekCorrectTotal = weekSeries.reduce((sum, row) => sum + row.correct, 0);
+  const consistencyLabel = weekActiveDays >= 5
+    ? 'Ritmul este excelent. Continua asa.'
+    : weekActiveDays >= 3
+      ? 'Ritm bun. Mai adauga 1-2 sesiuni.'
+      : 'Porneste cu sesiuni scurte in fiecare zi.';
 
   return (
     <Layout>
@@ -224,6 +258,36 @@ const Dashboard = () => {
               animate={{ width: `${goalPct}%` }}
               transition={{ duration: 0.6, ease: 'easeOut' }}
             />
+          </div>
+
+          <div className={styles.momentumBlock}>
+            <div className={styles.momentumHead}>
+              <span className={styles.momentumTitle}><BarChart3 size={13} /> Ritm 7 zile</span>
+              <span className={styles.momentumMeta}>{weekCorrectTotal} corecte</span>
+            </div>
+
+            <div className={styles.momentumBars}>
+              {weekSeries.map((row) => {
+                const h = row.correct > 0 ? Math.max(8, Math.round((row.correct / maxWeekCorrect) * 100)) : 4;
+                return (
+                  <div key={row.key} className={styles.momentumCol} title={`${row.correct} corecte, ${row.attempted} incercate`}>
+                    <span className={styles.momentumTrack}>
+                      <motion.span
+                        className={styles.momentumFill}
+                        initial={{ height: 0 }}
+                        animate={{ height: `${h}%` }}
+                        transition={{ duration: 0.35, ease: 'easeOut' }}
+                      />
+                    </span>
+                    <span className={styles.momentumDay}>{row.day}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <span className={styles.momentumHint}>
+              Activ in {weekActiveDays}/7 zile. {consistencyLabel}
+            </span>
           </div>
 
           <div className={styles.journeyFooter}>

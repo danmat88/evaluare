@@ -229,6 +229,16 @@ const ExerciseList = ({ exercises = [], loading }) => {
       attempted: Array.from(attemptedSet),
       correct: Array.from(correctSet),
     });
+
+    const history = safeReadJSON(STORAGE_KEYS.activityHistory, {});
+    const nextHistory = {
+      ...(history && typeof history === 'object' ? history : {}),
+      [today]: {
+        attempted: attemptedSet.size,
+        correct: correctSet.size,
+      },
+    };
+    safeWriteJSON(STORAGE_KEYS.activityHistory, nextHistory);
   }, [setDraftAnswer]);
 
   useEffect(() => {

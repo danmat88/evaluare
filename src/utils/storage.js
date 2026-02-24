@@ -3,6 +3,7 @@ export const STORAGE_KEYS = {
   solved: 'enmath:solved:v1',
   lastExercise: 'enmath:last-exercise:v1',
   dailyActivity: 'enmath:daily-activity:v1',
+  activityHistory: 'enmath:activity-history:v1',
   focusMode: 'enmath:focus-mode:v1',
   drafts: 'enmath:answer-drafts:v1',
   commandRecent: 'enmath:command-recent:v1',
