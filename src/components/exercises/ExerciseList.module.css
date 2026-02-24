@@ -18,9 +18,18 @@
 
 .sidebarHeader {
   padding: var(--sp-4) var(--sp-4) var(--sp-3);
-  letter-spacing: 0.12em;
   flex-shrink: 0;
   border-bottom: 1px solid rgba(241,245,249,0.05);
+}
+
+/* Sidebar title */
+.sidebarTitle {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .chapterList {
@@ -39,7 +48,7 @@
   padding: 8px var(--sp-3);
   border-radius: var(--r-md);
   color: var(--text-muted);
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   font-size: var(--fs-sm);
   font-weight: 500;
   transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
@@ -205,4 +214,59 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* ── Mini stat typography ── */
+.miniStatNum {
+  font-family: var(--font-mono);
+  font-size: clamp(1.25rem, 2vw, 1.6rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.miniStatNum_mint   { color: var(--neon-mint);   text-shadow: 0 0 12px rgba(52, 211, 153, 0.45); }
+.miniStatNum_yellow { color: var(--neon-yellow);  text-shadow: 0 0 12px rgba(251, 191, 36, 0.45); }
+
+.miniStatLabel {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── Header typography ── */
+.breadcrumbText {
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.counterCurrent {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.counterTotal {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+.shortcutHint {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+
+/* ── State typography ── */
+.stateText {
+  font-family: var(--font-display);
+  font-size: var(--fs-base);
+  font-weight: 500;
+  color: var(--text-muted);
 }

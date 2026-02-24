@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import ExerciseCard from './ExerciseCard';
-import ChalkText from '../blackboard/ChalkText';
 import useExerciseStore from '../../store/exerciseStore';
 import styles from './ExerciseList.module.css';
 
@@ -48,7 +47,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
       {/* ── Chapter sidebar ── */}
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
-          <ChalkText size="xs" color="muted">CAPITOLE</ChalkText>
+          <span className={styles.sidebarTitle}>CAPITOLE</span>
         </div>
         <div className={styles.chapterList}>
           {CHAPTERS.map((ch) => {
@@ -72,12 +71,12 @@ const ExerciseList = ({ exercises = [], loading }) => {
         {/* Mini stats */}
         <div className={styles.miniStats}>
           <div className={styles.miniStat}>
-            <ChalkText size="lg" color="mint">{totalCorrect}</ChalkText>
-            <ChalkText size="xs" color="muted">corecte</ChalkText>
+            <span className={`${styles.miniStatNum} ${styles.miniStatNum_mint}`}>{totalCorrect}</span>
+            <span className={styles.miniStatLabel}>corecte</span>
           </div>
           <div className={styles.miniStat}>
-            <ChalkText size="lg" color="yellow">{streak}</ChalkText>
-            <ChalkText size="xs" color="muted">serie</ChalkText>
+            <span className={`${styles.miniStatNum} ${styles.miniStatNum_yellow}`}>{streak}</span>
+            <span className={styles.miniStatLabel}>serie</span>
           </div>
         </div>
       </aside>
@@ -87,23 +86,21 @@ const ExerciseList = ({ exercises = [], loading }) => {
         {/* Header with nav */}
         <div className={styles.header}>
           <div className={styles.breadcrumb}>
-            <ChalkText size="xs" color="muted">
+            <span className={styles.breadcrumbText}>
               {chapter ? CHAPTERS.find((c) => c.id === chapter)?.label : 'Toate capitolele'}
-            </ChalkText>
+            </span>
             {chapter && <ChevronRight size={12} className={styles.chevron} />}
           </div>
           <div className={styles.navRow}>
             <button className={styles.navBtn} onClick={prev} disabled={idx === 0}>←</button>
             <div className={styles.counter}>
-              <ChalkText size="sm" color={filtered.length > 0 ? 'white' : 'muted'}>
-                {filtered.length > 0 ? `${idx + 1}` : '0'}
-              </ChalkText>
-              <ChalkText size="xs" color="muted">/ {filtered.length}</ChalkText>
+              <span className={styles.counterCurrent}>{filtered.length > 0 ? idx + 1 : '0'}</span>
+              <span className={styles.counterTotal}>/ {filtered.length}</span>
             </div>
             <button className={styles.navBtn} onClick={next} disabled={idx >= filtered.length - 1}>→</button>
           </div>
           <div className={styles.shortcuts}>
-            <ChalkText size="xs" color="muted">← → pentru navigare</ChalkText>
+            <span className={styles.shortcutHint}>← → navigare</span>
           </div>
         </div>
 
@@ -112,13 +109,13 @@ const ExerciseList = ({ exercises = [], loading }) => {
           {loading && (
             <div className={styles.state}>
               <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity }}>
-                <ChalkText size="lg" color="yellow">Se încarcă...</ChalkText>
+                <span className={styles.stateText}>Se încarcă...</span>
               </motion.div>
             </div>
           )}
           {!loading && !current && (
             <div className={styles.state}>
-              <ChalkText size="md" color="muted">Niciun exercițiu găsit.</ChalkText>
+              <span className={styles.stateText}>Niciun exercițiu găsit.</span>
             </div>
           )}
           {!loading && current && (

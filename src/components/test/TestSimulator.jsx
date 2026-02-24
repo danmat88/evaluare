@@ -18,19 +18,12 @@ const TestSimulator = () => {
   const [subjectIdx, setSubjectIdx] = useState(0);
   const [exIdx, setExIdx]           = useState(0);
 
-  if (!currentTest) return null;
-  if (finished) return <TestResults />;
-
-  const subjects = currentTest.subjects || [];
+  const subjects = currentTest?.subjects || [];
   const subject  = subjects[subjectIdx];
   const exercise = subject?.exercises?.[exIdx];
   const curr     = exercise ? (answers[exercise.id] || '') : '';
 
-  const handleKey  = (v) => started && exercise && setAnswer(exercise.id, curr + v);
-  const handleBack = ()  => started && exercise && setAnswer(exercise.id, curr.slice(0, -1));
-  const handleClr  = ()  => started && exercise && setAnswer(exercise.id, '');
-
-  // Enter to navigate exercises
+  // Enter to navigate exercises — must be before any early returns
   useEffect(() => {
     const fn = (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
@@ -41,6 +34,13 @@ const TestSimulator = () => {
     window.addEventListener('keydown', fn);
     return () => window.removeEventListener('keydown', fn);
   }, [exIdx, subject]);
+
+  if (!currentTest) return null;
+  if (finished) return <TestResults />;
+
+  const handleKey  = (v) => started && exercise && setAnswer(exercise.id, curr + v);
+  const handleBack = ()  => started && exercise && setAnswer(exercise.id, curr.slice(0, -1));
+  const handleClr  = ()  => started && exercise && setAnswer(exercise.id, '');
 
   const answered = Object.keys(answers).length;
   const total    = subjects.reduce((s, sub) => s + (sub.exercises?.length || 0), 0);

@@ -15,8 +15,26 @@ import styles from './ExerciseCard.module.css';
 const DIFF_LABEL = ['', '★ Ușor', '★★ Mediu', '★★★ Greu'];
 const DIFF_COLOR = ['', 'mint', 'yellow', 'coral'];
 
-const CORRECT_MSGS = ['Excelent! 🎯', 'Bravo! 🌟', 'Perfect! ✨', 'Corect! 🎉', 'Genial! 🚀'];
-const WRONG_MSGS   = ['Mai încearcă!', 'Aproape!', 'Nu renunța!', 'Gândește-te din nou!'];
+const CORRECT_MSGS = [
+  'Excelent! 🎯 Continuă tot așa!',
+  'Bravo! 🌟 Ești pe drumul cel bun!',
+  'Perfect! ✨ Răspuns corect!',
+  'Corect! 🎉 Fantastic!',
+  'Genial! 🚀 Ești în formă!',
+  'Superb! 💎 Matematică de top!',
+  'Impresionant! 🔥 Mai departe!',
+  'Exact! ⚡ Bun de tot!',
+];
+const WRONG_MSGS = [
+  '❌ Nu-i asta — mai încearcă!',
+  '🤔 Aproape! Verifică calculul.',
+  '💪 Nu renunța! Încearcă din nou.',
+  '🔄 Gândește-te pas cu pas.',
+  '📐 Revezi formula și încearcă!',
+  '🧠 Ești aproape! O mai dai o dată?',
+  '⚠️ Nu e corect — poți mai bine!',
+  '🎯 Concentrează-te și recalculează.',
+];
 
 const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
 

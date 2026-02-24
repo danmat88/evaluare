@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { BookOpen, FlaskConical, ArrowRight, Zap, Target, TrendingUp } from 'lucide-react';
-import ChalkText from '../components/blackboard/ChalkText';
 import ProgressDashboard from '../components/progress/ProgressDashboard';
 import AnimatedCounter from '../components/ui/AnimatedCounter';
 import Layout from '../components/layout/Layout';
@@ -73,8 +72,8 @@ const Dashboard = () => {
         {/* ① Greeting — col 1-2, row 1 */}
         <motion.div className={styles.greeting} variants={up}>
           <div className={styles.greetingText}>
-            <ChalkText size="xs" color="muted">{greeting.toUpperCase()},</ChalkText>
-            <ChalkText size="2xl" color="yellow" glow>{name}!</ChalkText>
+            <span className={styles.greetingLabel}>{greeting},</span>
+            <span className={styles.greetingName}>{name}!</span>
           </div>
           <p className={styles.greetingSub}>
             Continuă să exersezi și vei fi pregătit pentru examen.
@@ -96,7 +95,7 @@ const Dashboard = () => {
         >
           <div className={styles.progressHeader}>
             <TrendingUp size={13} />
-            <ChalkText size="xs" color="muted">PROGRES CAPITOLE</ChalkText>
+            <span className={styles.sectionLabel}>PROGRES CAPITOLE</span>
           </div>
           <ProgressDashboard profile={profile} xp={xp} />
         </motion.div>
@@ -106,7 +105,7 @@ const Dashboard = () => {
           <motion.div key={s.label} className={`${styles.statCard} ${styles[`statCell${i}`]}`} variants={up}>
             <span className={`${styles.statIcon} ${styles[`iconBg_${s.color}`]}`}>{s.icon}</span>
             <AnimatedCounter value={values[s.key]} className={`${styles.statNum} ${styles[`c_${s.color}`]}`} />
-            <ChalkText size="xs" color="muted">{s.label}</ChalkText>
+            <span className={styles.statLabel}>{s.label}</span>
           </motion.div>
         ))}
 
@@ -115,8 +114,8 @@ const Dashboard = () => {
           <Link to="/exercitii" className={`${styles.navCard} ${styles.navCard_cyan}`}>
             <div className={`${styles.navIcon} ${styles.navIconCyan}`}><BookOpen size={22} /></div>
             <div className={styles.navBody}>
-              <ChalkText size="md" color="white">Exerciții</ChalkText>
-              <ChalkText size="xs" color="muted">Pe capitole · soluții animate</ChalkText>
+              <span className={styles.navTitle}>Exerciții</span>
+              <span className={styles.navDesc}>Pe capitole · soluții animate</span>
             </div>
             <ArrowRight size={16} className={styles.arrow} />
           </Link>
@@ -127,8 +126,8 @@ const Dashboard = () => {
           <Link to="/teste" className={`${styles.navCard} ${styles.navCard_yellow}`}>
             <div className={`${styles.navIcon} ${styles.navIconYellow}`}><FlaskConical size={22} /></div>
             <div className={styles.navBody}>
-              <ChalkText size="md" color="white">Test simulat</ChalkText>
-              <ChalkText size="xs" color="muted">Subiect I+II+III · 2 ore</ChalkText>
+              <span className={styles.navTitle}>Test simulat</span>
+              <span className={styles.navDesc}>Subiect I+II+III · 2 ore</span>
             </div>
             <ArrowRight size={16} className={styles.arrow} />
           </Link>
@@ -138,9 +137,9 @@ const Dashboard = () => {
         <motion.div className={styles.tipCard} variants={up}>
           <div className={styles.tipHeader}>
             <span className={styles.tipIcon}>💡</span>
-            <ChalkText size="xs" color="yellow">SFAT AL ZILEI</ChalkText>
+            <span className={styles.tipLabel}>SFAT AL ZILEI</span>
           </div>
-          <ChalkText size="sm" color="muted">{dailyTip}</ChalkText>
+          <span className={styles.tipText}>{dailyTip}</span>
         </motion.div>
 
       </motion.div>
