@@ -1,8 +1,21 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, CheckSquare, LayoutDashboard, MoonStar, PlayCircle, Search, Sparkles, Sun, User } from 'lucide-react';
+import {
+  Accessibility,
+  BookOpen,
+  CheckSquare,
+  LayoutDashboard,
+  MoonStar,
+  PlayCircle,
+  Search,
+  Sparkles,
+  Sun,
+  User,
+} from 'lucide-react';
 import { STORAGE_KEYS, safeReadJSON, safeWriteJSON } from '../../utils/storage';
 import styles from './CommandPalette.module.css';
+
+const RECENT_LIMIT = 6;
 
 const filterCommands = (commands, query) => {
   const q = query.trim().toLowerCase();
@@ -16,6 +29,7 @@ const filterCommands = (commands, query) => {
 const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) => {
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
+  const [recentIds, setRecentIds] = useState(() => safeReadJSON(STORAGE_KEYS.commandRecent, []));
   const inputRef = useRef(null);
 
   const lastExercise = useMemo(
@@ -26,6 +40,19 @@ const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) 
     () => (isOpen ? Boolean(safeReadJSON(STORAGE_KEYS.focusMode, false)) : false),
     [isOpen],
   );
+  const reducedMotion = useMemo(
+    () => (isOpen ? Boolean(safeReadJSON(STORAGE_KEYS.reduceMotion, false)) : false),
+    [isOpen],
+  );
+
+  const recordRecent = useCallback((id) => {
+    setRecentIds((prev) => {
+      const base = Array.isArray(prev) ? prev : [];
+      const next = [id, ...base.filter((item) => item !== id)].slice(0, RECENT_LIMIT);
+      safeWriteJSON(STORAGE_KEYS.commandRecent, next);
+      return next;
+    });
+  }, []);
 
   const commands = useMemo(() => {
     const base = [
@@ -35,7 +62,7 @@ const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) 
         label: 'Deschide Dashboard',
         hint: 'Overview si progres',
         tags: 'home start',
-        run: () => onNavigate('/dashboard'),
+        action: () => onNavigate('/dashboard'),
       },
       {
         id: 'ex',
@@ -43,7 +70,7 @@ const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) 
         label: 'Deschide Exercitii',
         hint: 'Rezolva pe capitole',
         tags: 'practice chapter',
-        run: () => onNavigate('/exercitii'),
+        action: () => onNavigate('/exercitii'),
       },
       {
         id: 'tests',
@@ -51,7 +78,7 @@ const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) 
         label: 'Deschide Teste',
         hint: 'Simulare examen',
         tags: 'simulator',
-        run: () => onNavigate('/teste'),
+        action: () => onNavigate('/teste'),
       },
       {
         id: 'profile',
@@ -59,7 +86,7 @@ const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) 
         label: 'Deschide Profil',
         hint: 'Rezultate si statistici',
         tags: 'account stats',
-        run: () => onNavigate('/profil'),
+        action: () => onNavigate('/profil'),
       },
       {
         id: 'theme',
@@ -67,7 +94,7 @@ const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) 
         label: isDark ? 'Comuta pe tema light' : 'Comuta pe tema dark',
         hint: 'Aspect interfata',
         tags: 'appearance color',
-        run: () => onToggleTheme(),
+        action: () => onToggleTheme(),
       },
       {
         id: 'focus',
@@ -75,7 +102,19 @@ const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) 
         label: focusMode ? 'Dezactiveaza focus mode' : 'Activeaza focus mode',
         hint: 'Aplicat in pagina Exercitii',
         tags: 'focus mode',
-        run: () => safeWriteJSON(STORAGE_KEYS.focusMode, !focusMode),
+        action: () => safeWriteJSON(STORAGE_KEYS.focusMode, !focusMode),
+      },
+      {
+        id: 'motion',
+        icon: <Accessibility size={14} />,
+        label: reducedMotion ? 'Activeaza animatiile' : 'Reduce animatiile',
+        hint: 'Preferinta de accesibilitate',
+        tags: 'motion accessibility',
+        action: () => {
+          const next = !reducedMotion;
+          safeWriteJSON(STORAGE_KEYS.reduceMotion, next);
+          document.documentElement.setAttribute('data-motion', next ? 'reduce' : 'full');
+        },
       },
     ];
 
@@ -89,19 +128,30 @@ const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) 
         label: 'Continua ultimul exercitiu',
         hint: lastExercise.chapter ? `Capitol: ${lastExercise.chapter}` : 'Sesiunea anterioara',
         tags: 'resume continue',
-        run: () => onNavigate(to),
+        action: () => onNavigate(to),
       });
     }
 
     return base;
-  }, [focusMode, isDark, lastExercise, onNavigate, onToggleTheme]);
+  }, [focusMode, isDark, lastExercise, onNavigate, onToggleTheme, reducedMotion]);
 
-  const visible = useMemo(() => filterCommands(commands, query), [commands, query]);
+  const visible = useMemo(() => {
+    const filtered = filterCommands(commands, query);
+    if (query.trim()) return filtered;
+
+    const order = new Map((Array.isArray(recentIds) ? recentIds : []).map((id, i) => [id, i]));
+    return [...filtered].sort((a, b) => {
+      const ai = order.has(a.id) ? order.get(a.id) : 999;
+      const bi = order.has(b.id) ? order.get(b.id) : 999;
+      return ai - bi;
+    });
+  }, [commands, query, recentIds]);
 
   useEffect(() => {
     if (!isOpen) return;
     setQuery('');
     setActiveIndex(0);
+    setRecentIds(safeReadJSON(STORAGE_KEYS.commandRecent, []));
     const id = setTimeout(() => inputRef.current?.focus(), 10);
     return () => clearTimeout(id);
   }, [isOpen]);
@@ -110,6 +160,13 @@ const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) 
     if (!isOpen) return;
     setActiveIndex((curr) => Math.min(curr, Math.max(visible.length - 1, 0)));
   }, [visible.length, isOpen]);
+
+  const runCommand = useCallback((command) => {
+    if (!command) return;
+    command.action?.();
+    recordRecent(command.id);
+    onClose();
+  }, [onClose, recordRecent]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -132,14 +189,13 @@ const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) 
       if (event.key === 'Enter') {
         event.preventDefault();
         if (!visible.length) return;
-        visible[activeIndex]?.run?.();
-        onClose();
+        runCommand(visible[activeIndex]);
       }
     };
 
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [activeIndex, isOpen, onClose, visible]);
+  }, [activeIndex, isOpen, onClose, runCommand, visible]);
 
   return (
     <AnimatePresence>
@@ -169,30 +225,33 @@ const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) 
                 <div className={styles.empty}>Nu exista comenzi pentru cautarea curenta.</div>
               )}
 
-              {visible.map((command, index) => (
-                <button
-                  key={command.id}
-                  type="button"
-                  className={`${styles.item} ${index === activeIndex ? styles.itemActive : ''}`}
-                  onMouseEnter={() => setActiveIndex(index)}
-                  onClick={() => {
-                    command.run?.();
-                    onClose();
-                  }}
-                >
-                  <span className={styles.itemIcon}>{command.icon}</span>
-                  <span className={styles.itemBody}>
-                    <span className={styles.itemTitle}>{command.label}</span>
-                    {command.hint && <span className={styles.itemHint}>{command.hint}</span>}
-                  </span>
-                  <span className={styles.itemKey}>ENTER</span>
-                </button>
-              ))}
+              {visible.map((command, index) => {
+                const isRecent = !query.trim() && Array.isArray(recentIds) && recentIds.includes(command.id);
+                return (
+                  <button
+                    key={command.id}
+                    type="button"
+                    className={`${styles.item} ${index === activeIndex ? styles.itemActive : ''}`}
+                    onMouseEnter={() => setActiveIndex(index)}
+                    onClick={() => runCommand(command)}
+                  >
+                    <span className={styles.itemIcon}>{command.icon}</span>
+                    <span className={styles.itemBody}>
+                      <span className={styles.itemTitle}>{command.label}</span>
+                      {command.hint && <span className={styles.itemHint}>{command.hint}</span>}
+                    </span>
+                    <span className={styles.itemRight}>
+                      {isRecent && <span className={styles.itemRecent}>RECENT</span>}
+                      <span className={styles.itemKey}>ENTER</span>
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
             <div className={styles.footer}>
               <span>Ctrl/Cmd + K pentru deschidere rapida</span>
-              <span>↑ ↓ navigare</span>
+              <span>UP / DOWN pentru navigare</span>
             </div>
           </motion.div>
         </div>

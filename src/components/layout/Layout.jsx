@@ -15,6 +15,7 @@ import { motion } from 'framer-motion';
 import { useAuth, useTheme } from '../../contexts';
 import XPBar from '../ui/XPBar';
 import CommandPalette from './CommandPalette';
+import { STORAGE_KEYS, safeReadJSON } from '../../utils/storage';
 import styles from './Layout.module.css';
 
 const NAV = [
@@ -47,6 +48,21 @@ const Layout = ({ children }) => {
 
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  useEffect(() => {
+    const applyMotion = () => {
+      const reduced = Boolean(safeReadJSON(STORAGE_KEYS.reduceMotion, false));
+      document.documentElement.setAttribute('data-motion', reduced ? 'reduce' : 'full');
+    };
+
+    applyMotion();
+    window.addEventListener('focus', applyMotion);
+    window.addEventListener('storage', applyMotion);
+    return () => {
+      window.removeEventListener('focus', applyMotion);
+      window.removeEventListener('storage', applyMotion);
+    };
   }, []);
 
   const goTo = (to) => {

@@ -163,6 +163,27 @@
   justify-content: center;
 }
 
+.itemRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.itemRecent {
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 6px;
+  border: var(--border-dim);
+  background: color-mix(in srgb, var(--neon-cyan) 14%, transparent);
+  color: var(--neon-cyan);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .footer {
   border-top: var(--border-dim);
   padding: 10px 14px;

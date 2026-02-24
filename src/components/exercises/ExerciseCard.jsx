@@ -1,4 +1,4 @@
-﻿import { useState, useRef } from 'react';
+﻿import { useCallback, useEffect, useRef, useState } from 'react';
 import { BlockMath } from 'react-katex';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, CheckCircle2, Eye, Flame, RotateCcw, XCircle } from 'lucide-react';
@@ -41,8 +41,8 @@ const WRONG_MSGS = [
 
 const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-const ExerciseCard = ({ exercise, onResult, onNext }) => {
-  const [answer, setAnswer] = useState('');
+const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswerChange }) => {
+  const [answer, setAnswer] = useState(initialAnswer);
   const [submitted, setSubmitted] = useState(false);
   const [correct, setCorrect] = useState(null);
   const [showSolution, setShowSolution] = useState(false);
@@ -55,9 +55,25 @@ const ExerciseCard = ({ exercise, onResult, onNext }) => {
   const { streak } = useExerciseStore();
   const { user } = useAuth();
 
-  const handleKey = (v) => !submitted && setAnswer((a) => a + v);
-  const handleBackspace = () => !submitted && setAnswer((a) => a.slice(0, -1));
-  const handleClear = () => !submitted && setAnswer('');
+  const updateAnswer = useCallback((nextValue) => {
+    setAnswer(nextValue);
+    onAnswerChange?.(exercise.id, nextValue);
+  }, [exercise.id, onAnswerChange]);
+
+  useEffect(() => {
+    setAnswer(initialAnswer || '');
+    setSubmitted(false);
+    setCorrect(null);
+    setShowSolution(false);
+    setFlash(null);
+    setFeedbackMsg('');
+    setShowParticles(false);
+    setXpFloat(null);
+  }, [exercise.id, initialAnswer]);
+
+  const handleKey = (v) => !submitted && updateAnswer(`${answer}${v}`);
+  const handleBackspace = () => !submitted && updateAnswer(answer.slice(0, -1));
+  const handleClear = () => !submitted && updateAnswer('');
 
   const handleSubmit = () => {
     if (!answer || submitted) return;
@@ -100,6 +116,8 @@ const ExerciseCard = ({ exercise, onResult, onNext }) => {
       setTimeout(() => setXpFloat(null), 1100);
     }
 
+    if (isCorrect) onAnswerChange?.(exercise.id, '');
+
     if (user?.uid) {
       saveExerciseResult(user.uid, {
         exerciseId: exercise.id,
@@ -113,7 +131,7 @@ const ExerciseCard = ({ exercise, onResult, onNext }) => {
   };
 
   const handleReset = () => {
-    setAnswer('');
+    updateAnswer('');
     setSubmitted(false);
     setCorrect(null);
     setShowSolution(false);

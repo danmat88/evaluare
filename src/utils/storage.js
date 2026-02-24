@@ -4,6 +4,9 @@ export const STORAGE_KEYS = {
   lastExercise: 'enmath:last-exercise:v1',
   dailyActivity: 'enmath:daily-activity:v1',
   focusMode: 'enmath:focus-mode:v1',
+  drafts: 'enmath:answer-drafts:v1',
+  commandRecent: 'enmath:command-recent:v1',
+  reduceMotion: 'enmath:reduce-motion:v1',
 };
 
 export const safeReadJSON = (key, fallback) => {

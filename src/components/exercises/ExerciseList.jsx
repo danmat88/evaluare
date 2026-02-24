@@ -2,8 +2,10 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
+  Box,
   ChevronLeft,
   ChevronRight,
+  CircleDot,
   Equal,
   FilterX,
   Hash,
@@ -18,8 +20,6 @@ import {
   Star,
   Target,
   TrendingUp,
-  Box,
-  CircleDot,
   Zap,
 } from 'lucide-react';
 import ExerciseCard from './ExerciseCard';
@@ -80,6 +80,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
   const [solvedIds, setSolvedIds] = useState(() => toSet(safeReadJSON(STORAGE_KEYS.solved, [])));
   const [lastExercise, setLastExercise] = useState(() => safeReadJSON(STORAGE_KEYS.lastExercise, null));
   const [focusMode, setFocusMode] = useState(() => Boolean(safeReadJSON(STORAGE_KEYS.focusMode, false)));
+  const [draftAnswers, setDraftAnswers] = useState(() => safeReadJSON(STORAGE_KEYS.drafts, {}));
 
   const { totalCorrect, streak } = useExerciseStore();
 
@@ -103,6 +104,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
 
   const current = filtered[idx] ?? null;
   const isFavorite = current ? favoriteIds.has(current.id) : false;
+  const draftsCount = useMemo(() => Object.keys(draftAnswers || {}).length, [draftAnswers]);
 
   useEffect(() => {
     safeWriteJSON(STORAGE_KEYS.favorites, Array.from(favoriteIds));
@@ -117,6 +119,10 @@ const ExerciseList = ({ exercises = [], loading }) => {
   }, [focusMode]);
 
   useEffect(() => {
+    safeWriteJSON(STORAGE_KEYS.drafts, draftAnswers);
+  }, [draftAnswers]);
+
+  useEffect(() => {
     if (!current) return;
     const snapshot = {
       id: current.id,
@@ -127,6 +133,16 @@ const ExerciseList = ({ exercises = [], loading }) => {
     setLastExercise(snapshot);
     safeWriteJSON(STORAGE_KEYS.lastExercise, snapshot);
   }, [current]);
+
+  const setDraftAnswer = useCallback((exerciseId, value) => {
+    setDraftAnswers((prev) => {
+      const next = { ...(prev || {}) };
+      const normalized = String(value || '').trim();
+      if (!normalized) delete next[exerciseId];
+      else next[exerciseId] = String(value);
+      return next;
+    });
+  }, []);
 
   const changeChapter = (id) => {
     setChapter(id);
@@ -185,7 +201,9 @@ const ExerciseList = ({ exercises = [], loading }) => {
     setIdx(0);
   }, [lastExercise]);
 
-  const onExerciseResult = useCallback(({ exerciseId, correct }) => {
+  const onExerciseResult = useCallback((payload) => {
+    const { exerciseId, correct } = payload;
+
     if (correct) {
       setSolvedIds((prevSet) => {
         if (prevSet.has(exerciseId)) return prevSet;
@@ -193,6 +211,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
         nextSet.add(exerciseId);
         return nextSet;
       });
+      setDraftAnswer(exerciseId, '');
     }
 
     const today = todayStamp();
@@ -210,7 +229,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
       attempted: Array.from(attemptedSet),
       correct: Array.from(correctSet),
     });
-  }, []);
+  }, [setDraftAnswer]);
 
   useEffect(() => {
     setIdx((currentIdx) => Math.min(currentIdx, Math.max(filtered.length - 1, 0)));
@@ -254,27 +273,27 @@ const ExerciseList = ({ exercises = [], loading }) => {
       return target.matches('input, textarea, [contenteditable=true]');
     };
 
-    const fn = (e) => {
-      if (e.key === 'ArrowRight' && !isTypingTarget(e.target)) next();
-      if (e.key === 'ArrowLeft' && !isTypingTarget(e.target)) prev();
+    const fn = (event) => {
+      if (event.key === 'ArrowRight' && !isTypingTarget(event.target)) next();
+      if (event.key === 'ArrowLeft' && !isTypingTarget(event.target)) prev();
 
-      if (e.key === '/' && !isTypingTarget(e.target)) {
-        e.preventDefault();
+      if (event.key === '/' && !isTypingTarget(event.target)) {
+        event.preventDefault();
         searchRef.current?.focus();
       }
 
-      if (e.key.toLowerCase() === 'f' && !isTypingTarget(e.target)) {
-        e.preventDefault();
+      if (event.key.toLowerCase() === 'f' && !isTypingTarget(event.target)) {
+        event.preventDefault();
         toggleFavoriteCurrent();
       }
 
-      if (e.key.toLowerCase() === 'r' && !isTypingTarget(e.target)) {
-        e.preventDefault();
+      if (event.key.toLowerCase() === 'r' && !isTypingTarget(event.target)) {
+        event.preventDefault();
         jumpRandom();
       }
 
-      if (e.key.toLowerCase() === 'm' && !isTypingTarget(e.target)) {
-        e.preventDefault();
+      if (event.key.toLowerCase() === 'm' && !isTypingTarget(event.target)) {
+        event.preventDefault();
         setFocusMode((v) => !v);
       }
     };
@@ -291,6 +310,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
           <div className={styles.sidebarMeta}>
             <span className={styles.sidebarMetaChip}>{favoriteIds.size} fav</span>
             <span className={styles.sidebarMetaChip}>{solvedIds.size} ok</span>
+            <span className={styles.sidebarMetaChip}>{draftsCount} draft</span>
           </div>
         </div>
 
@@ -335,7 +355,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
             </div>
 
             <div className={styles.navRow}>
-              <button className={styles.navBtn} onClick={prev} disabled={idx === 0} title="Anterior (sageta stanga)">
+              <button className={styles.navBtn} onClick={prev} disabled={idx === 0} title="Anterior (LEFT)">
                 <ChevronLeft size={14} />
               </button>
 
@@ -344,7 +364,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
                 <span className={styles.counterTotal}>/ {filtered.length}</span>
               </div>
 
-              <button className={styles.navBtn} onClick={next} disabled={idx >= filtered.length - 1} title="Urmator (sageta dreapta)">
+              <button className={styles.navBtn} onClick={next} disabled={idx >= filtered.length - 1} title="Urmator (RIGHT)">
                 <ChevronRight size={14} />
               </button>
 
@@ -433,7 +453,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
             </div>
 
             <div className={styles.shortcuts}>
-              <span className={styles.shortcutHint}>Shortcut-uri: ←/→, /, F, R, M</span>
+              <span className={styles.shortcutHint}>Shortcuts: LEFT/RIGHT, /, F, R, M</span>
             </div>
           </div>
         </div>
@@ -465,6 +485,8 @@ const ExerciseList = ({ exercises = [], loading }) => {
               >
                 <ExerciseCard
                   exercise={current}
+                  initialAnswer={draftAnswers?.[current.id] || ''}
+                  onAnswerChange={setDraftAnswer}
                   onResult={onExerciseResult}
                   onNext={idx < filtered.length - 1 ? next : null}
                 />
