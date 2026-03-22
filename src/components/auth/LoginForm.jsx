@@ -29,14 +29,17 @@ const err = {
 };
 
 export default function LoginForm({ onSwitch }) {
-  const { login }         = useAuth();
+  const { login, resetPassword } = useAuth();
   const [arataPw, setAr]  = useState(false);
   const [tremura, setTr]  = useState(false);
+  const [trimiteReset, setTrimiteReset] = useState(false);
   const passwordInputRef  = useRef(null);
 
   const {
     register,
+    getValues,
     handleSubmit,
+    trigger,
     formState: { errors, isSubmitting, dirtyFields },
   } = useForm({
     resolver: zodResolver(schema),
@@ -52,6 +55,31 @@ export default function LoginForm({ onSwitch }) {
       notify.error('E-mail sau parolă incorectă. Mai încearcă.');
       setTr(true);
       setTimeout(() => setTr(false), 500);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    const email = String(getValues('email') || '').trim();
+
+    if (!email) {
+      notify.error('Scrie adresa de e-mail si apoi cere resetarea parolei.');
+      return;
+    }
+
+    const emailValid = await trigger('email');
+    if (!emailValid) {
+      notify.error('Adresa de e-mail nu este valida.');
+      return;
+    }
+
+    try {
+      setTrimiteReset(true);
+      await resetPassword(email);
+      notify.success('Am trimis emailul de resetare a parolei.');
+    } catch {
+      notify.error('Nu am putut trimite emailul de resetare. Verifica adresa si incearca din nou.');
+    } finally {
+      setTrimiteReset(false);
     }
   };
 
@@ -153,7 +181,12 @@ export default function LoginForm({ onSwitch }) {
                   </motion.span>
                 )}
               </AnimatePresence>
-              <button type="button" className={styles.forgotBtn}>
+              <button
+                type="button"
+                className={styles.forgotBtn}
+                onClick={handleResetPassword}
+                disabled={trimiteReset}
+              >
                 Ai uitat parola?
               </button>
             </div>

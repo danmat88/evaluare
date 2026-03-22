@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { getTestById, getAllTests } from '../firebase/exercises';
 import { saveTestResult } from '../firebase/results';
 import { matchAnswer } from '../utils/answerMatcher';
+import { createClientId } from '../utils/ids';
 import {
   STORAGE_KEYS,
   getStorageScope,
@@ -61,7 +62,7 @@ const buildResults = (test, answers, timeLeft, autoSubmitted = false) => {
   return {
     score,
     totalPoints,
-    percentage: Math.round((score / totalPoints) * 100),
+    percentage: totalPoints > 0 ? Math.round((score / totalPoints) * 100) : 0,
     answeredCount,
     totalQuestions,
     unansweredCount: Math.max(totalQuestions - answeredCount, 0),
@@ -89,6 +90,7 @@ const persistSession = (state) => {
     timeLeft: state.timeLeft,
     started: state.started,
     uid: state.uid,
+    attemptId: state.attemptId,
     subjectIdx: state.subjectIdx,
     exerciseIdx: state.exerciseIdx,
     savedAt: Date.now(),
@@ -102,9 +104,11 @@ const useTestStore = create((set, get) => ({
   timeLeft: TEST_DURATION,
   started: false,
   finished: false,
+  submitting: false,
   results: null,
   loading: false,
   uid: null,
+  attemptId: null,
   storageScope: 'guest',
   subjectIdx: 0,
   exerciseIdx: 0,
@@ -134,10 +138,12 @@ const useTestStore = create((set, get) => ({
       loading: false,
       answers: restored?.answers && typeof restored.answers === 'object' ? restored.answers : {},
       finished: false,
+      submitting: false,
       results: null,
       started: Boolean(restored?.started && restored?.timeLeft > 0),
       timeLeft: Number.isFinite(restored?.timeLeft) ? Math.max(restored.timeLeft, 0) : TEST_DURATION,
       uid: restored?.uid || options.uid || null,
+      attemptId: restored?.attemptId || createClientId('test-attempt'),
       storageScope,
       subjectIdx,
       exerciseIdx,
@@ -152,6 +158,7 @@ const useTestStore = create((set, get) => ({
       started: true,
       timeLeft: state.timeLeft > 0 && state.timeLeft < TEST_DURATION ? state.timeLeft : TEST_DURATION,
       uid: uid || state.uid || null,
+      attemptId: state.attemptId || createClientId('test-attempt'),
       storageScope,
     }));
     persistSession(get());
@@ -198,23 +205,30 @@ const useTestStore = create((set, get) => ({
   },
 
   finishTest: async (uid, options = {}) => {
-    const { currentTest, answers, timeLeft, finished, storageScope } = get();
-    if (!currentTest || finished) return;
+    const { currentTest, answers, timeLeft, finished, storageScope, submitting } = get();
+    if (!currentTest || finished || submitting) return;
 
     const results = buildResults(currentTest, answers, timeLeft, Boolean(options.autoSubmitted));
-    set({ finished: true, started: false, results });
+    const finalAttemptId = get().attemptId || createClientId('test-attempt');
+
+    set({ finished: true, started: false, submitting: true, results, attemptId: finalAttemptId });
     removeScopedJSON(STORAGE_KEYS.testSession, storageScope);
 
     const finalUid = uid || get().uid;
-    if (finalUid) {
-      await saveTestResult(finalUid, {
-        testId: currentTest.id,
-        title: currentTest.title || 'Test simulat',
-        score: results.score,
-        totalPoints: results.totalPoints,
-        answers,
-        timeSpent: results.timeSpent,
-      });
+    try {
+      if (finalUid) {
+        await saveTestResult(finalUid, {
+          attemptId: finalAttemptId,
+          testId: currentTest.id,
+          title: currentTest.title || 'Test simulat',
+          score: results.score,
+          totalPoints: results.totalPoints,
+          answers,
+          timeSpent: results.timeSpent,
+        });
+      }
+    } finally {
+      set({ submitting: false });
     }
   },
 
@@ -226,8 +240,10 @@ const useTestStore = create((set, get) => ({
       timeLeft: TEST_DURATION,
       started: false,
       finished: false,
+      submitting: false,
       results: null,
       uid: null,
+      attemptId: null,
       subjectIdx: 0,
       exerciseIdx: 0,
     });

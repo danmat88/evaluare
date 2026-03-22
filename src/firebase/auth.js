@@ -2,6 +2,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  sendPasswordResetEmail,
   updateProfile,
   onAuthStateChanged,
 } from 'firebase/auth';
@@ -53,6 +54,9 @@ export const loginUser = ({ email, password }) =>
   signInWithEmailAndPassword(auth, email, password);
 
 export const logoutUser = () => signOut(auth);
+
+export const resetUserPassword = (email) =>
+  sendPasswordResetEmail(auth, email);
 
 export const getUserProfile = async (uid) => {
   const snap = await getDoc(doc(db, 'users', uid));

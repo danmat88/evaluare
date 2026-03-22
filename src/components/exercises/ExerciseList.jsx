@@ -34,7 +34,9 @@ import {
   writeScopedJSON,
 } from '../../utils/storage';
 import {
+  getSolvedExerciseIds,
   getReviewExerciseIds,
+  mergeSolvedExercises,
   readStudyInsights,
   recordExerciseAttempt,
 } from '../../utils/studyInsights';
@@ -123,7 +125,6 @@ const ExerciseList = ({ exercises = [], loading }) => {
   const viewModeRef = useRef(viewMode);
 
   const [favoriteIds, setFavoriteIds] = useState(() => toSet(readScopedJSON(STORAGE_KEYS.favorites, storageScope, [])));
-  const [solvedIds, setSolvedIds] = useState(() => toSet(readScopedJSON(STORAGE_KEYS.solved, storageScope, [])));
   const [lastExercise, setLastExercise] = useState(() => readScopedJSON(STORAGE_KEYS.lastExercise, storageScope, null));
   const [focusMode, setFocusMode] = useState(() => Boolean(readScopedJSON(STORAGE_KEYS.focusMode, storageScope, false)));
   const [draftAnswers, setDraftAnswers] = useState(() => readScopedJSON(STORAGE_KEYS.drafts, storageScope, {}));
@@ -131,6 +132,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
 
   const { totalCorrect, streak } = useExerciseStore();
   const reviewIds = useMemo(() => new Set(getReviewExerciseIds(studyInsights)), [studyInsights]);
+  const solvedIds = useMemo(() => new Set(getSolvedExerciseIds(studyInsights)), [studyInsights]);
 
   useEffect(() => {
     chapterRef.current = chapter;
@@ -198,10 +200,6 @@ const ExerciseList = ({ exercises = [], loading }) => {
   }, [favoriteIds, storageScope]);
 
   useEffect(() => {
-    writeScopedJSON(STORAGE_KEYS.solved, storageScope, Array.from(solvedIds));
-  }, [solvedIds, storageScope]);
-
-  useEffect(() => {
     writeScopedJSON(STORAGE_KEYS.focusMode, storageScope, focusMode);
   }, [focusMode, storageScope]);
 
@@ -210,22 +208,30 @@ const ExerciseList = ({ exercises = [], loading }) => {
   }, [draftAnswers, storageScope]);
 
   useEffect(() => {
+    const legacySolved = readScopedJSON(STORAGE_KEYS.solved, storageScope, []);
+    const mergedInsights = Array.isArray(legacySolved) && legacySolved.length > 0
+      ? mergeSolvedExercises(legacySolved, storageScope)
+      : readStudyInsights(storageScope);
+
     setFavoriteIds(toSet(readScopedJSON(STORAGE_KEYS.favorites, storageScope, [])));
-    setSolvedIds(toSet(readScopedJSON(STORAGE_KEYS.solved, storageScope, [])));
     setLastExercise(readScopedJSON(STORAGE_KEYS.lastExercise, storageScope, null));
     setFocusMode(Boolean(readScopedJSON(STORAGE_KEYS.focusMode, storageScope, false)));
     setDraftAnswers(readScopedJSON(STORAGE_KEYS.drafts, storageScope, {}));
-    setStudyInsights(readStudyInsights(storageScope));
+    setStudyInsights(mergedInsights);
   }, [storageScope]);
 
   useEffect(() => {
     const syncWorkspaceState = () => {
+      const legacySolved = readScopedJSON(STORAGE_KEYS.solved, storageScope, []);
+      const mergedInsights = Array.isArray(legacySolved) && legacySolved.length > 0
+        ? mergeSolvedExercises(legacySolved, storageScope)
+        : readStudyInsights(storageScope);
+
       setFavoriteIds(toSet(readScopedJSON(STORAGE_KEYS.favorites, storageScope, [])));
-      setSolvedIds(toSet(readScopedJSON(STORAGE_KEYS.solved, storageScope, [])));
       setLastExercise(readScopedJSON(STORAGE_KEYS.lastExercise, storageScope, null));
       setFocusMode(Boolean(readScopedJSON(STORAGE_KEYS.focusMode, storageScope, false)));
       setDraftAnswers(readScopedJSON(STORAGE_KEYS.drafts, storageScope, {}));
-      setStudyInsights(readStudyInsights(storageScope));
+      setStudyInsights(mergedInsights);
     };
 
     window.addEventListener('focus', syncWorkspaceState);
@@ -322,12 +328,6 @@ const ExerciseList = ({ exercises = [], loading }) => {
     const { exerciseId, correct, timeSpent } = payload;
 
     if (correct) {
-      setSolvedIds((prevSet) => {
-        if (prevSet.has(exerciseId)) return prevSet;
-        const nextSet = new Set(prevSet);
-        nextSet.add(exerciseId);
-        return nextSet;
-      });
       setDraftAnswer(exerciseId, '');
     }
 

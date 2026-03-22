@@ -5,6 +5,19 @@ const emptyInsights = () => ({
   updatedAt: null,
 });
 
+const createExerciseRecord = (exerciseId, chapter = null) => ({
+  exerciseId,
+  chapter,
+  attempts: 0,
+  correctAttempts: 0,
+  wrongAttempts: 0,
+  solved: false,
+  lastCorrect: null,
+  lastAttemptAt: null,
+  totalTimeSpent: 0,
+  averageTimeSpent: 0,
+});
+
 const normalizeInsights = (value) => {
   if (!value || typeof value !== 'object') return emptyInsights();
   return {
@@ -34,6 +47,22 @@ export const getReviewExerciseIds = (insights) =>
     .filter(exerciseNeedsReview)
     .map((record) => record.exerciseId);
 
+export const getSolvedExerciseIds = (insights) =>
+  Object.values(normalizeInsights(insights).exercises)
+    .filter((record) => record?.solved)
+    .map((record) => String(record.exerciseId));
+
+export const isExerciseSolved = ({ exerciseId, insights, scope = null }) => {
+  if (exerciseId === null || exerciseId === undefined) return false;
+
+  const normalizedInsights = insights ? normalizeInsights(insights) : readStudyInsights(scope);
+  const directMatch = normalizedInsights.exercises[String(exerciseId)];
+  if (directMatch?.solved) return true;
+
+  const legacySolvedIds = readScopedJSON(STORAGE_KEYS.solved, scope, []);
+  return Array.isArray(legacySolvedIds) && legacySolvedIds.some((value) => String(value) === String(exerciseId));
+};
+
 export const getSolvedProgressByChapter = (insights) =>
   Object.values(normalizeInsights(insights).exercises).reduce((progress, record) => {
     if (!record?.solved || !record.chapter) return progress;
@@ -56,20 +85,45 @@ export const mergeChapterProgress = (remoteProgress = {}, insights) => {
   return mergedProgress;
 };
 
+export const mergeSolvedExercises = (solvedExercises, scope = null) => {
+  const insights = readStudyInsights(scope);
+  const nextExercises = { ...insights.exercises };
+  let changed = false;
+
+  (Array.isArray(solvedExercises) ? solvedExercises : []).forEach((entry) => {
+    if (entry === null || entry === undefined) return;
+
+    const exerciseId = String(typeof entry === 'object' ? entry.exerciseId : entry);
+    if (!exerciseId) return;
+
+    const chapter = typeof entry === 'object' && entry ? entry.chapter || null : null;
+    const previous = nextExercises[exerciseId] || createExerciseRecord(exerciseId, chapter);
+    const next = {
+      ...previous,
+      chapter: chapter || previous.chapter || null,
+      solved: true,
+    };
+
+    if (!previous.solved || next.chapter !== previous.chapter) {
+      nextExercises[exerciseId] = next;
+      changed = true;
+    }
+  });
+
+  if (!changed) {
+    return insights;
+  }
+
+  return writeStudyInsights({
+    exercises: nextExercises,
+    updatedAt: Date.now(),
+  }, scope);
+};
+
 export const recordExerciseAttempt = ({ exerciseId, chapter, correct, timeSpent }, scope = null) => {
   const insights = readStudyInsights(scope);
-  const previous = insights.exercises[exerciseId] || {
-    exerciseId,
-    chapter: chapter || null,
-    attempts: 0,
-    correctAttempts: 0,
-    wrongAttempts: 0,
-    solved: false,
-    lastCorrect: null,
-    lastAttemptAt: null,
-    totalTimeSpent: 0,
-    averageTimeSpent: 0,
-  };
+  const normalizedExerciseId = String(exerciseId);
+  const previous = insights.exercises[normalizedExerciseId] || createExerciseRecord(normalizedExerciseId, chapter || null);
 
   const attempts = previous.attempts + 1;
   const safeTimeSpent = Number.isFinite(timeSpent) ? Math.max(timeSpent, 0) : 0;
@@ -90,7 +144,7 @@ export const recordExerciseAttempt = ({ exerciseId, chapter, correct, timeSpent 
   return writeStudyInsights({
     exercises: {
       ...insights.exercises,
-      [exerciseId]: next,
+      [normalizedExerciseId]: next,
     },
     updatedAt: Date.now(),
   }, scope);

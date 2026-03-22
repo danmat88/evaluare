@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { getAllExercises, getExercisesByChapter } from '../firebase/exercises';
 import { matchAnswer } from '../utils/answerMatcher';
+import { isExerciseSolved } from '../utils/studyInsights';
 import { getStorageScope } from '../utils/storage';
 import {
   computeExerciseAnswerStats,
@@ -26,6 +27,25 @@ const initialState = {
 
 const persistStats = (storageScope, stats) =>
   writeExerciseStats(getStorageScope(storageScope), stats);
+
+const buildExerciseSubmission = ({ exercise, answer, state }) => {
+  const correct = matchAnswer(exercise.answer, answer);
+  const alreadySolved = isExerciseSolved({
+    exerciseId: exercise.id,
+    scope: state.storageScope,
+  });
+  const nextStats = computeExerciseAnswerStats(state, {
+    correct,
+    countsTowardStats: !alreadySolved,
+  });
+
+  return {
+    correct,
+    alreadySolved,
+    countedTowardStats: !alreadySolved,
+    nextStats,
+  };
+};
 
 const useExerciseStore = create(subscribeWithSelector((set, get) => ({
   ...initialState,
@@ -113,53 +133,63 @@ const useExerciseStore = create(subscribeWithSelector((set, get) => ({
     const { currentExercise, userAnswer, storageScope } = get();
     if (!currentExercise) return null;
 
-    const correct = matchAnswer(currentExercise.answer, userAnswer);
-    const nextStats = computeExerciseAnswerStats(get(), correct);
+    const result = buildExerciseSubmission({
+      exercise: currentExercise,
+      answer: userAnswer,
+      state: get(),
+    });
 
     set({
       answered: true,
-      correct,
-      ...nextStats,
+      correct: result.correct,
+      ...result.nextStats,
     });
 
-    persistStats(storageScope, nextStats);
+    persistStats(storageScope, result.nextStats);
 
     return {
-      correct,
-      xpGain: nextStats.lastXpGain,
-      xp: nextStats.xp,
-      streak: nextStats.streak,
-      bestStreak: nextStats.bestStreak,
-      totalCorrect: nextStats.totalCorrect,
-      totalAnswered: nextStats.totalAnswered,
-      statsUpdatedAt: nextStats.statsUpdatedAt,
+      correct: result.correct,
+      alreadySolved: result.alreadySolved,
+      countedTowardStats: result.countedTowardStats,
+      xpGain: result.nextStats.lastXpGain,
+      xp: result.nextStats.xp,
+      streak: result.nextStats.streak,
+      bestStreak: result.nextStats.bestStreak,
+      totalCorrect: result.nextStats.totalCorrect,
+      totalAnswered: result.nextStats.totalAnswered,
+      statsUpdatedAt: result.nextStats.statsUpdatedAt,
     };
   },
 
   submitExerciseAnswer: ({ exercise, answer }) => {
     if (!exercise) return null;
 
-    const correct = matchAnswer(exercise.answer, answer);
-    const nextStats = computeExerciseAnswerStats(get(), correct);
+    const result = buildExerciseSubmission({
+      exercise,
+      answer,
+      state: get(),
+    });
     const storageScope = get().storageScope;
 
     set({
       answered: true,
-      correct,
-      ...nextStats,
+      correct: result.correct,
+      ...result.nextStats,
     });
 
-    persistStats(storageScope, nextStats);
+    persistStats(storageScope, result.nextStats);
 
     return {
-      correct,
-      xpGain: nextStats.lastXpGain,
-      xp: nextStats.xp,
-      streak: nextStats.streak,
-      bestStreak: nextStats.bestStreak,
-      totalCorrect: nextStats.totalCorrect,
-      totalAnswered: nextStats.totalAnswered,
-      statsUpdatedAt: nextStats.statsUpdatedAt,
+      correct: result.correct,
+      alreadySolved: result.alreadySolved,
+      countedTowardStats: result.countedTowardStats,
+      xpGain: result.nextStats.lastXpGain,
+      xp: result.nextStats.xp,
+      streak: result.nextStats.streak,
+      bestStreak: result.nextStats.bestStreak,
+      totalCorrect: result.nextStats.totalCorrect,
+      totalAnswered: result.nextStats.totalAnswered,
+      statsUpdatedAt: result.nextStats.statsUpdatedAt,
     };
   },
 

@@ -117,8 +117,21 @@ export const resolveExerciseStats = ({ localStats, remoteStats }) => {
   return normalizedRemote;
 };
 
-export const computeExerciseAnswerStats = (currentStats, correct, now = Date.now()) => {
+export const computeExerciseAnswerStats = (currentStats, outcome, now = Date.now()) => {
   const stats = normalizeExerciseStats(currentStats);
+  const normalizedOutcome = typeof outcome === 'object' && outcome !== null
+    ? outcome
+    : { correct: Boolean(outcome), countsTowardStats: true };
+  const correct = Boolean(normalizedOutcome.correct);
+  const countsTowardStats = normalizedOutcome.countsTowardStats !== false;
+
+  if (!countsTowardStats) {
+    return normalizeExerciseStats({
+      ...stats,
+      lastXpGain: 0,
+    });
+  }
+
   const nextStreak = correct ? stats.streak + 1 : 0;
 
   let xpGain = 0;

@@ -5,8 +5,13 @@ import {
   loginUser,
   logoutUser,
   registerUser,
+  resetUserPassword,
   updateUserStats,
 } from '../firebase/auth';
+import {
+  getCanonicalExerciseStats,
+  subscribeToExerciseCompletions,
+} from '../firebase/results';
 import useExerciseStore from '../store/exerciseStore';
 import { AuthContext } from './AuthContextValue';
 import {
@@ -17,6 +22,7 @@ import {
   readExerciseStats,
   resolveExerciseStats,
 } from '../utils/exerciseStats';
+import { mergeSolvedExercises } from '../utils/studyInsights';
 import { STORAGE_CHANGE_EVENT, getStorageScope } from '../utils/storage';
 
 export const AuthProvider = ({ children }) => {
@@ -27,11 +33,16 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     let profileUnsub = null;
+    let completionsUnsub = null;
 
     const authUnsub = subscribeToAuth((firebaseUser) => {
       if (profileUnsub) {
         profileUnsub();
         profileUnsub = null;
+      }
+      if (completionsUnsub) {
+        completionsUnsub();
+        completionsUnsub = null;
       }
 
       if (firebaseUser) {
@@ -39,6 +50,10 @@ export const AuthProvider = ({ children }) => {
         useExerciseStore.getState().setStorageScope(storageScope);
         setUser(firebaseUser);
         setLoading(true);
+
+        completionsUnsub = subscribeToExerciseCompletions(firebaseUser.uid, (completions) => {
+          mergeSolvedExercises(completions, storageScope);
+        });
 
         profileUnsub = subscribeToProfile(firebaseUser.uid, (prof) => {
           const remoteStats = normalizeExerciseStats(prof);
@@ -71,8 +86,57 @@ export const AuthProvider = ({ children }) => {
     return () => {
       authUnsub();
       if (profileUnsub) profileUnsub();
+      if (completionsUnsub) completionsUnsub();
     };
   }, []);
+
+  useEffect(() => {
+    if (!user?.uid) return undefined;
+
+    const uid = user.uid;
+    const storageScope = getStorageScope(uid);
+    let cancelled = false;
+
+    const syncCanonicalStats = async () => {
+      try {
+        const canonicalStats = await getCanonicalExerciseStats(uid);
+        if (cancelled) return;
+
+        const currentStats = pickExerciseStats(useExerciseStore.getState());
+        const remoteStats = lastRemoteStatsRef.current;
+        const canonicalHasProgress = canonicalStats.xp > 0 || canonicalStats.totalCorrect > 0 || canonicalStats.totalAnswered > 0;
+        const existingHasProgress = currentStats.xp > 0
+          || currentStats.totalCorrect > 0
+          || currentStats.totalAnswered > 0
+          || remoteStats.xp > 0
+          || remoteStats.totalCorrect > 0
+          || remoteStats.totalAnswered > 0;
+
+        if (!canonicalHasProgress && existingHasProgress) {
+          return;
+        }
+
+        if (!exerciseStatsEqual(canonicalStats, currentStats)) {
+          useExerciseStore.getState().hydrateStats(canonicalStats, { scope: storageScope });
+        }
+
+        if (!exerciseStatsEqual(canonicalStats, remoteStats)) {
+          await updateUserStats(uid, canonicalStats);
+          if (!cancelled) {
+            lastRemoteStatsRef.current = canonicalStats;
+          }
+        }
+      } catch {
+        // If canonical rebuild fails, keep the current local/remote merge intact.
+      }
+    };
+
+    void syncCanonicalStats();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.uid]);
 
   useEffect(() => {
     if (!user?.uid) return undefined;
@@ -158,10 +222,11 @@ export const AuthProvider = ({ children }) => {
   const login = (data) => loginUser(data);
   const register = (data) => registerUser(data);
   const logout = () => logoutUser();
+  const resetPassword = (email) => resetUserPassword(email);
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, loading, isAuthenticated: !!user, login, register, logout }}
+      value={{ user, profile, loading, isAuthenticated: !!user, login, register, logout, resetPassword }}
     >
       {children}
     </AuthContext.Provider>

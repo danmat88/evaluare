@@ -13,6 +13,7 @@ import Particles from '../ui/Particles';
 import useExerciseStore from '../../store/exerciseStore';
 import { useAuth } from '../../contexts';
 import { saveExerciseResult } from '../../firebase/results';
+import { createClientId } from '../../utils/ids';
 import styles from './ExerciseCard.module.css';
 
 const DIFF_LABEL = ['', '* Usor', '** Mediu', '*** Greu'];
@@ -40,6 +41,9 @@ const WRONG_MSGS = [
   'Concentreaza-te si recalculeaza.',
 ];
 
+const REPEAT_SOLVED_MSG = 'Corect din nou. Exercitiul era deja rezolvat, asa ca nu mai primesti XP suplimentar.';
+const REVIEW_MISS_MSG = 'Incercarea este salvata pentru review, dar nu iti rupe seria pe un exercitiu deja rezolvat.';
+
 const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswerChange }) => {
@@ -53,6 +57,7 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
   const [xpFloat, setXpFloat] = useState(null);
   const boardRef = useRef(null);
   const startedAtRef = useRef(null);
+  const submittingRef = useRef(false);
 
   const streak = useExerciseStore((state) => state.streak);
   const submitExerciseAnswer = useExerciseStore((state) => state.submitExerciseAnswer);
@@ -73,6 +78,7 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
     setFeedbackMsg('');
     setShowParticles(false);
     setXpFloat(null);
+    submittingRef.current = false;
   }, [exercise.id, initialAnswer]);
 
   const handleKey = (value) => !submitted && updateAnswer(`${answer}${value}`);
@@ -80,18 +86,27 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
   const handleClear = () => !submitted && updateAnswer('');
 
   const handleSubmit = () => {
-    if (!answer || submitted) return;
+    if (!answer || submitted || submittingRef.current) return;
+
+    submittingRef.current = true;
 
     const attemptStartedAt = startedAtRef.current ?? Date.now();
     const timeSpent = Math.max(1, Math.round((Date.now() - attemptStartedAt) / 1000));
     const result = submitExerciseAnswer({ exercise, answer });
-    if (!result) return;
+    if (!result) {
+      submittingRef.current = false;
+      return;
+    }
 
     const isCorrect = result.correct;
 
     setCorrect(isCorrect);
     setSubmitted(true);
-    setFeedbackMsg(isCorrect ? rand(CORRECT_MSGS) : rand(WRONG_MSGS));
+    setFeedbackMsg(
+      isCorrect
+        ? (result.alreadySolved ? REPEAT_SOLVED_MSG : rand(CORRECT_MSGS))
+        : (result.alreadySolved ? REVIEW_MISS_MSG : rand(WRONG_MSGS)),
+    );
 
     setFlash(isCorrect ? 'correct' : 'wrong');
     setTimeout(() => setFlash(null), 700);
@@ -110,6 +125,7 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
 
     if (user?.uid) {
       saveExerciseResult(user.uid, {
+        attemptId: createClientId('exercise-attempt'),
         exerciseId: exercise.id,
         chapter: exercise.chapter,
         correct: isCorrect,
@@ -117,7 +133,13 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
       }).catch(() => {});
     }
 
-    onResult?.({ exerciseId: exercise.id, correct: isCorrect, timeSpent });
+    onResult?.({
+      exerciseId: exercise.id,
+      correct: isCorrect,
+      timeSpent,
+      alreadySolved: result.alreadySolved,
+      countedTowardStats: result.countedTowardStats,
+    });
   };
 
   const handleReset = () => {
@@ -130,6 +152,7 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
     setFeedbackMsg('');
     setShowParticles(false);
     setXpFloat(null);
+    submittingRef.current = false;
   };
 
   const diff = exercise.difficulty || 1;

@@ -8,8 +8,15 @@ const THEME_COLORS = {
 };
 
 const getInitialTheme = () => {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === 'dark' || stored === 'light') return stored;
+  if (typeof window === 'undefined') return 'dark';
+
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (stored === 'dark' || stored === 'light') return stored;
+  } catch {
+    // Ignore storage failures and fall back to system preference.
+  }
+
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 };
 
@@ -33,8 +40,22 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     applyTheme(theme);
-    localStorage.setItem(STORAGE_KEY, theme);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, theme);
+    } catch {
+      // Ignore storage failures; the theme can still be applied for the current session.
+    }
   }, [theme]);
+
+  useEffect(() => {
+    const syncTheme = (event) => {
+      if (event.key && event.key !== STORAGE_KEY) return;
+      setTheme(getInitialTheme());
+    };
+
+    window.addEventListener('storage', syncTheme);
+    return () => window.removeEventListener('storage', syncTheme);
+  }, []);
 
   const toggle = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
 
