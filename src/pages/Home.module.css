@@ -1,550 +1,647 @@
+/* ════════════════════════════════════════════════════════
+   HOME  ·  Full-bleed split
+   Left  : flex column, hero flex:1 + min-height:0  ← THE fix
+   Right : auth card with layout-animated height
+   ════════════════════════════════════════════════════════ */
+
+/* ── Page ────────────────────────────────────────────────── */
 .page {
+  width: 100%;
   min-height: 100dvh;
-  padding: 16px;
   display: grid;
-  place-items: center;
+  grid-template-columns: minmax(320px, 44%) 1fr;
+  background: var(--bg-void);
   position: relative;
-  overflow: hidden;
 }
 
-.page::before {
-  content: '';
-  position: absolute;
+.noise {
+  position: fixed;
   inset: 0;
+  z-index: 200;
   pointer-events: none;
-  background:
-    radial-gradient(circle at 14% 18%, color-mix(in srgb, var(--neon-cyan) 16%, transparent) 0%, transparent 28%),
-    radial-gradient(circle at 86% 12%, color-mix(in srgb, var(--neon-yellow) 14%, transparent) 0%, transparent 24%),
-    radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--neon-indigo) 12%, transparent) 0%, transparent 36%);
-}
-
-.page::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(color-mix(in srgb, var(--text-dim) 12%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--text-dim) 12%, transparent) 1px, transparent 1px);
-  background-size: 54px 54px;
-  opacity: 0.1;
-  mask-image: radial-gradient(circle at 50% 42%, black 0%, black 42%, transparent 85%);
-  -webkit-mask-image: radial-gradient(circle at 50% 42%, black 0%, black 42%, transparent 85%);
+  opacity: 0.024;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
 }
 
 .themeToggle {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 2;
-  min-height: 36px;
-  padding: 0 13px;
-  border-radius: var(--r-full);
-  border: 1px solid color-mix(in srgb, var(--chalk-white) 12%, transparent);
-  background: color-mix(in srgb, var(--bg-glass) 88%, transparent);
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 300;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--chalk-white) 13%, transparent);
+  background: color-mix(in srgb, var(--bg-glass) 80%, transparent);
+  backdrop-filter: blur(14px);
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-family: var(--font-display);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  transition: border-color var(--t-fast), color var(--t-fast), transform var(--t-fast);
-  box-shadow: var(--shadow-sm);
+  justify-content: center;
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--bg-void) 30%, transparent);
+  transition: border-color var(--t-fast), color var(--t-fast),
+              box-shadow var(--t-fast), transform var(--t-fast);
 }
-
 .themeToggle:hover {
   color: var(--text-primary);
-  border-color: color-mix(in srgb, var(--neon-cyan) 28%, transparent);
-  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--neon-cyan) 30%, transparent);
+  box-shadow:
+    0 2px 14px color-mix(in srgb, var(--bg-void) 30%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--neon-cyan) 10%, transparent);
+  transform: scale(1.08);
 }
 
-.authCard {
-  width: min(100%, 920px);
-  max-height: calc(100dvh - 32px);
+
+/* ════════════════════════════════════════════════════════
+   BRAND STAGE — left
+   KEY: flex column, height 100dvh, overflow hidden.
+   brandHero must have flex:1 AND min-height:0 so it
+   can actually shrink and give space to brandBottom.
+   ════════════════════════════════════════════════════════ */
+
+.brandStage {
   position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: minmax(280px, 0.92fr) minmax(340px, 1.08fr);
-  gap: 14px;
-  padding: 14px;
-  border-radius: 34px;
-  border: 1px solid color-mix(in srgb, var(--chalk-white) 12%, transparent);
-  background: color-mix(in srgb, var(--bg-card-strong) 94%, transparent);
-  box-shadow: var(--shadow-xl);
-  backdrop-filter: blur(20px);
-  overflow: hidden;
-}
-
-.brandPanel,
-.authPanel {
-  min-width: 0;
-  min-height: 0;
-  border-radius: 26px;
-  position: relative;
-}
-
-.brandPanel {
-  padding: 24px;
+  height: 100dvh;
+  /* flex column — the only layout model that works for this */
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 18px;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 92%, transparent) 0%, color-mix(in srgb, var(--bg-raised) 82%, transparent) 100%);
-  border: 1px solid color-mix(in srgb, var(--chalk-white) 10%, transparent);
+  padding: 28px 32px 0;
   overflow: hidden;
+  border-right: 1px solid color-mix(in srgb, var(--chalk-white) 7%, transparent);
+  background: color-mix(in srgb, var(--bg-void) 97%, transparent);
 }
 
-.brandPanel::before {
-  content: '';
+/* Atmosphere */
+.aurora1 {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 85% 65% at 12% 8%,
+    color-mix(in srgb, var(--neon-cyan) 18%, transparent) 0%, transparent 55%);
+  animation: auroraA 13s ease-in-out infinite;
+}
+.aurora2 {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 65% 55% at 86% 86%,
+    color-mix(in srgb, #f59e0b 9%, transparent) 0%, transparent 55%);
+  animation: auroraB 18s ease-in-out infinite;
+}
+.aurora3 {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 50% 40% at 55% 46%,
+    color-mix(in srgb, #34d399 7%, transparent) 0%, transparent 60%);
+  animation: auroraC 23s ease-in-out infinite;
+}
+.stageGrid {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(circle,
+    color-mix(in srgb, var(--chalk-white) 20%, transparent) 1px, transparent 1px);
+  background-size: 26px 26px;
+  opacity: 0.07;
+  mask-image: radial-gradient(ellipse 80% 70% at 40% 50%, black 20%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 40% 50%, black 20%, transparent 78%);
+}
+.ghostMono {
   position: absolute;
-  inset: -20% 20% auto -18%;
-  height: 240px;
-  border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--neon-cyan) 18%, transparent) 0%, transparent 72%);
+  right: -20px; bottom: 28px;
+  font-family: var(--font-display);
+  font-size: clamp(8rem, 16vw, 14rem);
+  font-weight: 800;
+  letter-spacing: -0.1em;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--chalk-white) 5%, transparent);
   pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
 }
-
-.brandPanel::after {
-  content: '';
+.mathDeco { position: absolute; inset: 0; pointer-events: none; user-select: none; }
+.mathSym {
   position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(color-mix(in srgb, var(--text-dim) 10%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--text-dim) 10%, transparent) 1px, transparent 1px);
-  background-size: 38px 38px;
-  opacity: 0.12;
-  mask-image: linear-gradient(180deg, black 0%, rgba(0, 0, 0, 0.2) 100%);
-  -webkit-mask-image: linear-gradient(180deg, black 0%, rgba(0, 0, 0, 0.2) 100%);
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 1.9vw, 1.7rem);
+  font-weight: 700;
+  color: color-mix(in srgb, var(--neon-cyan) 11%, transparent);
+  left: var(--x); top: var(--y);
+  transform: rotate(var(--r)) scale(var(--s));
+  animation: mathFloat 8s ease-in-out infinite;
+  animation-delay: var(--d);
 }
 
-.brandTop,
-.heroBlock,
-.pointList,
-.factRow {
-  position: relative;
-  z-index: 1;
-}
 
+/* ── ZONE 1: Logo — never shrinks ────────────────────────── */
 .brandTop {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  /* padding-bottom creates breathing room before hero */
+  padding-bottom: 4px;
 }
 
-.brandLockup {
+.logoRow {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+}
+.logoMark {
+  width: 46px; height: 46px;
+  border-radius: 13px;
+  border: 1px solid color-mix(in srgb, var(--chalk-white) 14%, transparent);
+  background: color-mix(in srgb, var(--bg-card-strong) 88%, transparent);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; flex-shrink: 0; overflow: hidden;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--neon-cyan) 8%, transparent),
+    0 4px 16px color-mix(in srgb, var(--bg-void) 36%, transparent);
+}
+.logoHalo {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 35% 35%,
+    color-mix(in srgb, var(--neon-cyan) 28%, transparent) 0%, transparent 70%);
+  animation: haloBreath 4s ease-in-out infinite;
+}
+.logoRing {
+  position: absolute; inset: 5px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--chalk-white) 9%, transparent);
+}
+.logoGlyph {
+  position: relative; z-index: 1;
+  font-family: var(--font-display);
+  font-size: 1.05rem; font-weight: 700; letter-spacing: -0.05em;
+  color: var(--text-primary);
+}
+.logoMeta { display: flex; flex-direction: column; gap: 2px; }
+.logoEyebrow {
+  font-family: var(--font-display);
+  font-size: 8px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+.logoName {
+  font-family: var(--font-display);
+  font-size: 1.4rem; font-weight: 700;
+  letter-spacing: -0.05em; line-height: 1;
+  color: var(--text-primary);
 }
 
-.logoMark {
-  width: 72px;
-  height: 74px;
+
+/* ── ZONE 2: Hero — takes all leftover space ─────────────── */
+/* flex:1 means "take remaining space".
+   min-height:0 means "I can shrink below my content height".
+   WITHOUT min-height:0, flex items default to min-height:auto
+   and will push brandBottom out of the container. */
+.brandHero {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  min-height: 0;        /* ← THE critical fix */
+  overflow: hidden;     /* clips if truly too short */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  padding: 16px 0;
+}
+
+.headlineKicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-display);
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--neon-cyan) 70%, var(--text-primary));
+  width: fit-content;
+  padding: 3px 9px 3px 6px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 16%, transparent);
+  background: color-mix(in srgb, var(--neon-cyan) 7%, transparent);
+}
+
+.headlineTitle {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 3.5vw, 3.4rem);
+  font-weight: 800;
+  line-height: 0.93;
+  letter-spacing: -0.055em;
+  color: var(--text-primary);
+}
+.headlineGrad {
+  background: linear-gradient(128deg,
+    var(--neon-cyan) 0%,
+    color-mix(in srgb, var(--neon-cyan) 48%, #f59e0b) 55%,
+    #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.headlineSub {
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  max-width: 310px;
+}
+
+
+/* ── ZONE 3: Bottom — never shrinks, always visible ─────── */
+/* flex-shrink:0 ensures it stays at its natural height.
+   The hero zone (flex:1, min-height:0) absorbs any shortage. */
+.brandBottom {
+  position: relative;
+  z-index: 2;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Feature list */
+.featureList {
+  border-top: 1px solid color-mix(in srgb, var(--chalk-white) 7%, transparent);
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+.featureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 6px 8px 2px;
+  margin: 0 -2px;
+  border-radius: 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--chalk-white) 5%, transparent);
+  cursor: default;
+  transition: background var(--t-fast);
+}
+.featureItem:last-child { border-bottom: none; }
+.featureItem:hover {
+  background: color-mix(in srgb, var(--accent, var(--neon-cyan)) 6%, transparent);
+}
+.featureItem:hover .featureIcon {
+  background: var(--accent-bg);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent, var(--neon-cyan)) 28%, transparent),
+              0 0 8px color-mix(in srgb, var(--accent, var(--neon-cyan)) 12%, transparent);
+}
+.featureIcon {
+  width: 26px; height: 26px; border-radius: 7px;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  color: var(--accent, var(--neon-cyan));
+  background: var(--accent-bg, color-mix(in srgb, var(--neon-cyan) 10%, transparent));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent, var(--neon-cyan)) 18%, transparent);
+  transition: background var(--t-fast), box-shadow var(--t-fast);
+  margin-top: 1px;
+}
+.featureCopy { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.featureTitle {
+  font-family: var(--font-display);
+  font-size: 0.78rem; font-weight: 600;
+  color: var(--text-primary); line-height: 1.2;
+}
+.featureSub {
+  font-family: var(--font-body);
+  font-size: 9px; line-height: 1.45;
+  color: var(--text-muted);
+}
+
+/* Stat cards */
+.statRow {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+.statCard {
+  flex: 1;
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 9px 11px;
+  border-radius: 11px;
+  border: 1px solid color-mix(in srgb, var(--chalk-white) 9%, transparent);
+  background: color-mix(in srgb, var(--bg-card-strong) 58%, transparent);
+  backdrop-filter: blur(12px);
+  transition: border-color var(--t-fast), transform var(--t-fast);
+}
+.statCard:hover {
+  border-color: color-mix(in srgb, var(--neon-cyan) 20%, transparent);
+  transform: translateY(-2px);
+}
+.statIcon {
+  color: color-mix(in srgb, var(--neon-cyan) 70%, var(--text-primary));
+  display: inline-flex; margin-bottom: 1px;
+}
+.statValue {
+  font-family: var(--font-display);
+  font-size: 1.15rem; font-weight: 800;
+  letter-spacing: -0.05em; line-height: 1;
+  color: var(--text-primary);
+}
+.statLabel {
+  font-family: var(--font-body);
+  font-size: 8.5px; line-height: 1.3;
+  color: var(--text-muted);
+}
+
+/* Marquee */
+.marqueeWrap {
+  overflow: hidden;
+  width: calc(100% + 64px);
+  margin-left: -32px;
+  padding: 8px 0;
+  border-top: 1px solid color-mix(in srgb, var(--chalk-white) 6%, transparent);
+  mask-image: linear-gradient(90deg, transparent 0%, black 10%, black 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 10%, black 90%, transparent 100%);
+}
+.marqueeTrack {
+  display: flex;
+  width: max-content;
+  animation: marquee 24s linear infinite;
+}
+.marqueeItem {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 0 15px;
+  font-family: var(--font-display);
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-dim); white-space: nowrap;
+}
+.marqueeItem:nth-child(3n+1) { color: color-mix(in srgb, var(--neon-cyan) 36%, var(--text-dim)); }
+.marqueeItem:nth-child(3n+2) { color: color-mix(in srgb, #f59e0b 30%, var(--text-dim)); }
+
+
+/* ════════════════════════════════════════════════════════
+   AUTH STAGE — right
+   ════════════════════════════════════════════════════════ */
+
+.authStage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px;
+  background: color-mix(in srgb, var(--bg-card-strong) 88%, transparent);
+  overflow-y: auto;
+  min-height: 100dvh;
+}
+.authAtmos {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 40% at 75% 12%,
+      color-mix(in srgb, var(--neon-cyan) 6%, transparent) 0%, transparent 60%),
+    radial-gradient(ellipse 45% 35% at 22% 88%,
+      color-mix(in srgb, #f59e0b 4%, transparent) 0%, transparent 55%);
+}
+
+/* Glow border wrapper */
+.authCardWrap {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+}
+.cardGlowBorder {
+  position: absolute; inset: -1px;
+  border-radius: 23px;
+  background: conic-gradient(
+    from var(--ga, 0deg),
+    transparent 0deg,
+    color-mix(in srgb, var(--neon-cyan) 42%, transparent) 55deg,
+    transparent 110deg,
+    transparent 190deg,
+    color-mix(in srgb, #f59e0b 26%, transparent) 240deg,
+    transparent 295deg,
+    transparent 360deg
+  );
+  animation: glowSpin 9s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+.cardGlowBorder::after {
+  content: '';
+  position: absolute; inset: 1.5px;
+  border-radius: 21.5px;
+  background: color-mix(in srgb, var(--bg-card-strong) 98%, transparent);
+}
+
+/* ── The auth card itself ─────────────────────────────────── */
+.authCard {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--bg-card-strong) 96%, transparent);
+  border: 1px solid color-mix(in srgb, var(--chalk-white) 10%, transparent);
+  backdrop-filter: blur(24px);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--chalk-white) 3%, transparent),
+    0 16px 56px color-mix(in srgb, var(--bg-void) 48%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--chalk-white) 8%, transparent);
+  overflow: hidden;
+}
+
+/* Top strip: badge + title + intro — has a subtle gradient tint */
+.authCardTop {
+  padding: 28px 28px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  background: linear-gradient(155deg,
+    color-mix(in srgb, var(--neon-cyan) 3%, transparent) 0%,
+    transparent 55%);
+  border-bottom: 1px solid color-mix(in srgb, var(--chalk-white) 6%, transparent);
   position: relative;
   overflow: hidden;
-  border-radius: 22px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card-strong) 96%, transparent) 0%, color-mix(in srgb, var(--bg-surface) 84%, transparent) 100%);
-  border: 1px solid color-mix(in srgb, var(--chalk-white) 16%, transparent);
-  box-shadow: 0 18px 36px rgba(2, 6, 23, 0.24);
 }
-
-.logoMark::before {
+/* Decorative top-right corner glow */
+.authCardTop::before {
   content: '';
-  position: absolute;
-  inset: 5px;
-  border-radius: 16px;
-  border: 1px solid color-mix(in srgb, var(--chalk-white) 12%, transparent);
-}
-
-.logoBand {
-  position: absolute;
-  top: 11px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 38px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 3px;
-  z-index: 1;
-}
-
-.logoBand span {
-  height: 5px;
-  border-radius: 999px;
-}
-
-.logoBand span:nth-child(1) {
-  background: #2563eb;
-}
-
-.logoBand span:nth-child(2) {
-  background: #facc15;
-}
-
-.logoBand span:nth-child(3) {
-  background: #dc2626;
-}
-
-.logoPrimary {
-  position: relative;
-  z-index: 1;
-  font-family: var(--font-display);
-  font-size: 1.45rem;
-  font-weight: 800;
-  letter-spacing: -0.08em;
-  color: var(--text-primary);
-}
-
-.logoSecondary {
-  position: relative;
-  z-index: 1;
-  font-family: var(--font-mono);
-  font-size: 7px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-}
-
-.brandMeta {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.brandKicker {
-  font-family: var(--font-display);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.brandName {
-  font-family: var(--font-display);
-  font-size: clamp(1.55rem, 3vw, 2rem);
-  font-weight: 800;
-  letter-spacing: -0.07em;
-  line-height: 0.96;
-  color: var(--text-primary);
-}
-
-.surfaceBadge {
-  width: fit-content;
-  min-height: 28px;
-  padding: 0 11px;
-  border-radius: var(--r-full);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-primary);
-  border: 1px solid color-mix(in srgb, var(--chalk-white) 14%, transparent);
-  background: color-mix(in srgb, var(--bg-card-strong) 72%, transparent);
-}
-
-.heroBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.heroTitle {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 4vw, 2.85rem);
-  font-weight: 800;
-  letter-spacing: -0.08em;
-  line-height: 0.94;
-  color: var(--text-primary);
-}
-
-.heroText {
-  max-width: 340px;
-  font-family: var(--font-body);
-  font-size: 0.92rem;
-  line-height: 1.58;
-  color: var(--text-secondary);
-}
-
-.pointList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.pointItem {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 12px;
-  padding: 11px 0;
-}
-
-.pointItem + .pointItem {
-  border-top: var(--border-dim);
-}
-
-.pointIcon {
-  width: 32px;
-  height: 32px;
-  border-radius: 12px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-primary);
-  background: color-mix(in srgb, var(--neon-cyan) 12%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--neon-cyan) 18%, transparent);
-}
-
-.pointCopy {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.pointTitle {
-  font-family: var(--font-display);
-  font-size: 0.92rem;
-  font-weight: 700;
-  line-height: 1.24;
-  color: var(--text-primary);
-}
-
-.pointSub {
-  font-family: var(--font-body);
-  font-size: 11px;
-  line-height: 1.5;
-  color: var(--text-muted);
-}
-
-.factRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.factChip {
-  min-height: 30px;
-  padding: 0 11px;
-  border-radius: var(--r-full);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  border: 1px solid color-mix(in srgb, var(--chalk-white) 12%, transparent);
-  background: color-mix(in srgb, var(--bg-card-strong) 58%, transparent);
-}
-
-.authPanel {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 14px;
-  background: color-mix(in srgb, var(--bg-card-strong) 82%, transparent);
-  border: 1px solid color-mix(in srgb, var(--chalk-white) 10%, transparent);
-}
-
-.panelHeader {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  position: absolute; top: -50px; right: -50px;
+  width: 150px; height: 150px; border-radius: 50%;
+  background: radial-gradient(circle,
+    color-mix(in srgb, var(--neon-cyan) 12%, transparent) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .modeBadge {
   width: fit-content;
-  min-height: 28px;
-  padding: 0 11px;
-  border-radius: var(--r-full);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 23px;
+  padding: 0 10px;
+  border-radius: 999px;
+  display: inline-flex; align-items: center;
   font-family: var(--font-display);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-primary);
-  border: 1px solid color-mix(in srgb, var(--neon-cyan) 24%, transparent);
-  background: color-mix(in srgb, var(--neon-cyan) 10%, transparent);
+  font-size: 8px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--neon-cyan) 86%, var(--text-primary));
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 22%, transparent);
+  background: color-mix(in srgb, var(--neon-cyan) 8%, transparent);
 }
-
 .authTitle {
   font-family: var(--font-display);
-  font-size: clamp(1.45rem, 2.4vw, 1.9rem);
+  font-size: clamp(1.6rem, 2.4vw, 2rem);
   font-weight: 800;
-  letter-spacing: -0.06em;
-  line-height: 1.02;
+  letter-spacing: -0.05em;
+  line-height: 1.04;
   color: var(--text-primary);
 }
-
 .authIntro {
   font-family: var(--font-body);
-  font-size: 0.88rem;
-  line-height: 1.52;
+  font-size: 0.82rem;
+  line-height: 1.58;
   color: var(--text-secondary);
 }
 
-.tabShell {
-  padding: 4px;
-  border-radius: 18px;
-  border: var(--border-dim);
-  background: color-mix(in srgb, var(--bg-surface) 72%, transparent);
-}
-
-.tabBar {
+/* Form body */
+.authCardBody {
+  padding: 20px 28px 24px;
   display: flex;
-  gap: 4px;
+  flex-direction: column;
+  gap: 16px;
 }
 
+/* Tab bar */
+.tabShell {
+  padding: 3px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--chalk-white) 9%, transparent);
+  background: color-mix(in srgb, var(--bg-surface) 50%, transparent);
+}
+.tabBar { display: flex; gap: 3px; }
 .tab {
   flex: 1;
-  min-height: 40px;
-  border-radius: 14px;
+  min-height: 37px;
+  border-radius: 9px;
   border: 1px solid transparent;
   color: var(--text-muted);
   font-family: var(--font-display);
-  font-size: 0.82rem;
-  font-weight: 700;
-  transition: border-color var(--t-fast), color var(--t-fast), background var(--t-base), transform var(--t-fast);
+  font-size: 0.77rem; font-weight: 600;
+  letter-spacing: 0.02em;
+  position: relative; overflow: hidden;
+  transition: color var(--t-fast);
+}
+.tab:hover:not(.tabActive) { color: var(--text-secondary); }
+.tabActive { color: var(--text-primary); }
+.tabPill {
+  position: absolute; inset: 0;
+  border-radius: 9px;
+  background: linear-gradient(155deg,
+    color-mix(in srgb, var(--bg-raised) 96%, transparent) 0%,
+    color-mix(in srgb, var(--bg-surface) 96%, transparent) 100%);
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 22%, transparent);
+  box-shadow:
+    0 1px 4px color-mix(in srgb, var(--bg-void) 25%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--chalk-white) 10%, transparent),
+    0 0 14px color-mix(in srgb, var(--neon-cyan) 7%, transparent);
+}
+.tabLabel { position: relative; z-index: 1; }
+
+/* Form panel — min-height keeps both tabs visually the same.
+   No fixed height so errors/strength-meter animate in naturally.
+   layout animation on authCardWrap handles smooth resize. */
+.formPanel {
+  width: 100%;
+  /* Fixed to register form height so the card never resizes on tab switch.
+     Login form (~258px) fits inside with ~30px breathing room at bottom. */
+  height: 288px;
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
 }
 
-.tab:hover {
-  color: var(--text-primary);
-}
-
-.tabActive {
-  color: var(--text-primary);
-  background: var(--grad-surface);
-  border-color: color-mix(in srgb, var(--neon-cyan) 24%, transparent);
-}
-
-.formWrap {
-  min-height: 0;
-  display: flex;
-  flex: 1;
-  align-items: flex-start;
-}
-
+/* Footer note */
 .authNote {
   font-family: var(--font-body);
-  font-size: 11px;
-  line-height: 1.45;
+  font-size: 10px; line-height: 1.5;
   color: var(--text-muted);
+  padding-top: 4px;
+  border-top: 1px solid color-mix(in srgb, var(--chalk-white) 6%, transparent);
 }
 
+
+/* ════════════════════════════════════════════════════════
+   KEYFRAMES
+   ════════════════════════════════════════════════════════ */
+@keyframes auroraA {
+  0%,100% { transform:translate(0,0) scale(1); opacity:1; }
+  33%      { transform:translate(5%,8%) scale(1.06); opacity:.8; }
+  66%      { transform:translate(-4%,4%) scale(.96); opacity:.9; }
+}
+@keyframes auroraB {
+  0%,100% { transform:translate(0,0) scale(1); opacity:1; }
+  40%      { transform:translate(-5%,-4%) scale(1.07); opacity:.75; }
+  75%      { transform:translate(4%,5%) scale(.95); opacity:.9; }
+}
+@keyframes auroraC {
+  0%,100% { transform:translate(0,0) scale(1); opacity:.6; }
+  50%      { transform:translate(7%,-7%) scale(1.1); opacity:.9; }
+}
+@keyframes haloBreath {
+  0%,100% { opacity:1; transform:scale(1); }
+  50%      { opacity:.6; transform:scale(1.12); }
+}
+@keyframes mathFloat {
+  0%,100% { transform:rotate(var(--r)) scale(var(--s)) translateY(0); }
+  50%      { transform:rotate(var(--r)) scale(var(--s)) translateY(-6px); }
+}
+@keyframes marquee {
+  from { transform:translateX(0); }
+  to   { transform:translateX(-50%); }
+}
+@keyframes glowSpin {
+  from { --ga:0deg; }
+  to   { --ga:360deg; }
+}
+@property --ga {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+
+/* ════════════════════════════════════════════════════════
+   RESPONSIVE
+   ════════════════════════════════════════════════════════ */
+
+/* Stack on tablet */
 @media (max-width: 860px) {
-  .authCard {
-    width: min(100%, 560px);
-    max-height: calc(100dvh - 32px);
-    grid-template-columns: 1fr;
+  .page { grid-template-columns: 1fr; }
+  .brandStage {
+    height: auto;
+    min-height: auto;
+    padding: 24px 24px 0;
+    border-right: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--chalk-white) 7%, transparent);
+    overflow: visible; /* let content flow naturally when stacked */
   }
-
-  .brandPanel {
-    gap: 14px;
-  }
-
-  .heroText {
-    max-width: none;
-  }
-
-  .pointList {
-    gap: 8px;
-  }
-}
-
-@media (max-width: 560px) {
-  .page {
-    padding: 12px;
-  }
-
-  .themeToggle {
-    top: 12px;
-    right: 12px;
-  }
-
-  .themeToggle span {
-    display: none;
-  }
-
-  .authCard {
-    border-radius: 24px;
-    padding: 12px;
+  .brandHero {
+    overflow: visible;
+    padding: 16px 0 12px;
     gap: 12px;
   }
-
-  .brandPanel,
-  .authPanel {
-    border-radius: 20px;
-    padding: 16px;
-  }
-
-  .brandLockup {
-    align-items: flex-start;
-  }
-
-  .heroTitle {
-    font-size: clamp(1.7rem, 8vw, 2.25rem);
-  }
-
-  .authIntro,
-  .heroText {
-    font-size: 0.82rem;
-  }
+  .headlineTitle { font-size: clamp(1.9rem, 7vw, 2.8rem); }
+  .ghostMono { font-size: clamp(5rem, 15vw, 8rem); bottom: 16px; }
+  .authStage { min-height: auto; padding: 28px 20px 36px; align-items: flex-start; }
+  .authCardWrap { max-width: 100%; }
 }
 
-@media (max-height: 820px) {
-  .authCard {
-    gap: 12px;
-    padding: 12px;
-  }
-
-  .brandPanel,
-  .authPanel {
-    padding: 18px;
-  }
-
-  .heroTitle {
-    font-size: clamp(1.8rem, 3.4vw, 2.3rem);
-  }
-
-  .heroText,
-  .authIntro {
-    font-size: 0.82rem;
-  }
-
-  .pointSub {
-    font-size: 10px;
-  }
+/* Mobile */
+@media (max-width: 540px) {
+  .brandStage { padding: 20px 18px 0; }
+  .headlineTitle { font-size: clamp(1.7rem, 9vw, 2.3rem); }
+  .headlineSub { font-size: 0.79rem; }
+  .authStage { padding: 20px 14px 28px; }
+  .authCardTop { padding: 22px 20px 18px; }
+  .authCardBody { padding: 16px 20px 20px; gap: 13px; }
+  .authTitle { font-size: clamp(1.35rem, 6vw, 1.7rem); }
+  .formPanel { height: 288px; }
+  .themeToggle { top: 14px; right: 14px; }
 }
 
-@media (max-height: 740px) {
-  .pointSub,
-  .factRow {
-    display: none;
-  }
-
-  .brandPanel {
-    gap: 12px;
-  }
+/* Short desktop — reduce hero text, never hide bottom zone */
+@media (max-height: 660px) and (min-width: 860px) {
+  .brandStage { padding: 20px 28px 0; }
+  .brandHero { padding: 10px 0; gap: 10px; }
+  .headlineTitle { font-size: clamp(1.7rem, 3vw, 2.6rem); }
+  .headlineSub { display: none; }
+}
+@media (max-height: 560px) and (min-width: 860px) {
+  .featureSub { display: none; }
+  .statRow { display: none; }
 }

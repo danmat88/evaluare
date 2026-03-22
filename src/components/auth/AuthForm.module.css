@@ -1,3 +1,10 @@
+/* ══════════════════════════════════════════════════════
+   AuthForm — fits inside .formPanel (min-height: 230px).
+   Error slots are pre-reserved (min-height) so the form
+   height doesn't jump when errors appear/disappear.
+   Both Login and Register render at the same height.
+   ══════════════════════════════════════════════════════ */
+
 .form {
   width: 100%;
   display: flex;
@@ -9,111 +16,209 @@
   gap: 10px;
 }
 
-.header {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.kicker {
-  font-family: var(--font-display);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-}
-
-.subline {
-  font-family: var(--font-body);
-  font-size: 11px;
-  line-height: 1.5;
-  color: var(--text-muted);
-}
-
+/* ── Fields ──────────────────────────────────────────────── */
 .fields {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
+/* Register: 4 fields in a 2-column grid = 2 rows (same as login's 2 stacked fields) */
 .fieldsGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 9px 12px;
+  gap: 10px 10px;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
+}
+
+/* ── Label row (label + valid indicator or forgot link) ───── */
+.labelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 14px;
 }
 
 .label {
   font-family: var(--font-display);
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--text-secondary);
+}
+
+.validIcon {
+  display: inline-flex;
+  align-items: center;
+  color: color-mix(in srgb, var(--neon-cyan) 85%, var(--text-primary));
+  animation: popIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.forgotBtn {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: 9.5px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color var(--t-fast);
+}
+.forgotBtn:hover { color: color-mix(in srgb, var(--neon-cyan) 80%, var(--text-primary)); }
+
+/* ── Input wrapper (password show/hide) ──────────────────── */
+.inputWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .input {
   width: 100%;
-  height: 43px;
-  border-radius: 14px;
-  border: 1px solid color-mix(in srgb, var(--chalk-white) 10%, transparent);
-  background: color-mix(in srgb, var(--bg-raised) 76%, transparent);
+  height: 42px;
+  border-radius: 11px;
+  border: 1px solid color-mix(in srgb, var(--chalk-white) 11%, transparent);
+  background: color-mix(in srgb, var(--bg-raised) 55%, transparent);
   color: var(--text-primary);
   font-family: var(--font-body);
-  font-size: 0.9rem;
-  padding: 0 14px;
+  font-size: 0.875rem;
+  padding: 0 13px;
   transition: border-color var(--t-fast), box-shadow var(--t-fast), background var(--t-fast);
 }
+.inputHasSuffix { padding-right: 40px; }
 
 .input:hover {
-  border-color: color-mix(in srgb, var(--chalk-white) 18%, transparent);
+  border-color: color-mix(in srgb, var(--chalk-white) 20%, transparent);
+  background: color-mix(in srgb, var(--bg-raised) 68%, transparent);
 }
-
-.input::placeholder {
-  color: var(--text-dim);
-}
-
+.input::placeholder { color: var(--text-dim); font-size: 0.83rem; }
 .input:focus {
-  border-color: color-mix(in srgb, var(--neon-cyan) 32%, transparent);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--neon-cyan) 10%, transparent);
-  background: color-mix(in srgb, var(--bg-surface) 92%, transparent);
+  outline: none;
+  border-color: color-mix(in srgb, var(--neon-cyan) 38%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--neon-cyan) 10%, transparent);
+  background: color-mix(in srgb, var(--bg-surface) 85%, transparent);
 }
 
 .inputErr {
-  border-color: color-mix(in srgb, var(--neon-coral) 44%, transparent) !important;
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--neon-coral) 10%, transparent) !important;
+  border-color: color-mix(in srgb, var(--neon-coral) 46%, transparent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--neon-coral) 10%, transparent) !important;
+}
+.inputOk {
+  border-color: color-mix(in srgb, var(--neon-cyan) 30%, transparent);
+}
+
+/* Password show/hide button */
+.pwToggle {
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: none;
+  color: var(--text-dim);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color var(--t-fast), background var(--t-fast);
+  flex-shrink: 0;
+}
+.pwToggle:hover {
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--chalk-white) 8%, transparent);
+}
+
+/* ── Error slot — pre-reserved so height never jumps ─────── */
+/* Always renders at min-height; error text animates in/out */
+.errorSlot {
+  min-height: 15px;
+  overflow: hidden;
 }
 
 .errorText {
   font-family: var(--font-body);
-  font-size: 11px;
-  line-height: 1.45;
+  font-size: 10px;
+  line-height: 1.3;
   color: var(--neon-coral);
+  padding-top: 1px;
 }
 
+/* ── Password strength (in register) ────────────────────── */
+.strengthSlot {
+  /* Pre-reserve space so layout doesn't jump when meter appears */
+  height: 26px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.strengthWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.strengthBars {
+  display: flex;
+  gap: 3px;
+}
+.strengthBar {
+  flex: 1;
+  height: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--chalk-white) 9%, transparent);
+  transition: background 0.3s ease;
+}
+.strengthMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.strengthHint {
+  font-family: var(--font-body);
+  font-size: 8.5px;
+  color: var(--text-dim);
+}
+.strengthLabel {
+  font-family: var(--font-display);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+
+/* ── Submit button ───────────────────────────────────────── */
 .submit {
-  min-height: 43px;
+  min-height: 42px;
+  border-radius: 11px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  width: 100%;
 }
 
+/* ── Footer (switch link) ────────────────────────────────── */
 .footer {
   display: flex;
-  justify-content: flex-start;
   align-items: center;
   flex-wrap: wrap;
   gap: 5px;
   padding-top: 8px;
-  border-top: var(--border-dim);
-  text-align: left;
+  border-top: 1px solid color-mix(in srgb, var(--chalk-white) 7%, transparent);
 }
 
 .footerText {
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: 10.5px;
   color: var(--text-muted);
 }
 
@@ -123,38 +228,48 @@
   background: none;
   display: inline-flex;
   align-items: center;
-  color: var(--text-primary);
   font-family: var(--font-display);
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-primary);
   position: relative;
-  transition: color var(--t-fast), opacity var(--t-fast);
+  transition: color var(--t-fast);
 }
-
 .switchBtn::after {
   content: '';
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -3px;
+  left: 0; right: 0; bottom: -2px;
   height: 1px;
-  background: color-mix(in srgb, var(--neon-cyan) 58%, transparent);
-  transform: scaleX(0.7);
+  background: color-mix(in srgb, var(--neon-cyan) 55%, transparent);
+  transform: scaleX(0.55);
   transform-origin: center;
-  transition: transform var(--t-fast), opacity var(--t-fast);
+  transition: transform var(--t-fast);
 }
-
 .switchBtn:hover {
-  opacity: 0.92;
-  color: var(--neon-cyan);
+  color: color-mix(in srgb, var(--neon-cyan) 80%, var(--text-primary));
+}
+.switchBtn:hover::after { transform: scaleX(1); }
+
+/* ── Shake on login error ────────────────────────────────── */
+.fieldShake {
+  animation: shake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97);
 }
 
-.switchBtn:hover::after {
-  transform: scaleX(1);
+/* ── Keyframes ───────────────────────────────────────────── */
+@keyframes shake {
+  0%,100% { transform: translateX(0);   }
+  15%      { transform: translateX(-6px); }
+  30%      { transform: translateX(6px);  }
+  45%      { transform: translateX(-4px); }
+  60%      { transform: translateX(4px);  }
+  75%      { transform: translateX(-2px); }
+  90%      { transform: translateX(2px);  }
+}
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.4); }
+  to   { opacity: 1; transform: scale(1);   }
 }
 
 @media (max-width: 520px) {
-  .fieldsGrid {
-    grid-template-columns: 1fr;
-  }
+  .fieldsGrid { grid-template-columns: 1fr; }
 }
