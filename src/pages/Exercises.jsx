@@ -7,7 +7,7 @@ import styles from './Exercises.module.css';
 const Exercises = () => {
   const { exercises, loading } = useExercises();
   return (
-    <Layout>
+    <Layout scrollMode="contained">
       <div className={styles.page}>
         <ExerciseList exercises={exercises} loading={loading} />
       </div>

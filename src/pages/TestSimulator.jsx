@@ -5,13 +5,28 @@ import TestSimulatorComp from '../components/test/TestSimulator';
 import ChalkText from '../components/blackboard/ChalkText';
 import Button from '../components/ui/Button';
 import Layout from '../components/layout/Layout';
+import { useAuth } from '../contexts';
 import useTestStore from '../store/testStore';
-import { STORAGE_CHANGE_EVENT, STORAGE_KEYS, safeReadJSON } from '../utils/storage';
+import {
+  STORAGE_CHANGE_EVENT,
+  STORAGE_KEYS,
+  getStorageScope,
+  readScopedJSON,
+} from '../utils/storage';
 import styles from './TestSimulator.module.css';
 
 const TestSimulatorPage = () => {
-  const { tests, currentTest, loading, loadTests, loadTest } = useTestStore();
-  const [savedSession, setSavedSession] = useState(() => safeReadJSON(STORAGE_KEYS.testSession, null));
+  const { user } = useAuth();
+  const storageScope = getStorageScope(user?.uid);
+  const {
+    tests,
+    currentTest,
+    loading,
+    loadTests,
+    loadTest,
+    setStorageScope,
+  } = useTestStore();
+  const [savedSession, setSavedSession] = useState(() => readScopedJSON(STORAGE_KEYS.testSession, storageScope, null));
   const restoredRef = useRef(false);
 
   useEffect(() => {
@@ -19,7 +34,16 @@ const TestSimulatorPage = () => {
   }, [loadTests]);
 
   useEffect(() => {
-    const refreshSavedSession = () => setSavedSession(safeReadJSON(STORAGE_KEYS.testSession, null));
+    setStorageScope(storageScope);
+    setSavedSession(readScopedJSON(STORAGE_KEYS.testSession, storageScope, null));
+  }, [setStorageScope, storageScope]);
+
+  useEffect(() => {
+    restoredRef.current = false;
+  }, [storageScope, savedSession?.testId]);
+
+  useEffect(() => {
+    const refreshSavedSession = () => setSavedSession(readScopedJSON(STORAGE_KEYS.testSession, storageScope, null));
 
     window.addEventListener('focus', refreshSavedSession);
     window.addEventListener('storage', refreshSavedSession);
@@ -30,24 +54,24 @@ const TestSimulatorPage = () => {
       window.removeEventListener('storage', refreshSavedSession);
       window.removeEventListener(STORAGE_CHANGE_EVENT, refreshSavedSession);
     };
-  }, []);
+  }, [storageScope]);
 
   useEffect(() => {
     if (restoredRef.current || loading || currentTest || !savedSession?.testId) return;
     restoredRef.current = true;
-    loadTest(savedSession.testId);
-  }, [currentTest, loadTest, loading, savedSession]);
+    loadTest(savedSession.testId, { scope: storageScope, uid: user?.uid });
+  }, [currentTest, loadTest, loading, savedSession, storageScope, user?.uid]);
 
   if (currentTest) {
     return (
-      <Layout>
+      <Layout scrollMode="contained">
         <div className={styles.activeTest}><TestSimulatorComp /></div>
       </Layout>
     );
   }
 
   return (
-    <Layout>
+    <Layout scrollMode="page">
       <div className={styles.page}>
         <div className={styles.header}>
           <div>
@@ -79,7 +103,12 @@ const TestSimulatorPage = () => {
                 </div>
               </div>
 
-              <Button variant="primary" size="sm" icon={<RotateCcw size={13} />} onClick={() => loadTest(savedSession.testId)}>
+              <Button
+                variant="primary"
+                size="sm"
+                icon={<RotateCcw size={13} />}
+                onClick={() => loadTest(savedSession.testId, { scope: storageScope, uid: user?.uid })}
+              >
                 Continua testul
               </Button>
             </div>
@@ -123,7 +152,13 @@ const TestSimulatorPage = () => {
                   </div>
 
                   <div className={styles.cardFooter}>
-                    <Button variant="primary" size="sm" fullWidth icon={<Play size={13} />} onClick={() => loadTest(test.id)}>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      fullWidth
+                      icon={<Play size={13} />}
+                      onClick={() => loadTest(test.id, { scope: storageScope, uid: user?.uid })}
+                    >
                       {isSaved ? 'Continua testul' : 'Incepe testul'}
                     </Button>
                   </div>

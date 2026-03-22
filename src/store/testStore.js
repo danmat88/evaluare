@@ -2,7 +2,13 @@ import { create } from 'zustand';
 import { getTestById, getAllTests } from '../firebase/exercises';
 import { saveTestResult } from '../firebase/results';
 import { matchAnswer } from '../utils/answerMatcher';
-import { STORAGE_KEYS, safeReadJSON, safeRemoveJSON, safeWriteJSON } from '../utils/storage';
+import {
+  STORAGE_KEYS,
+  getStorageScope,
+  readScopedJSON,
+  removeScopedJSON,
+  writeScopedJSON,
+} from '../utils/storage';
 
 const TEST_DURATION = 2 * 60 * 60;
 
@@ -65,17 +71,19 @@ const buildResults = (test, answers, timeLeft, autoSubmitted = false) => {
   };
 };
 
-const getStoredSession = () => safeReadJSON(STORAGE_KEYS.testSession, null);
+const getStoredSession = (storageScope) =>
+  readScopedJSON(STORAGE_KEYS.testSession, storageScope, null);
 
 const persistSession = (state) => {
+  const storageScope = getStorageScope(state.storageScope || state.uid);
   const hasMeaningfulProgress = state.started || Object.values(state.answers || {}).some((value) => String(value ?? '').trim());
 
   if (!state.currentTest || state.finished || !hasMeaningfulProgress) {
-    safeRemoveJSON(STORAGE_KEYS.testSession);
+    removeScopedJSON(STORAGE_KEYS.testSession, storageScope);
     return;
   }
 
-  safeWriteJSON(STORAGE_KEYS.testSession, {
+  writeScopedJSON(STORAGE_KEYS.testSession, storageScope, {
     testId: state.currentTest.id,
     answers: state.answers,
     timeLeft: state.timeLeft,
@@ -97,6 +105,7 @@ const useTestStore = create((set, get) => ({
   results: null,
   loading: false,
   uid: null,
+  storageScope: 'guest',
   subjectIdx: 0,
   exerciseIdx: 0,
 
@@ -106,11 +115,14 @@ const useTestStore = create((set, get) => ({
     set({ tests, loading: false });
   },
 
-  loadTest: async (id) => {
+  setStorageScope: (scope) => set({ storageScope: getStorageScope(scope) }),
+
+  loadTest: async (id, options = {}) => {
     set({ loading: true });
     const test = await getTestById(id);
 
-    const stored = getStoredSession();
+    const storageScope = getStorageScope(options.scope ?? get().storageScope ?? options.uid);
+    const stored = getStoredSession(storageScope);
     const restored = stored?.testId === id ? stored : null;
     const subjects = test?.subjects || [];
     const subjectIdx = clampIndex(restored?.subjectIdx ?? 0, subjects.length);
@@ -125,7 +137,8 @@ const useTestStore = create((set, get) => ({
       results: null,
       started: Boolean(restored?.started && restored?.timeLeft > 0),
       timeLeft: Number.isFinite(restored?.timeLeft) ? Math.max(restored.timeLeft, 0) : TEST_DURATION,
-      uid: restored?.uid || null,
+      uid: restored?.uid || options.uid || null,
+      storageScope,
       subjectIdx,
       exerciseIdx,
     });
@@ -133,11 +146,13 @@ const useTestStore = create((set, get) => ({
     persistSession(get());
   },
 
-  startTest: (uid) => {
+  startTest: (uid, options = {}) => {
+    const storageScope = getStorageScope(options.scope ?? get().storageScope ?? uid);
     set((state) => ({
       started: true,
       timeLeft: state.timeLeft > 0 && state.timeLeft < TEST_DURATION ? state.timeLeft : TEST_DURATION,
       uid: uid || state.uid || null,
+      storageScope,
     }));
     persistSession(get());
   },
@@ -183,12 +198,12 @@ const useTestStore = create((set, get) => ({
   },
 
   finishTest: async (uid, options = {}) => {
-    const { currentTest, answers, timeLeft, finished } = get();
+    const { currentTest, answers, timeLeft, finished, storageScope } = get();
     if (!currentTest || finished) return;
 
     const results = buildResults(currentTest, answers, timeLeft, Boolean(options.autoSubmitted));
     set({ finished: true, started: false, results });
-    safeRemoveJSON(STORAGE_KEYS.testSession);
+    removeScopedJSON(STORAGE_KEYS.testSession, storageScope);
 
     const finalUid = uid || get().uid;
     if (finalUid) {
@@ -204,7 +219,7 @@ const useTestStore = create((set, get) => ({
   },
 
   resetTest: () => {
-    safeRemoveJSON(STORAGE_KEYS.testSession);
+    removeScopedJSON(STORAGE_KEYS.testSession, get().storageScope);
     set({
       currentTest: null,
       answers: {},

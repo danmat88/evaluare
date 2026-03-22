@@ -12,7 +12,15 @@ import {
   Sun,
   User,
 } from 'lucide-react';
-import { STORAGE_KEYS, safeReadJSON, safeWriteJSON } from '../../utils/storage';
+import { useAuth } from '../../contexts';
+import {
+  STORAGE_KEYS,
+  getStorageScope,
+  readScopedJSON,
+  safeReadJSON,
+  safeWriteJSON,
+  writeScopedJSON,
+} from '../../utils/storage';
 import styles from './CommandPalette.module.css';
 
 const RECENT_LIMIT = 6;
@@ -27,18 +35,20 @@ const filterCommands = (commands, query) => {
 };
 
 const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) => {
+  const { user } = useAuth();
+  const storageScope = getStorageScope(user?.uid);
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
-  const [recentIds, setRecentIds] = useState(() => safeReadJSON(STORAGE_KEYS.commandRecent, []));
+  const [recentIds, setRecentIds] = useState(() => readScopedJSON(STORAGE_KEYS.commandRecent, storageScope, []));
   const inputRef = useRef(null);
 
   const lastExercise = useMemo(
-    () => (isOpen ? safeReadJSON(STORAGE_KEYS.lastExercise, null) : null),
-    [isOpen],
+    () => (isOpen ? readScopedJSON(STORAGE_KEYS.lastExercise, storageScope, null) : null),
+    [isOpen, storageScope],
   );
   const focusMode = useMemo(
-    () => (isOpen ? Boolean(safeReadJSON(STORAGE_KEYS.focusMode, false)) : false),
-    [isOpen],
+    () => (isOpen ? Boolean(readScopedJSON(STORAGE_KEYS.focusMode, storageScope, false)) : false),
+    [isOpen, storageScope],
   );
   const reducedMotion = useMemo(
     () => (isOpen ? Boolean(safeReadJSON(STORAGE_KEYS.reduceMotion, false)) : false),
@@ -49,10 +59,10 @@ const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) 
     setRecentIds((prev) => {
       const base = Array.isArray(prev) ? prev : [];
       const next = [id, ...base.filter((item) => item !== id)].slice(0, RECENT_LIMIT);
-      safeWriteJSON(STORAGE_KEYS.commandRecent, next);
+      writeScopedJSON(STORAGE_KEYS.commandRecent, storageScope, next);
       return next;
     });
-  }, []);
+  }, [storageScope]);
 
   const commands = useMemo(() => {
     const base = [
@@ -102,7 +112,7 @@ const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) 
         label: focusMode ? 'Dezactiveaza focus mode' : 'Activeaza focus mode',
         hint: 'Aplicat in pagina Exercitii',
         tags: 'focus mode',
-        action: () => safeWriteJSON(STORAGE_KEYS.focusMode, !focusMode),
+        action: () => writeScopedJSON(STORAGE_KEYS.focusMode, storageScope, !focusMode),
       },
       {
         id: 'motion',
@@ -133,7 +143,7 @@ const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) 
     }
 
     return base;
-  }, [focusMode, isDark, lastExercise, onNavigate, onToggleTheme, reducedMotion]);
+  }, [focusMode, isDark, lastExercise, onNavigate, onToggleTheme, reducedMotion, storageScope]);
 
   const visible = useMemo(() => {
     const filtered = filterCommands(commands, query);
@@ -151,10 +161,10 @@ const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) 
     if (!isOpen) return;
     setQuery('');
     setActiveIndex(0);
-    setRecentIds(safeReadJSON(STORAGE_KEYS.commandRecent, []));
+    setRecentIds(readScopedJSON(STORAGE_KEYS.commandRecent, storageScope, []));
     const id = setTimeout(() => inputRef.current?.focus(), 10);
     return () => clearTimeout(id);
-  }, [isOpen]);
+  }, [isOpen, storageScope]);
 
   useEffect(() => {
     if (!isOpen) return;

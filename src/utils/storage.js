@@ -9,9 +9,11 @@ export const STORAGE_KEYS = {
   commandRecent: 'enmath:command-recent:v1',
   reduceMotion: 'enmath:reduce-motion:v1',
   testSession: 'enmath:test-session:v1',
+  studyInsights: 'enmath:study-insights:v1',
 };
 
 export const STORAGE_CHANGE_EVENT = 'enmath:storage-change';
+const GLOBAL_STORAGE_KEYS = new Set([STORAGE_KEYS.reduceMotion]);
 
 const emitStorageChange = (key, value) => {
   if (typeof window === 'undefined') return;
@@ -33,7 +35,10 @@ export const safeReadJSON = (key, fallback) => {
 export const safeWriteJSON = (key, value) => {
   if (typeof window === 'undefined') return;
   try {
-    window.localStorage.setItem(key, JSON.stringify(value));
+    const nextRaw = JSON.stringify(value);
+    const prevRaw = window.localStorage.getItem(key);
+    if (prevRaw === nextRaw) return;
+    window.localStorage.setItem(key, nextRaw);
     emitStorageChange(key, value);
   } catch {
     // Ignore quota/serialization errors; UX features should fail gracefully.
@@ -43,12 +48,47 @@ export const safeWriteJSON = (key, value) => {
 export const safeRemoveJSON = (key) => {
   if (typeof window === 'undefined') return;
   try {
+    if (window.localStorage.getItem(key) === null) return;
     window.localStorage.removeItem(key);
     emitStorageChange(key, null);
   } catch {
     // Ignore quota errors; cleanup should fail gracefully.
   }
 };
+
+export const getStorageScope = (uid) => uid || 'guest';
+
+export const getScopedStorageKey = (key, scope = null) => {
+  if (!scope || GLOBAL_STORAGE_KEYS.has(key)) return key;
+  return `${key}:${scope}`;
+};
+
+export const readScopedJSON = (key, scope, fallback) => {
+  const scopedKey = getScopedStorageKey(key, scope);
+  const missing = {};
+  const scopedValue = safeReadJSON(scopedKey, missing);
+
+  if (scopedValue !== missing) {
+    return scopedValue;
+  }
+
+  if (scopedKey !== key) {
+    const legacyValue = safeReadJSON(key, missing);
+    if (legacyValue !== missing) {
+      safeWriteJSON(scopedKey, legacyValue);
+      safeRemoveJSON(key);
+      return legacyValue;
+    }
+  }
+
+  return fallback;
+};
+
+export const writeScopedJSON = (key, scope, value) =>
+  safeWriteJSON(getScopedStorageKey(key, scope), value);
+
+export const removeScopedJSON = (key, scope) =>
+  safeRemoveJSON(getScopedStorageKey(key, scope));
 
 export const dateStamp = (date = new Date()) => {
   const year = date.getFullYear();

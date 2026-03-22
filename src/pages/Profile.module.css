@@ -1,6 +1,6 @@
 .page {
-  height: 100%;
-  overflow-y: auto;
+  min-height: 100%;
+  overflow: visible;
   padding: var(--page-pad);
   display: flex;
   flex-direction: column;
@@ -307,6 +307,77 @@
   gap: 8px;
 }
 
+.analysisGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--panel-gap);
+}
+
+.analysisCard {
+  border-radius: var(--r-lg);
+  border: var(--border-dim);
+  background: color-mix(in srgb, var(--bg-surface) 72%, transparent);
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 132px;
+}
+
+.analysisLabel {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.analysisValue {
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 2.2vw, 1.55rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.analysisSub {
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.analysisActionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.analysisLink {
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: var(--r-full);
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 32%, transparent);
+  background: color-mix(in srgb, var(--neon-cyan) 10%, transparent);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--t-fast), border-color var(--t-fast), transform var(--t-fast);
+}
+
+.analysisLink:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--neon-cyan) 48%, transparent);
+  background: color-mix(in srgb, var(--neon-cyan) 15%, transparent);
+}
+
 .histItem {
   border-radius: var(--r-lg);
   border: var(--border-dim);
@@ -474,6 +545,10 @@
 
   .statsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .analysisGrid {
+    grid-template-columns: 1fr;
   }
 }
 

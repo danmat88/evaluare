@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { getExercisesByChapter, getAllExercises } from '../firebase/exercises';
+import { matchAnswer } from '../utils/answerMatcher';
 
 const XP_CORRECT   = 10;
 const XP_STREAK_3  = 5;   // bonus at 3 streak
@@ -44,7 +45,7 @@ const useExerciseStore = create((set, get) => ({
     const { currentExercise, userAnswer, streak, bestStreak, xp, totalCorrect, totalAnswered } = get();
     if (!currentExercise) return;
 
-    const correct = userAnswer.trim() === String(currentExercise.answer).trim();
+    const correct = matchAnswer(currentExercise.answer, userAnswer);
     let xpGain = 0;
     let newStreak = correct ? streak + 1 : 0;
 

@@ -23,14 +23,21 @@ import {
   Zap,
 } from 'lucide-react';
 import ExerciseCard from './ExerciseCard';
+import { useAuth } from '../../contexts';
 import useExerciseStore from '../../store/exerciseStore';
 import {
   STORAGE_CHANGE_EVENT,
   STORAGE_KEYS,
-  safeReadJSON,
-  safeWriteJSON,
+  getStorageScope,
+  readScopedJSON,
   todayStamp,
+  writeScopedJSON,
 } from '../../utils/storage';
+import {
+  getReviewExerciseIds,
+  readStudyInsights,
+  recordExerciseAttempt,
+} from '../../utils/studyInsights';
 import styles from './ExerciseList.module.css';
 
 const CHAPTERS = [
@@ -57,6 +64,7 @@ const DIFFICULTIES = [
 
 const VIEW_MODES = [
   { id: 'all', label: 'Toate' },
+  { id: 'review', label: 'Revizuire' },
   { id: 'favorites', label: 'Favorite' },
   { id: 'pending', label: 'Nerezolvate' },
   { id: 'solved', label: 'Rezolvate' },
@@ -71,6 +79,8 @@ const normalize = (value) =>
 const toSet = (value) => new Set(Array.isArray(value) ? value : []);
 
 const ExerciseList = ({ exercises = [], loading }) => {
+  const { user } = useAuth();
+  const storageScope = getStorageScope(user?.uid);
   const navigate = useNavigate();
   const location = useLocation();
   const searchRef = useRef(null);
@@ -82,13 +92,15 @@ const ExerciseList = ({ exercises = [], loading }) => {
   const [idx, setIdx] = useState(0);
   const [pendingResumeId, setPendingResumeId] = useState(null);
 
-  const [favoriteIds, setFavoriteIds] = useState(() => toSet(safeReadJSON(STORAGE_KEYS.favorites, [])));
-  const [solvedIds, setSolvedIds] = useState(() => toSet(safeReadJSON(STORAGE_KEYS.solved, [])));
-  const [lastExercise, setLastExercise] = useState(() => safeReadJSON(STORAGE_KEYS.lastExercise, null));
-  const [focusMode, setFocusMode] = useState(() => Boolean(safeReadJSON(STORAGE_KEYS.focusMode, false)));
-  const [draftAnswers, setDraftAnswers] = useState(() => safeReadJSON(STORAGE_KEYS.drafts, {}));
+  const [favoriteIds, setFavoriteIds] = useState(() => toSet(readScopedJSON(STORAGE_KEYS.favorites, storageScope, [])));
+  const [solvedIds, setSolvedIds] = useState(() => toSet(readScopedJSON(STORAGE_KEYS.solved, storageScope, [])));
+  const [lastExercise, setLastExercise] = useState(() => readScopedJSON(STORAGE_KEYS.lastExercise, storageScope, null));
+  const [focusMode, setFocusMode] = useState(() => Boolean(readScopedJSON(STORAGE_KEYS.focusMode, storageScope, false)));
+  const [draftAnswers, setDraftAnswers] = useState(() => readScopedJSON(STORAGE_KEYS.drafts, storageScope, {}));
+  const [studyInsights, setStudyInsights] = useState(() => readStudyInsights(storageScope));
 
   const { totalCorrect, streak } = useExerciseStore();
+  const reviewIds = useMemo(() => new Set(getReviewExerciseIds(studyInsights)), [studyInsights]);
 
   const filtered = useMemo(() => {
     const q = normalize(query.trim());
@@ -97,6 +109,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
       if (chapter && exercise.chapter !== chapter) return false;
       if (difficulty && (exercise.difficulty || 1) !== difficulty) return false;
 
+      if (viewMode === 'review' && !reviewIds.has(exercise.id)) return false;
       if (viewMode === 'favorites' && !favoriteIds.has(exercise.id)) return false;
       if (viewMode === 'solved' && !solvedIds.has(exercise.id)) return false;
       if (viewMode === 'pending' && solvedIds.has(exercise.id)) return false;
@@ -106,7 +119,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
       const haystack = normalize(`${exercise.text} ${exercise.chapter} ${exercise.answer}`);
       return haystack.includes(q);
     });
-  }, [chapter, difficulty, exercises, favoriteIds, query, solvedIds, viewMode]);
+  }, [chapter, difficulty, exercises, favoriteIds, query, reviewIds, solvedIds, viewMode]);
 
   const current = filtered[idx] ?? null;
   const isFavorite = current ? favoriteIds.has(current.id) : false;
@@ -123,6 +136,12 @@ const ExerciseList = ({ exercises = [], loading }) => {
       return 'Modul focus este activ. Lucreaza un exercitiu pe rand si foloseste Enter sau tastele sageata pentru ritm constant.';
     }
 
+    if (viewMode === 'review') {
+      return filtered.length > 0
+        ? `Ai ${filtered.length} exercitii in zona de revizuire. Inchide mai intai ce ti-a pus probleme recent.`
+        : 'Nu ai exercitii in revizuire acum. Continua cu un capitol nou sau cu un test.';
+    }
+
     if (viewMode === 'favorites') {
       return filteredPendingCount > 0
         ? `Ai ${filteredPendingCount} exercitii favorite pe care inca le poti inchide.`
@@ -134,31 +153,41 @@ const ExerciseList = ({ exercises = [], loading }) => {
     }
 
     return 'Alege un capitol sau foloseste Aleatoriu pentru o sesiune scurta, concentrata si usor de reluat.';
-  }, [activeChapterLabel, chapter, filteredMasteryPct, filteredPendingCount, focusMode, viewMode]);
+  }, [activeChapterLabel, chapter, filtered.length, filteredMasteryPct, filteredPendingCount, focusMode, viewMode]);
 
   useEffect(() => {
-    safeWriteJSON(STORAGE_KEYS.favorites, Array.from(favoriteIds));
-  }, [favoriteIds]);
+    writeScopedJSON(STORAGE_KEYS.favorites, storageScope, Array.from(favoriteIds));
+  }, [favoriteIds, storageScope]);
 
   useEffect(() => {
-    safeWriteJSON(STORAGE_KEYS.solved, Array.from(solvedIds));
-  }, [solvedIds]);
+    writeScopedJSON(STORAGE_KEYS.solved, storageScope, Array.from(solvedIds));
+  }, [solvedIds, storageScope]);
 
   useEffect(() => {
-    safeWriteJSON(STORAGE_KEYS.focusMode, focusMode);
-  }, [focusMode]);
+    writeScopedJSON(STORAGE_KEYS.focusMode, storageScope, focusMode);
+  }, [focusMode, storageScope]);
 
   useEffect(() => {
-    safeWriteJSON(STORAGE_KEYS.drafts, draftAnswers);
-  }, [draftAnswers]);
+    writeScopedJSON(STORAGE_KEYS.drafts, storageScope, draftAnswers);
+  }, [draftAnswers, storageScope]);
+
+  useEffect(() => {
+    setFavoriteIds(toSet(readScopedJSON(STORAGE_KEYS.favorites, storageScope, [])));
+    setSolvedIds(toSet(readScopedJSON(STORAGE_KEYS.solved, storageScope, [])));
+    setLastExercise(readScopedJSON(STORAGE_KEYS.lastExercise, storageScope, null));
+    setFocusMode(Boolean(readScopedJSON(STORAGE_KEYS.focusMode, storageScope, false)));
+    setDraftAnswers(readScopedJSON(STORAGE_KEYS.drafts, storageScope, {}));
+    setStudyInsights(readStudyInsights(storageScope));
+  }, [storageScope]);
 
   useEffect(() => {
     const syncWorkspaceState = () => {
-      setFavoriteIds(toSet(safeReadJSON(STORAGE_KEYS.favorites, [])));
-      setSolvedIds(toSet(safeReadJSON(STORAGE_KEYS.solved, [])));
-      setLastExercise(safeReadJSON(STORAGE_KEYS.lastExercise, null));
-      setFocusMode(Boolean(safeReadJSON(STORAGE_KEYS.focusMode, false)));
-      setDraftAnswers(safeReadJSON(STORAGE_KEYS.drafts, {}));
+      setFavoriteIds(toSet(readScopedJSON(STORAGE_KEYS.favorites, storageScope, [])));
+      setSolvedIds(toSet(readScopedJSON(STORAGE_KEYS.solved, storageScope, [])));
+      setLastExercise(readScopedJSON(STORAGE_KEYS.lastExercise, storageScope, null));
+      setFocusMode(Boolean(readScopedJSON(STORAGE_KEYS.focusMode, storageScope, false)));
+      setDraftAnswers(readScopedJSON(STORAGE_KEYS.drafts, storageScope, {}));
+      setStudyInsights(readStudyInsights(storageScope));
     };
 
     window.addEventListener('focus', syncWorkspaceState);
@@ -170,7 +199,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
       window.removeEventListener('storage', syncWorkspaceState);
       window.removeEventListener(STORAGE_CHANGE_EVENT, syncWorkspaceState);
     };
-  }, []);
+  }, [storageScope]);
 
   useEffect(() => {
     if (!current) return;
@@ -181,8 +210,8 @@ const ExerciseList = ({ exercises = [], loading }) => {
       savedAt: Date.now(),
     };
     setLastExercise(snapshot);
-    safeWriteJSON(STORAGE_KEYS.lastExercise, snapshot);
-  }, [current]);
+    writeScopedJSON(STORAGE_KEYS.lastExercise, storageScope, snapshot);
+  }, [current, storageScope]);
 
   const setDraftAnswer = useCallback((exerciseId, value) => {
     setDraftAnswers((prev) => {
@@ -252,7 +281,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
   }, [lastExercise]);
 
   const onExerciseResult = useCallback((payload) => {
-    const { exerciseId, correct } = payload;
+    const { exerciseId, correct, timeSpent } = payload;
 
     if (correct) {
       setSolvedIds((prevSet) => {
@@ -265,7 +294,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
     }
 
     const today = todayStamp();
-    const stored = safeReadJSON(STORAGE_KEYS.dailyActivity, { date: today, attempted: [], correct: [] });
+    const stored = readScopedJSON(STORAGE_KEYS.dailyActivity, storageScope, { date: today, attempted: [], correct: [] });
     const base = stored?.date === today ? stored : { date: today, attempted: [], correct: [] };
 
     const attemptedSet = new Set(Array.isArray(base.attempted) ? base.attempted : []);
@@ -274,13 +303,13 @@ const ExerciseList = ({ exercises = [], loading }) => {
     const correctSet = new Set(Array.isArray(base.correct) ? base.correct : []);
     if (correct) correctSet.add(exerciseId);
 
-    safeWriteJSON(STORAGE_KEYS.dailyActivity, {
+    writeScopedJSON(STORAGE_KEYS.dailyActivity, storageScope, {
       date: today,
       attempted: Array.from(attemptedSet),
       correct: Array.from(correctSet),
     });
 
-    const history = safeReadJSON(STORAGE_KEYS.activityHistory, {});
+    const history = readScopedJSON(STORAGE_KEYS.activityHistory, storageScope, {});
     const nextHistory = {
       ...(history && typeof history === 'object' ? history : {}),
       [today]: {
@@ -288,8 +317,15 @@ const ExerciseList = ({ exercises = [], loading }) => {
         correct: correctSet.size,
       },
     };
-    safeWriteJSON(STORAGE_KEYS.activityHistory, nextHistory);
-  }, [setDraftAnswer]);
+    writeScopedJSON(STORAGE_KEYS.activityHistory, storageScope, nextHistory);
+
+    setStudyInsights(recordExerciseAttempt({
+      exerciseId,
+      chapter: current?.chapter || null,
+      correct,
+      timeSpent,
+    }, storageScope));
+  }, [current?.chapter, setDraftAnswer, storageScope]);
 
   useEffect(() => {
     setIdx((currentIdx) => Math.min(currentIdx, Math.max(filtered.length - 1, 0)));
@@ -309,23 +345,37 @@ const ExerciseList = ({ exercises = [], loading }) => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const chapterParam = params.get('capitol');
+    const modeParam = params.get('mod');
+    const nextViewMode = VIEW_MODES.some((mode) => mode.id === modeParam) ? modeParam : 'all';
+
     if (chapterParam && CHAPTERS.some((ch) => ch.id === chapterParam)) {
       setChapter(chapterParam);
       setIdx(0);
+    } else if (!chapterParam) {
+      setChapter(null);
     }
+
+    setViewMode((currentMode) => {
+      if (currentMode !== nextViewMode) {
+        setIdx(0);
+      }
+      return nextViewMode;
+    });
   }, [location.search]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (chapter) params.set('capitol', chapter);
     else params.delete('capitol');
+    if (viewMode !== 'all') params.set('mod', viewMode);
+    else params.delete('mod');
 
     const nextSearch = params.toString();
     const currentSearch = location.search.startsWith('?') ? location.search.slice(1) : location.search;
     if (nextSearch !== currentSearch) {
       navigate({ pathname: location.pathname, search: nextSearch ? `?${nextSearch}` : '' }, { replace: true });
     }
-  }, [chapter, navigate, location.pathname, location.search]);
+  }, [chapter, navigate, location.pathname, location.search, viewMode]);
 
   useEffect(() => {
     const isTypingTarget = (target) => {
@@ -370,6 +420,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
           <div className={styles.sidebarMeta}>
             <span className={styles.sidebarMetaChip}>{favoriteIds.size} fav</span>
             <span className={styles.sidebarMetaChip}>{solvedIds.size} ok</span>
+            <span className={styles.sidebarMetaChip}>{reviewIds.size} review</span>
             <span className={styles.sidebarMetaChip}>{draftsCount} draft</span>
           </div>
         </div>
@@ -466,6 +517,7 @@ const ExerciseList = ({ exercises = [], loading }) => {
               <span className={styles.studyChip}>Rezolvate {filteredSolvedCount}</span>
               <span className={styles.studyChip}>Ramase {filteredPendingCount}</span>
               <span className={styles.studyChip}>Mastery {filteredMasteryPct}%</span>
+              <span className={styles.studyChip}>Review {reviewIds.size}</span>
             </div>
           </div>
 

@@ -1,6 +1,6 @@
 .page {
-  height: 100%;
-  overflow-y: auto;
+  min-height: 100%;
+  overflow: visible;
   padding: var(--page-pad);
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -412,6 +412,59 @@
   background: linear-gradient(90deg, var(--neon-mint), var(--neon-cyan), var(--neon-yellow));
 }
 
+.insightGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+
+.insightCard {
+  border-radius: var(--r-lg);
+  border: var(--border-dim);
+  background: color-mix(in srgb, var(--bg-surface) 74%, transparent);
+  padding: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 108px;
+}
+
+.insightCard_cyan {
+  border-color: color-mix(in srgb, var(--neon-cyan) 26%, transparent);
+}
+
+.insightCard_mint {
+  border-color: color-mix(in srgb, var(--neon-mint) 26%, transparent);
+}
+
+.insightCard_yellow {
+  border-color: color-mix(in srgb, var(--neon-yellow) 26%, transparent);
+}
+
+.insightLabel {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.insightValue {
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.insightSub {
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
 .coachGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -778,6 +831,10 @@
   }
 
   .coachGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .insightGrid {
     grid-template-columns: 1fr;
   }
 }

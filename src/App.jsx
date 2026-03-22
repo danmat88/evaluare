@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Sigma } from 'lucide-react';
 import { ToastProvider } from './components/ui/Toast';
 import { useAuth } from './contexts';
@@ -47,26 +47,34 @@ const Loading = ({ label = 'Se incarca pagina...' }) => (
 
 const Public = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
   if (loading) return <Loading />;
-  return isAuthenticated ? <Navigate to="/dashboard" replace /> : <Suspense fallback={<Loading />}>{children}</Suspense>;
+  const redirectTo = location.state?.redirectTo || '/dashboard';
+  return isAuthenticated ? <Navigate to={redirectTo} replace /> : <Suspense fallback={<Loading />}>{children}</Suspense>;
 };
 
 const Private = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
   if (loading) return <Loading />;
-  return isAuthenticated ? <Suspense fallback={<Loading />}>{children}</Suspense> : <Navigate to="/" replace />;
+  const redirectTo = `${location.pathname}${location.search}${location.hash}`;
+  return isAuthenticated
+    ? <Suspense fallback={<Loading />}>{children}</Suspense>
+    : <Navigate to="/login" replace state={{ redirectTo }} />;
 };
 
 const App = () => (
   <BrowserRouter>
     <ToastProvider />
     <Routes>
-      <Route path="/" element={<Public><Home /></Public>} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<Public><Home /></Public>} />
+      <Route path="/register" element={<Public><Home /></Public>} />
       <Route path="/dashboard" element={<Private><Dashboard /></Private>} />
       <Route path="/exercitii" element={<Private><Exercises /></Private>} />
       <Route path="/teste" element={<Private><TestPage /></Private>} />
       <Route path="/profil" element={<Private><Profile /></Private>} />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   </BrowserRouter>
 );

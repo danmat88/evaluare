@@ -39,15 +39,19 @@
 }
 
 .brandSigma {
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: var(--border-dim);
-  background: color-mix(in srgb, var(--bg-surface) 76%, transparent);
-  color: var(--text-primary);
+  background: linear-gradient(145deg, var(--neon-cyan), color-mix(in srgb, var(--neon-indigo) 86%, white 14%));
+  color: #04111c;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: -0.08em;
 }
 
 .brandName {
@@ -226,12 +230,27 @@
 .content {
   flex: 1;
   min-height: 0;
-  overflow: hidden;
 }
 
 .pageWrap {
+  min-height: 0;
+}
+
+.contentContained {
+  overflow: hidden;
+}
+
+.pageWrapContained {
   height: 100%;
   overflow: hidden;
+}
+
+.contentPage {
+  overflow-y: auto;
+}
+
+.pageWrapPage {
+  min-height: 100%;
 }
 
 .mobileDock {

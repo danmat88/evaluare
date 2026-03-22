@@ -20,7 +20,15 @@ import AnimatedCounter from '../components/ui/AnimatedCounter';
 import Layout from '../components/layout/Layout';
 import { useAuth } from '../contexts';
 import useExerciseStore from '../store/exerciseStore';
-import { STORAGE_CHANGE_EVENT, STORAGE_KEYS, dateStamp, safeReadJSON, todayStamp } from '../utils/storage';
+import {
+  STORAGE_CHANGE_EVENT,
+  STORAGE_KEYS,
+  dateStamp,
+  getStorageScope,
+  readScopedJSON,
+  todayStamp,
+} from '../utils/storage';
+import { readStudyInsights, summarizeStudyInsights } from '../utils/studyInsights';
 import styles from './Dashboard.module.css';
 
 const DAILY_GOAL = 12;
@@ -87,15 +95,17 @@ const LiveClock = () => {
 };
 
 const Dashboard = () => {
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const { xp, streak, totalCorrect } = useExerciseStore();
   const values = { xp, streak, totalCorrect };
+  const storageScope = getStorageScope(user?.uid);
 
   const [favoritesCount, setFavoritesCount] = useState(0);
   const [dailyCorrect, setDailyCorrect] = useState(0);
   const [dailyAttempted, setDailyAttempted] = useState(0);
   const [lastExercise, setLastExercise] = useState(null);
   const [activityHistory, setActivityHistory] = useState({});
+  const [studyInsights, setStudyInsights] = useState(() => readStudyInsights(storageScope));
 
   const name = profile?.name?.split(' ')[0] || 'elev';
   const hour = new Date().getHours();
@@ -104,21 +114,23 @@ const Dashboard = () => {
   const refreshJourney = useCallback(() => {
     const today = todayStamp();
 
-    const favorites = safeReadJSON(STORAGE_KEYS.favorites, []);
+    const favorites = readScopedJSON(STORAGE_KEYS.favorites, storageScope, []);
     setFavoritesCount(Array.isArray(favorites) ? favorites.length : 0);
 
-    const daily = safeReadJSON(STORAGE_KEYS.dailyActivity, { date: today, attempted: [], correct: [] });
+    const daily = readScopedJSON(STORAGE_KEYS.dailyActivity, storageScope, { date: today, attempted: [], correct: [] });
     const normalized = daily?.date === today ? daily : { date: today, attempted: [], correct: [] };
 
     setDailyCorrect(Array.isArray(normalized.correct) ? normalized.correct.length : 0);
     setDailyAttempted(Array.isArray(normalized.attempted) ? normalized.attempted.length : 0);
 
-    const last = safeReadJSON(STORAGE_KEYS.lastExercise, null);
+    const last = readScopedJSON(STORAGE_KEYS.lastExercise, storageScope, null);
     setLastExercise(last && typeof last === 'object' ? last : null);
 
-    const history = safeReadJSON(STORAGE_KEYS.activityHistory, {});
+    const history = readScopedJSON(STORAGE_KEYS.activityHistory, storageScope, {});
     setActivityHistory(history && typeof history === 'object' ? history : {});
-  }, []);
+
+    setStudyInsights(readStudyInsights(storageScope));
+  }, [storageScope]);
 
   useEffect(() => {
     refreshJourney();
@@ -149,12 +161,31 @@ const Dashboard = () => {
     return found;
   }, [progress]);
 
+  const studySummary = useMemo(
+    () => summarizeStudyInsights(studyInsights, CHAPTERS),
+    [studyInsights],
+  );
+
   const goalPct = Math.min(Math.round((dailyCorrect / DAILY_GOAL) * 100), 100);
   const remaining = Math.max(DAILY_GOAL - dailyCorrect, 0);
   const resumeLink = lastExercise?.chapter ? `/exercitii?capitol=${lastExercise.chapter}` : '/exercitii';
+  const reviewLink = '/exercitii?mod=review';
   const lastChapterLabel = lastExercise?.chapter
     ? CHAPTERS.find((chapterItem) => chapterItem.id === lastExercise.chapter)?.label || lastExercise.chapter
     : null;
+  const reviewChampionChapterLabel = studySummary.reviewChampion?.chapter
+    ? CHAPTERS.find((chapterItem) => chapterItem.id === studySummary.reviewChampion.chapter)?.label || studySummary.reviewChampion.chapter
+    : null;
+  const averageSolveMinutes = studySummary.averageTimeSpent > 0
+    ? `${Math.max(1, Math.round(studySummary.averageTimeSpent / 60))} min/ex.`
+    : 'se calculeaza';
+  const greetingSub = studySummary.reviewCount > 0
+    ? `Ai ${studySummary.reviewCount} exercitii care merita o revizuire scurta inainte sa treci mai departe.`
+    : remaining > 0
+      ? `Mai ai ${remaining} raspunsuri corecte pana la obiectivul de azi.`
+      : studySummary.strongestAccuracyChapter
+        ? `${studySummary.strongestAccuracyChapter.label} este in forma buna. Poti inchide ziua cu o simulare.`
+        : 'Continua sa exersezi si vei fi pregatit pentru examen.';
 
   const weekSeries = useMemo(() => {
     const now = new Date();
@@ -200,7 +231,17 @@ const Dashboard = () => {
         to: '/exercitii',
         action: 'Deschide exercitii',
       },
-    weakest
+    studySummary.reviewCount > 0
+      ? {
+        label: 'Revizuire',
+        title: 'Curata exercitiile fragile',
+        sub: reviewChampionChapterLabel
+          ? `${studySummary.reviewCount} exercitii cer revizuire, mai ales in ${reviewChampionChapterLabel}.`
+          : `${studySummary.reviewCount} exercitii cer revizuire dupa raspunsuri gresite recente.`,
+        to: reviewLink,
+        action: 'Deschide review',
+      }
+      : weakest
       ? {
         label: 'Recuperare',
         title: `Lucreaza ${weakest.label}`,
@@ -231,16 +272,44 @@ const Dashboard = () => {
         action: 'Incepe testul',
       },
   ];
+  const coachInsightCards = [
+    studySummary.totalAttempts > 0
+      ? {
+        label: 'Acuratete trackata',
+        value: `${studySummary.overallAccuracy}%`,
+        sub: `${studySummary.totalCorrectAttempts}/${studySummary.totalAttempts} raspunsuri corecte in sesiunile recente.`,
+        tone: 'cyan',
+      }
+      : null,
+    studySummary.strongestAccuracyChapter
+      ? {
+        label: 'Capitol stabil',
+        value: studySummary.strongestAccuracyChapter.label,
+        sub: `${studySummary.strongestAccuracyChapter.accuracy}% acuratete pe ${studySummary.strongestAccuracyChapter.attempts} incercari.`,
+        tone: 'mint',
+      }
+      : null,
+    studySummary.reviewCount > 0
+      ? {
+        label: 'Prioritate acum',
+        value: `${studySummary.reviewCount} review`,
+        sub: reviewChampionChapterLabel
+          ? `Incepe cu ${reviewChampionChapterLabel} ca sa repari rapid cele mai fragile raspunsuri.`
+          : 'Revino pe exercitiile ratate recent inainte de a deschide un capitol nou.',
+        tone: 'yellow',
+      }
+      : null,
+  ].filter(Boolean);
 
   return (
-    <Layout>
+    <Layout scrollMode="page">
       <motion.div className={styles.page} variants={stagger} initial="initial" animate="animate">
         <motion.div className={styles.greeting} variants={up}>
           <div className={styles.greetingText}>
             <span className={styles.greetingLabel}>{greeting},</span>
             <span className={styles.greetingName}>{name}!</span>
           </div>
-          <p className={styles.greetingSub}>Continua sa exersezi si vei fi pregatit pentru examen.</p>
+          <p className={styles.greetingSub}>{greetingSub}</p>
         </motion.div>
 
         <motion.div className={styles.clockCard} variants={up}>
@@ -301,6 +370,8 @@ const Dashboard = () => {
             <span className={styles.journeyChip}><Target size={12} /> {dailyCorrect}/{DAILY_GOAL} corecte azi</span>
             <span className={styles.journeyChip}><BookOpen size={12} /> {dailyAttempted} incercate azi</span>
             <span className={styles.journeyChip}><Bookmark size={12} /> {favoritesCount} favorite</span>
+            <span className={styles.journeyChip}><TrendingUp size={12} /> {studySummary.reviewCount} in review</span>
+            <span className={styles.journeyChip}><Clock3 size={12} /> {averageSolveMinutes}</span>
           </div>
 
           <div className={styles.goalTrack}>
@@ -311,6 +382,18 @@ const Dashboard = () => {
               transition={{ duration: 0.6, ease: 'easeOut' }}
             />
           </div>
+
+          {coachInsightCards.length > 0 && (
+            <div className={styles.insightGrid}>
+              {coachInsightCards.map((card) => (
+                <div key={card.label} className={`${styles.insightCard} ${styles[`insightCard_${card.tone}`]}`}>
+                  <span className={styles.insightLabel}>{card.label}</span>
+                  <span className={styles.insightValue}>{card.value}</span>
+                  <span className={styles.insightSub}>{card.sub}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className={styles.coachGrid}>
             {coachSteps.map((step) => (
@@ -371,7 +454,18 @@ const Dashboard = () => {
           </div>
           <span className={styles.tipText}>{dailyTip}</span>
 
-          {weakest && (
+          {studySummary.reviewCount > 0 ? (
+            <div className={styles.tipHint}>
+              <TrendingUp size={14} className={styles.tipHintIcon} />
+              <span className={styles.tipHintText}>
+                Zona de revizuire are <strong>{studySummary.reviewCount} exercitii</strong>
+                {reviewChampionChapterLabel ? `, cu prioritate in ${reviewChampionChapterLabel}.` : '.'}
+              </span>
+              <Link className={styles.tipAction} to={reviewLink}>
+                Revizuieste acum
+              </Link>
+            </div>
+          ) : weakest && (
             <div className={styles.tipHint}>
               <Target size={14} className={styles.tipHintIcon} />
               <span className={styles.tipHintText}>

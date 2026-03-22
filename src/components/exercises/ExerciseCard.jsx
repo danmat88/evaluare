@@ -6,6 +6,7 @@ import Blackboard from '../blackboard/Blackboard';
 import ChalkText from '../blackboard/ChalkText';
 import MathKeyboard from '../keyboard/MathKeyboard';
 import SolutionReveal from './SolutionReveal';
+import ExerciseVisual from './ExerciseVisual';
 import Modal from '../ui/Modal';
 import Button from '../ui/Button';
 import Particles from '../ui/Particles';
@@ -179,6 +180,18 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
                   <BlockMath math={exercise.math} />
                 </div>
               )}
+              <ExerciseVisual
+                visuals={exercise.visuals}
+                image={exercise.image}
+                imageUrl={exercise.imageUrl}
+                diagram={exercise.diagram}
+                diagramUrl={exercise.diagramUrl}
+                svg={exercise.svg}
+                svgMarkup={exercise.svgMarkup}
+                caption={exercise.caption}
+                alt={exercise.alt}
+                label={exercise.label}
+              />
             </div>
 
             <div className={styles.answerArea}>

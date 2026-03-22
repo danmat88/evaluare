@@ -7,7 +7,6 @@ import {
   LogOut,
   MoonStar,
   Search,
-  Sigma,
   Sun,
   User,
 } from 'lucide-react';
@@ -25,7 +24,7 @@ const NAV = [
   { to: '/profil', icon: <User size={16} />, label: 'Profil' },
 ];
 
-const Layout = ({ children }) => {
+const Layout = ({ children, scrollMode = 'contained' }) => {
   const { profile, logout } = useAuth();
   const { isDark, toggle } = useTheme();
   const navigate = useNavigate();
@@ -76,8 +75,8 @@ const Layout = ({ children }) => {
     <div className={styles.shell}>
       <header className={styles.nav}>
         <div className={styles.brand}>
-          <span className={styles.brandSigma}><Sigma size={15} /></span>
-          <span className={styles.brandName}>EN<span className={styles.brandAccent}>.</span>Math</span>
+          <span className={styles.brandSigma}>EN</span>
+          <span className={styles.brandName}>Evaluare <span className={styles.brandAccent}>Nationala</span></span>
         </div>
 
         <nav className={styles.links}>
@@ -127,7 +126,7 @@ const Layout = ({ children }) => {
             className={styles.logoutBtn}
             onClick={async () => {
               await logout();
-              navigate('/');
+              navigate('/login');
             }}
             title="Deconectare"
           >
@@ -136,9 +135,9 @@ const Layout = ({ children }) => {
         </div>
       </header>
 
-      <main className={styles.content}>
+      <main className={`${styles.content} ${scrollMode === 'page' ? styles.contentPage : styles.contentContained}`}>
         <motion.div
-          className={styles.pageWrap}
+          className={`${styles.pageWrap} ${scrollMode === 'page' ? styles.pageWrapPage : styles.pageWrapContained}`}
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BlockMath } from 'react-katex';
 import { ArrowRight, Check, ListChecks } from 'lucide-react';
 import ChalkText from '../blackboard/ChalkText';
+import ExerciseVisual from './ExerciseVisual';
 import Button from '../ui/Button';
 import styles from './SolutionReveal.module.css';
 
@@ -33,6 +34,18 @@ const SolutionReveal = ({ steps = [], onClose }) => {
                     <BlockMath math={step.math} />
                   </motion.div>
                 )}
+                <ExerciseVisual
+                  visuals={step.visuals}
+                  image={step.image}
+                  imageUrl={step.imageUrl}
+                  diagram={step.diagram}
+                  diagramUrl={step.diagramUrl}
+                  svg={step.svg}
+                  svgMarkup={step.svgMarkup}
+                  caption={step.caption}
+                  alt={step.alt}
+                  label={step.label}
+                />
               </div>
             </motion.div>
           ))}

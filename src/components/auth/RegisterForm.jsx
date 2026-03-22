@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import { UserPlus } from 'lucide-react';
-import ChalkText from '../blackboard/ChalkText';
 import Button from '../ui/Button';
 import { useAuth } from '../../contexts';
 import { notify } from '../ui/notify';
@@ -89,9 +88,11 @@ const RegisterForm = ({ onSwitch }) => {
       exit={{ opacity: 0, x: 10 }}
       transition={{ duration: 0.22 }}
     >
-      <div className={styles.heading}>
-        <ChalkText color="yellow" size="xl" glow>Hai la tabla!</ChalkText>
-        <ChalkText color="muted" size="sm">Cont gratuit, progres nelimitat</ChalkText>
+      <div className={styles.header}>
+        <span className={styles.kicker}>Pornire noua</span>
+        <p className={styles.subline}>
+          Creezi contul o singura data, apoi progresul si rezultatele raman salvate.
+        </p>
       </div>
 
       <div className={styles.fields}>
@@ -101,9 +102,7 @@ const RegisterForm = ({ onSwitch }) => {
 
           return (
             <div key={field.name} className={styles.field}>
-              <label className={styles.label} htmlFor={field.id}>
-                <ChalkText size="xs" color="muted">{field.label}</ChalkText>
-              </label>
+              <label className={styles.label} htmlFor={field.id}>{field.label}</label>
               <input
                 id={field.id}
                 className={`${styles.input} ${error ? styles.inputErr : ''}`}
@@ -118,9 +117,7 @@ const RegisterForm = ({ onSwitch }) => {
                 {...register(field.name)}
               />
               {error && (
-                <ChalkText as="span" id={errorId} size="xs" color="coral">
-                  {error.message}
-                </ChalkText>
+                <span id={errorId} className={styles.errorText}>{error.message}</span>
               )}
             </div>
           );
@@ -132,10 +129,8 @@ const RegisterForm = ({ onSwitch }) => {
       </Button>
 
       <p className={styles.footer}>
-        <ChalkText size="sm" color="muted">Ai deja cont.&nbsp;</ChalkText>
-        <button type="button" className={styles.switchBtn} onClick={onSwitch}>
-          <ChalkText size="sm" color="cyan">Conecteaza-te</ChalkText>
-        </button>
+        <span className={styles.footerText}>Ai deja cont?</span>
+        <button type="button" className={styles.switchBtn} onClick={onSwitch}>Conecteaza-te</button>
       </p>
     </motion.form>
   );

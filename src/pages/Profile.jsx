@@ -1,4 +1,5 @@
-﻿import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { BookOpen, Clock, FileText, Flame, History, Target, Trophy, Zap } from 'lucide-react';
 import Button from '../components/ui/Button';
@@ -7,6 +8,8 @@ import Layout from '../components/layout/Layout';
 import { useAuth } from '../contexts';
 import useExerciseStore from '../store/exerciseStore';
 import { getUserTestResults } from '../firebase/results';
+import { STORAGE_CHANGE_EVENT, getStorageScope } from '../utils/storage';
+import { readStudyInsights, summarizeStudyInsights } from '../utils/studyInsights';
 import { getLevel, getLevelProgress } from '../utils/xp';
 import styles from './Profile.module.css';
 
@@ -47,15 +50,40 @@ const Profile = () => {
   const { user, profile, logout } = useAuth();
   const { xp, bestStreak, totalCorrect, totalAnswered } = useExerciseStore();
   const [results, setResults] = useState([]);
+  const storageScope = getStorageScope(user?.uid);
+  const [studyInsights, setStudyInsights] = useState(() => readStudyInsights(storageScope));
 
   useEffect(() => {
     if (user?.uid) getUserTestResults(user.uid).then(setResults);
   }, [user]);
 
+  useEffect(() => {
+    const syncInsights = () => setStudyInsights(readStudyInsights(storageScope));
+
+    syncInsights();
+    window.addEventListener('focus', syncInsights);
+    window.addEventListener('storage', syncInsights);
+    window.addEventListener(STORAGE_CHANGE_EVENT, syncInsights);
+
+    return () => {
+      window.removeEventListener('focus', syncInsights);
+      window.removeEventListener('storage', syncInsights);
+      window.removeEventListener(STORAGE_CHANGE_EVENT, syncInsights);
+    };
+  }, [storageScope]);
+
   const level = getLevel(xp);
   const pct = getLevelProgress(xp);
   const accuracy = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0;
   const progress = useMemo(() => profile?.progress || {}, [profile?.progress]);
+  const studySummary = useMemo(
+    () => summarizeStudyInsights(studyInsights, CHAPTERS),
+    [studyInsights],
+  );
+  const reviewLink = '/exercitii?mod=review';
+  const averageExerciseTime = studySummary.averageTimeSpent > 0
+    ? `${Math.max(1, Math.round(studySummary.averageTimeSpent / 60))} min/ex.`
+    : 'Se calculeaza';
 
   const weakest = useMemo(() => {
     let minPct = 101;
@@ -72,7 +100,7 @@ const Profile = () => {
   }, [progress]);
 
   return (
-    <Layout>
+    <Layout scrollMode="page">
       <div className={styles.page}>
         <motion.div className={styles.profileCard} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <div className={styles.avatar}>
@@ -120,6 +148,77 @@ const Profile = () => {
               <span className={styles.statLbl}>{s.label}</span>
             </motion.div>
           ))}
+        </div>
+
+        <div className={styles.section}>
+          <div className={styles.sectionHead}>
+            <div className={styles.sectionLead}>
+              <Target size={13} className={styles.sectionIcon} />
+              <span className={styles.sectionLabel}>ANALIZA DE INVATARE</span>
+            </div>
+
+            {studySummary.totalAttempts > 0 && (
+              <span className={styles.histCount}>{studySummary.totalAttempts} incercari</span>
+            )}
+          </div>
+
+          {studySummary.totalAttempts === 0 ? (
+            <div className={styles.histEmpty}>
+              <span className={styles.histEmptyIcon}><Target size={28} /></span>
+              <span className={styles.histEmptyTitle}>Analiza apare dupa primele sesiuni</span>
+              <span className={styles.histEmptyDesc}>Rezolva cateva exercitii, iar aici vei vedea ce merge bine si ce merita revizuit.</span>
+            </div>
+          ) : (
+            <>
+              <div className={styles.analysisGrid}>
+                <div className={styles.analysisCard}>
+                  <span className={styles.analysisLabel}>Acuratete recenta</span>
+                  <span className={styles.analysisValue}>{studySummary.overallAccuracy}%</span>
+                  <span className={styles.analysisSub}>
+                    {studySummary.totalCorrectAttempts}/{studySummary.totalAttempts} raspunsuri corecte in sesiunile urmarite.
+                  </span>
+                </div>
+
+                <div className={styles.analysisCard}>
+                  <span className={styles.analysisLabel}>Ritm mediu</span>
+                  <span className={styles.analysisValue}>{averageExerciseTime}</span>
+                  <span className={styles.analysisSub}>
+                    Timpul se calculeaza din exercitiile rezolvate recent, nu doar din testele complete.
+                  </span>
+                </div>
+
+                <div className={styles.analysisCard}>
+                  <span className={styles.analysisLabel}>Revizuire activa</span>
+                  <span className={styles.analysisValue}>{studySummary.reviewCount}</span>
+                  <span className={styles.analysisSub}>
+                    {studySummary.reviewCount > 0
+                      ? 'Ai exercitii care merita reluate pana cand raspunsul devine stabil.'
+                      : 'Nu ai exercitii fragile in acest moment. Poti merge mai departe cu incredere.'}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.analysisActionRow}>
+                {studySummary.reviewCount > 0 && (
+                  <Link to={reviewLink} className={styles.analysisLink}>
+                    Deschide revizuirea
+                  </Link>
+                )}
+
+                {studySummary.strongestAccuracyChapter && (
+                  <Link to={`/exercitii?capitol=${studySummary.strongestAccuracyChapter.id}`} className={styles.analysisLink}>
+                    Continua pe {studySummary.strongestAccuracyChapter.label}
+                  </Link>
+                )}
+
+                {weakest && (
+                  <Link to={`/exercitii?capitol=${weakest.id}`} className={styles.analysisLink}>
+                    Repara {weakest.label}
+                  </Link>
+                )}
+              </div>
+            </>
+          )}
         </div>
 
         <div className={styles.section}>

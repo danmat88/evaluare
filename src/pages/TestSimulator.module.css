@@ -1,6 +1,6 @@
 .page {
-  height: 100%;
-  overflow-y: auto;
+  min-height: 100%;
+  overflow: visible;
   padding: var(--page-pad);
   display: flex;
   flex-direction: column;

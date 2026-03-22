@@ -1,15 +1,16 @@
-import { useId, useState } from 'react';
+import { useId } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MoonStar,
   Sun,
   BookOpen,
   Target,
-  Sigma,
   Layers,
   ClipboardCheck,
   Grid2x2,
+  Clock3,
 } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import LoginForm from '../components/auth/LoginForm';
 import RegisterForm from '../components/auth/RegisterForm';
 import { useTheme } from '../contexts';
@@ -18,28 +19,61 @@ import styles from './Home.module.css';
 const SUPPORT_STEPS = [
   {
     icon: <BookOpen size={18} />,
-    title: 'Exersezi pe capitole',
-    sub: 'Algebra, geometrie si cerinte tip Evaluarea Nationala.',
+    title: 'Capitole clare',
+    sub: 'Algebra, geometrie si exercitii construite pentru formatul Evaluarii Nationale.',
   },
   {
     icon: <Target size={18} />,
-    title: 'Intelegi fiecare pas',
-    sub: 'Rezolvari clare, fara salturi in logica sau explicatii lipsa.',
+    title: 'Logica fara goluri',
+    sub: 'Vezi pasii importanti, nu doar raspunsul final, ca sa intelegi metoda.',
   },
   {
     icon: <ClipboardCheck size={18} />,
-    title: 'Simulezi examenul complet',
-    sub: '120 de minute, 100 de puncte si rezultate salvate in cont.',
+    title: 'Simulare reala',
+    sub: 'Teste cronometrate, rezultate salvate si reluare rapida unde ai ramas.',
   },
 ];
 
 const STATS = [
   { num: '500+', label: 'Exercitii', icon: <Grid2x2 size={13} /> },
-  { num: '20+', label: 'Teste', icon: <ClipboardCheck size={13} /> },
-  { num: '10', label: 'Capitole', icon: <Layers size={13} /> },
+  { num: '20+', label: 'Simulari', icon: <Clock3 size={13} /> },
+  { num: '10+', label: 'Capitole', icon: <Layers size={13} /> },
 ];
 
-const AUTH_FACTS = ['Cont gratuit', 'Progres salvat automat', 'Acces instant'];
+const EXAM_PANELS = [
+  {
+    label: 'Subiect I',
+    title: 'Ritm bun de inceput',
+    sub: 'Intri rapid in calcul, atentie si raspunsuri scurte.',
+  },
+  {
+    label: 'Subiect II',
+    title: 'Metoda pas cu pas',
+    sub: 'Construiesti rezolvari curate pentru cerintele de lucru.',
+  },
+  {
+    label: 'Subiect III',
+    title: 'Simulare completa',
+    sub: 'Antrenezi examenul cu timp, punctaj si feedback clar.',
+  },
+];
+
+const AUTH_FACTS = ['Progres salvat', 'Review automat', 'Teste cronometrate'];
+
+const MODE_CONTENT = {
+  login: {
+    badge: 'Autentificare',
+    title: 'Reia exact de unde ai ramas',
+    intro: 'Intri direct in dashboard cu progresul, testele si exercitiile pe care le ai de revizuit.',
+    support: 'Foloseste acelasi email la fiecare sesiune ca sa-ti pastrezi istoricul complet de invatare.',
+  },
+  register: {
+    badge: 'Cont nou',
+    title: 'Creeaza-ti spatiul de studiu',
+    intro: 'Iti facem contul in cateva secunde, apoi poti exersa pe capitole si intra in simularea completa.',
+    support: 'Dupa inregistrare, rezultatele si progresul se salveaza automat dupa fiecare sesiune.',
+  },
+};
 
 const stagger = { animate: { transition: { staggerChildren: 0.07 } } };
 const up = {
@@ -47,10 +81,15 @@ const up = {
   animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.21, 1.11, 0.81, 0.99] } },
 };
 
+const getTabFromPath = (pathname) => (pathname === '/register' ? 'register' : 'login');
+
 const Home = () => {
-  const [tab, setTab] = useState('login');
   const { isDark, toggle } = useTheme();
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
   const tabBaseId = useId();
+  const tab = getTabFromPath(pathname);
+  const modeContent = MODE_CONTENT[tab];
 
   const loginTabId = `${tabBaseId}-login-tab`;
   const registerTabId = `${tabBaseId}-register-tab`;
@@ -58,6 +97,8 @@ const Home = () => {
   const registerPanelId = `${tabBaseId}-register-panel`;
   const activeTabId = tab === 'login' ? loginTabId : registerTabId;
   const activePanelId = tab === 'login' ? loginPanelId : registerPanelId;
+
+  const switchTab = (nextTab) => navigate(nextTab === 'register' ? '/register' : '/login');
 
   return (
     <div className={styles.page}>
@@ -71,44 +112,50 @@ const Home = () => {
         <span>{isDark ? 'Light' : 'Dark'}</span>
       </button>
 
-      <div className={styles.left}>
-        <div className={styles.orb1} />
-        <div className={styles.orb2} />
-        <div className={styles.gridBg} />
+      <section className={styles.hero}>
+        <div className={styles.heroGlowA} />
+        <div className={styles.heroGlowB} />
+        <div className={styles.heroMesh} />
 
-        <motion.div className={styles.leftContent} variants={stagger} initial="initial" animate="animate">
-          <motion.div className={styles.brandRow} variants={up}>
-            <span className={styles.sigma}><Sigma size={32} /></span>
-            <div className={styles.badge}>
-              <span className={styles.badgeDot} />
-              Evaluarea Nationala 2026 - Matematica
-            </div>
-          </motion.div>
+        <motion.div className={styles.heroContent} variants={stagger} initial="initial" animate="animate">
+          <div className={styles.heroTop}>
+            <motion.div className={styles.brandLockup} variants={up}>
+              <div className={styles.logoMark} aria-hidden="true">
+                <span className={styles.logoPrimary}>EN</span>
+                <span className={styles.logoSecondary}>VIII</span>
+              </div>
 
-          <motion.h1 className={styles.headline} variants={up}>
-            <span className={styles.headlineGradient}>EN Matematica</span>
-            <span className={styles.headlineSub}>Clasa a VIII-a - Interactiv</span>
-          </motion.h1>
+              <div className={styles.brandCopy}>
+                <span className={styles.brandKicker}>Platforma pentru elevii de clasa a VIII-a</span>
+                <h1 className={styles.brandTitle}>Evaluare Nationala</h1>
+                <p className={styles.brandSubtitle}>
+                  Matematica, organizata clar pentru pregatire zilnica, revizuire si simulare reala.
+                </p>
+              </div>
+            </motion.div>
 
-          <motion.p className={styles.tagline} variants={up}>
-            Exerseaza pe capitole, urmareste rezolvari pas cu pas si intra in simulare
-            cu un ritm de lucru apropiat de examenul real.
-          </motion.p>
+            <motion.div className={styles.heroLead} variants={up}>
+              <span className={styles.heroBadge}>Pregatire clara pentru examenul real</span>
+              <p className={styles.heroText}>
+                Inveti capitol cu capitol, vezi unde gresesti si revii exact in punctele
+                care conteaza inainte de simulare.
+              </p>
+            </motion.div>
+          </div>
 
-          <motion.div className={styles.statRow} variants={up}>
-            {STATS.map((s) => (
-              <span key={s.label} className={styles.statChip}>
-                <span className={styles.statIcon}>{s.icon}</span>
-                <span className={styles.statNum}>{s.num}</span>
-                <span className={styles.statLabel}>{s.label}</span>
-              </span>
+          <motion.div className={styles.examGrid} variants={up}>
+            {EXAM_PANELS.map((panel) => (
+              <div key={panel.label} className={styles.examCard}>
+                <span className={styles.examLabel}>{panel.label}</span>
+                <span className={styles.examTitle}>{panel.title}</span>
+                <span className={styles.examSub}>{panel.sub}</span>
+              </div>
             ))}
           </motion.div>
 
-          <motion.div className={styles.supportList} variants={stagger}>
-            {SUPPORT_STEPS.map((step, index) => (
+          <motion.div className={styles.supportGrid} variants={stagger}>
+            {SUPPORT_STEPS.map((step) => (
               <motion.div key={step.title} className={styles.supportItem} variants={up}>
-                <span className={styles.supportIndex}>0{index + 1}</span>
                 <span className={styles.supportIcon}>{step.icon}</span>
                 <div className={styles.supportText}>
                   <span className={styles.supportTitle}>{step.title}</span>
@@ -117,29 +164,40 @@ const Home = () => {
               </motion.div>
             ))}
           </motion.div>
-        </motion.div>
-      </div>
 
-      <div className={styles.right}>
+          <motion.div className={styles.statRow} variants={up}>
+            {STATS.map((stat) => (
+              <span key={stat.label} className={styles.statChip}>
+                <span className={styles.statIcon}>{stat.icon}</span>
+                <span className={styles.statNum}>{stat.num}</span>
+                <span className={styles.statLabel}>{stat.label}</span>
+              </span>
+            ))}
+          </motion.div>
+        </motion.div>
+      </section>
+
+      <section className={styles.authSide}>
         <motion.div
           className={styles.authCard}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.15 }}
         >
-          <div className={styles.cardGlow} />
-
-          <div className={styles.authBrand}>
-            <span className={styles.authSigma}><Sigma size={24} /></span>
-            <span className={styles.authBrandName}>EN.Math</span>
+          <div className={styles.authTop}>
+            <div className={styles.authBrand}>
+              <span className={styles.authLogo}>EN</span>
+              <div className={styles.authBrandCopy}>
+                <span className={styles.authBrandName}>Evaluare Nationala</span>
+                <span className={styles.authBrandSub}>Contul tau de studiu</span>
+              </div>
+            </div>
+            <span className={styles.modeBadge}>{modeContent.badge}</span>
           </div>
 
           <div className={styles.authHeading}>
-            <span className={styles.authEyebrow}>Intri in mai putin de un minut</span>
-            <p className={styles.authIntro}>
-              Autentificarea iti pastreaza progresul, rezultatele si obiectivele zilnice
-              la fiecare sesiune de studiu.
-            </p>
+            <h2 className={styles.authTitle}>{modeContent.title}</h2>
+            <p className={styles.authIntro}>{modeContent.intro}</p>
           </div>
 
           <div className={styles.authFacts} aria-label="Avantaje">
@@ -157,7 +215,7 @@ const Home = () => {
               aria-controls={loginPanelId}
               tabIndex={tab === 'login' ? 0 : -1}
               className={`${styles.tab} ${tab === 'login' ? styles.tabActive : ''}`}
-              onClick={() => setTab('login')}
+              onClick={() => switchTab('login')}
             >
               Autentificare
             </button>
@@ -169,21 +227,23 @@ const Home = () => {
               aria-controls={registerPanelId}
               tabIndex={tab === 'register' ? 0 : -1}
               className={`${styles.tab} ${tab === 'register' ? styles.tabActive : ''}`}
-              onClick={() => setTab('register')}
+              onClick={() => switchTab('register')}
             >
               Inregistrare
             </button>
           </div>
 
           <div className={styles.formWrap} role="tabpanel" id={activePanelId} aria-labelledby={activeTabId}>
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" initial={false}>
               {tab === 'login'
-                ? <LoginForm key="login" onSwitch={() => setTab('register')} />
-                : <RegisterForm key="register" onSwitch={() => setTab('login')} />}
+                ? <LoginForm key="login" onSwitch={() => switchTab('register')} />
+                : <RegisterForm key="register" onSwitch={() => switchTab('login')} />}
             </AnimatePresence>
           </div>
+
+          <p className={styles.authNote}>{modeContent.support}</p>
         </motion.div>
-      </div>
+      </section>
     </div>
   );
 };
