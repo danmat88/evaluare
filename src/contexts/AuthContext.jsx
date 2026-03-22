@@ -13,6 +13,7 @@ import {
   subscribeToExerciseCompletions,
 } from '../firebase/results';
 import useExerciseStore from '../store/exerciseStore';
+import useTestStore from '../store/testStore';
 import { AuthContext } from './AuthContextValue';
 import {
   emptyExerciseStats,
@@ -22,6 +23,11 @@ import {
   readExerciseStats,
   resolveExerciseStats,
 } from '../utils/exerciseStats';
+import {
+  flushPendingResultWrites,
+  hasPendingResultWrites,
+  readPendingTestResults,
+} from '../utils/pendingResults';
 import { mergeSolvedExercises } from '../utils/studyInsights';
 import { STORAGE_CHANGE_EVENT, getStorageScope } from '../utils/storage';
 
@@ -104,6 +110,9 @@ export const AuthProvider = ({ children }) => {
 
         const currentStats = pickExerciseStats(useExerciseStore.getState());
         const remoteStats = lastRemoteStatsRef.current;
+        if (hasPendingResultWrites(storageScope)) {
+          return;
+        }
         const canonicalHasProgress = canonicalStats.xp > 0 || canonicalStats.totalCorrect > 0 || canonicalStats.totalAnswered > 0;
         const existingHasProgress = currentStats.xp > 0
           || currentStats.totalCorrect > 0
@@ -135,6 +144,49 @@ export const AuthProvider = ({ children }) => {
 
     return () => {
       cancelled = true;
+    };
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!user?.uid) return undefined;
+
+    const uid = user.uid;
+    const storageScope = getStorageScope(uid);
+    let flushing = false;
+    let cancelled = false;
+
+    const flushPendingWrites = async () => {
+      if (flushing || cancelled || !hasPendingResultWrites(storageScope)) return;
+      flushing = true;
+
+      try {
+        await flushPendingResultWrites(uid, storageScope);
+        const testState = useTestStore.getState();
+        if (testState.saveStatus === 'pending' && testState.attemptId) {
+          const stillPending = readPendingTestResults(storageScope)
+            .some((entry) => entry.attemptId === testState.attemptId);
+
+          if (!stillPending) {
+            useTestStore.setState({ saveStatus: 'saved' });
+          }
+        }
+      } catch {
+        // Leave queued writes in storage for the next retry opportunity.
+      } finally {
+        flushing = false;
+      }
+    };
+
+    void flushPendingWrites();
+    window.addEventListener('focus', flushPendingWrites);
+    window.addEventListener('online', flushPendingWrites);
+    window.addEventListener(STORAGE_CHANGE_EVENT, flushPendingWrites);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener('focus', flushPendingWrites);
+      window.removeEventListener('online', flushPendingWrites);
+      window.removeEventListener(STORAGE_CHANGE_EVENT, flushPendingWrites);
     };
   }, [user?.uid]);
 

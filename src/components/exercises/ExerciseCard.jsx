@@ -14,6 +14,7 @@ import useExerciseStore from '../../store/exerciseStore';
 import { useAuth } from '../../contexts';
 import { saveExerciseResult } from '../../firebase/results';
 import { createClientId } from '../../utils/ids';
+import { queuePendingExerciseResult } from '../../utils/pendingResults';
 import styles from './ExerciseCard.module.css';
 
 const DIFF_LABEL = ['', '* Usor', '** Mediu', '*** Greu'];
@@ -124,13 +125,22 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
     if (isCorrect) onAnswerChange?.(exercise.id, '');
 
     if (user?.uid) {
+      const attemptId = createClientId('exercise-attempt');
       saveExerciseResult(user.uid, {
-        attemptId: createClientId('exercise-attempt'),
+        attemptId,
         exerciseId: exercise.id,
         chapter: exercise.chapter,
         correct: isCorrect,
         timeSpent,
-      }).catch(() => {});
+      }).catch(() => {
+        queuePendingExerciseResult(user.uid, {
+          attemptId,
+          exerciseId: exercise.id,
+          chapter: exercise.chapter,
+          correct: isCorrect,
+          timeSpent,
+        });
+      });
     }
 
     onResult?.({

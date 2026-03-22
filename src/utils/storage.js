@@ -9,6 +9,8 @@ export const STORAGE_KEYS = {
   focusMode: 'enmath:focus-mode:v1',
   drafts: 'enmath:answer-drafts:v1',
   commandRecent: 'enmath:command-recent:v1',
+  pendingExerciseResults: 'enmath:pending-exercise-results:v1',
+  pendingTestResults: 'enmath:pending-test-results:v1',
   reduceMotion: 'enmath:reduce-motion:v1',
   testSession: 'enmath:test-session:v1',
   studyInsights: 'enmath:study-insights:v1',

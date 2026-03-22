@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -82,9 +82,9 @@ export default function RegisterForm({ onSwitch }) {
   const passwordInputRefs = useRef({});
 
   const {
+    control,
     register,
     handleSubmit,
-    watch,
     formState: { errors, isSubmitting, dirtyFields },
   } = useForm({
     resolver: zodResolver(schema),
@@ -93,7 +93,11 @@ export default function RegisterForm({ onSwitch }) {
     shouldFocusError: true,
   });
 
-  const valoareParola = watch('password', '');
+  const valoareParola = useWatch({
+    control,
+    name: 'password',
+    defaultValue: '',
+  });
   const { scor, eticheta: etPutere, culoare } = putereParola(valoareParola);
 
   const onSubmit = async (data) => {

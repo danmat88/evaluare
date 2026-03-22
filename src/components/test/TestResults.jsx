@@ -63,6 +63,7 @@ const STAT = ({ label, value, color, delay, icon }) => (
 const TestResults = () => {
   const results = useTestStore((state) => state.results);
   const resetTest = useTestStore((state) => state.resetTest);
+  const saveStatus = useTestStore((state) => state.saveStatus);
   const navigate = useNavigate();
 
   if (!results) return null;
@@ -84,6 +85,14 @@ const TestResults = () => {
   const BadgeIcon = badgeInfo.Icon;
   const great = percentage >= 70;
   const nextStep = buildNextStep(results);
+  const saveMessage = saveStatus === 'pending'
+    ? 'Rezultatul este pastrat local si va fi sincronizat automat cand conexiunea revine.'
+    : saveStatus === 'saving'
+      ? 'Rezultatul se sincronizeaza acum cu profilul tau.'
+      : 'Rezultatul a fost salvat in profilul tau.';
+  const headingMessage = autoSubmitted
+    ? `Timpul s-a incheiat, iar testul a fost predat automat. ${saveMessage}`
+    : saveMessage;
 
   return (
     <div className={styles.page}>
@@ -109,9 +118,7 @@ const TestResults = () => {
             <ChalkText color="yellow" size="2xl" glow animated>
               {great ? 'Rezultat excelent!' : 'Test finalizat!'}
             </ChalkText>
-            <span className={styles.subhead}>
-              {autoSubmitted ? 'Timpul s-a incheiat, iar testul a fost predat automat.' : 'Rezultatul a fost salvat in profilul tau.'}
-            </span>
+            <span className={styles.subhead}>{headingMessage}</span>
           </div>
 
           <div className={styles.stats}>

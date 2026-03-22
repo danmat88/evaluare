@@ -3,6 +3,7 @@ import { getTestById, getAllTests } from '../firebase/exercises';
 import { saveTestResult } from '../firebase/results';
 import { matchAnswer } from '../utils/answerMatcher';
 import { createClientId } from '../utils/ids';
+import { queuePendingTestResult } from '../utils/pendingResults';
 import {
   STORAGE_KEYS,
   getStorageScope,
@@ -105,6 +106,7 @@ const useTestStore = create((set, get) => ({
   started: false,
   finished: false,
   submitting: false,
+  saveStatus: 'idle',
   results: null,
   loading: false,
   uid: null,
@@ -139,6 +141,7 @@ const useTestStore = create((set, get) => ({
       answers: restored?.answers && typeof restored.answers === 'object' ? restored.answers : {},
       finished: false,
       submitting: false,
+      saveStatus: 'idle',
       results: null,
       started: Boolean(restored?.started && restored?.timeLeft > 0),
       timeLeft: Number.isFinite(restored?.timeLeft) ? Math.max(restored.timeLeft, 0) : TEST_DURATION,
@@ -210,11 +213,18 @@ const useTestStore = create((set, get) => ({
 
     const results = buildResults(currentTest, answers, timeLeft, Boolean(options.autoSubmitted));
     const finalAttemptId = get().attemptId || createClientId('test-attempt');
+    const finalUid = uid || get().uid;
 
-    set({ finished: true, started: false, submitting: true, results, attemptId: finalAttemptId });
+    set({
+      finished: true,
+      started: false,
+      submitting: true,
+      saveStatus: finalUid ? 'saving' : 'idle',
+      results,
+      attemptId: finalAttemptId,
+    });
     removeScopedJSON(STORAGE_KEYS.testSession, storageScope);
 
-    const finalUid = uid || get().uid;
     try {
       if (finalUid) {
         await saveTestResult(finalUid, {
@@ -226,6 +236,23 @@ const useTestStore = create((set, get) => ({
           answers,
           timeSpent: results.timeSpent,
         });
+        set({ saveStatus: 'saved' });
+      }
+      if (!finalUid) {
+        set({ saveStatus: 'idle' });
+      }
+    } catch {
+      if (finalUid) {
+        queuePendingTestResult(finalUid, {
+          attemptId: finalAttemptId,
+          testId: currentTest.id,
+          title: currentTest.title || 'Test simulat',
+          score: results.score,
+          totalPoints: results.totalPoints,
+          answers,
+          timeSpent: results.timeSpent,
+        });
+        set({ saveStatus: 'pending' });
       }
     } finally {
       set({ submitting: false });
@@ -241,6 +268,7 @@ const useTestStore = create((set, get) => ({
       started: false,
       finished: false,
       submitting: false,
+      saveStatus: 'idle',
       results: null,
       uid: null,
       attemptId: null,
