@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react';
 import { ThemeContext } from './ThemeContextValue';
 
 const STORAGE_KEY = 'en-theme';
+const THEME_COLORS = {
+  dark: '#070b13',
+  light: '#edf6ff',
+};
 
 const getInitialTheme = () => {
   const stored = localStorage.getItem(STORAGE_KEY);
@@ -9,11 +13,26 @@ const getInitialTheme = () => {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 };
 
+const applyTheme = (theme) => {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.documentElement.style.colorScheme = theme;
+
+  let themeColorMeta = document.querySelector('meta[name="theme-color"]');
+
+  if (!themeColorMeta) {
+    themeColorMeta = document.createElement('meta');
+    themeColorMeta.setAttribute('name', 'theme-color');
+    document.head.appendChild(themeColorMeta);
+  }
+
+  themeColorMeta.setAttribute('content', THEME_COLORS[theme] ?? THEME_COLORS.dark);
+};
+
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(getInitialTheme);
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    applyTheme(theme);
     localStorage.setItem(STORAGE_KEY, theme);
   }, [theme]);
 
