@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   subscribeToAuth,
   subscribeToProfile,
@@ -9,16 +9,22 @@ import {
 } from '../firebase/auth';
 import useExerciseStore from '../store/exerciseStore';
 import { AuthContext } from './AuthContextValue';
+import {
+  emptyExerciseStats,
+  exerciseStatsEqual,
+  normalizeExerciseStats,
+  pickExerciseStats,
+  readExerciseStats,
+  resolveExerciseStats,
+} from '../utils/exerciseStats';
+import { STORAGE_CHANGE_EVENT, getStorageScope } from '../utils/storage';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const lastRemoteStatsRef = useRef(emptyExerciseStats());
 
-  // Hydrate the local store once per login session.
-  const hydratedUid = useRef(null);
-
-  // Effect 1: auth state + real-time profile listener.
   useEffect(() => {
     let profileUnsub = null;
 
@@ -29,25 +35,35 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (firebaseUser) {
+        const storageScope = getStorageScope(firebaseUser.uid);
+        useExerciseStore.getState().setStorageScope(storageScope);
         setUser(firebaseUser);
+        setLoading(true);
 
         profileUnsub = subscribeToProfile(firebaseUser.uid, (prof) => {
+          const remoteStats = normalizeExerciseStats(prof);
+          const localStats = readExerciseStats(storageScope);
+          const resolvedStats = resolveExerciseStats({ localStats, remoteStats });
+
+          lastRemoteStatsRef.current = remoteStats;
+          useExerciseStore.getState().hydrateStats(resolvedStats, { scope: storageScope });
+
+          if (!exerciseStatsEqual(resolvedStats, remoteStats)) {
+            updateUserStats(firebaseUser.uid, resolvedStats)
+              .then(() => {
+                lastRemoteStatsRef.current = normalizeExerciseStats(resolvedStats);
+              })
+              .catch(() => {});
+          }
+
           setProfile(prof);
           setLoading(false);
         });
       } else {
         setUser(null);
         setProfile(null);
-        hydratedUid.current = null;
-
-        useExerciseStore.setState({
-          xp: 0,
-          streak: 0,
-          bestStreak: 0,
-          totalCorrect: 0,
-          totalAnswered: 0,
-        });
-
+        lastRemoteStatsRef.current = emptyExerciseStats();
+        useExerciseStore.getState().resetStats({ scope: 'guest' });
         setLoading(false);
       }
     });
@@ -58,44 +74,86 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  // Effect 2: hydrate exercise stats from profile once.
   useEffect(() => {
-    if (!user || !profile || hydratedUid.current === user.uid) return;
-    hydratedUid.current = user.uid;
+    if (!user?.uid) return undefined;
 
-    useExerciseStore.setState({
-      xp: profile.xp ?? 0,
-      streak: profile.streak ?? 0,
-      bestStreak: profile.bestStreak ?? 0,
-      totalCorrect: profile.totalCorrect ?? 0,
-      totalAnswered: profile.totalAnswered ?? 0,
-    });
-  }, [user, profile]);
+    const storageScope = getStorageScope(user.uid);
 
-  // Effect 3: debounce-write store changes back to Firestore.
+    const syncLocalStats = () => {
+      const localStats = readExerciseStats(storageScope);
+      const currentStats = pickExerciseStats(useExerciseStore.getState());
+      const resolvedStats = resolveExerciseStats({ localStats, remoteStats: currentStats });
+
+      if (!exerciseStatsEqual(resolvedStats, currentStats)) {
+        useExerciseStore.getState().hydrateStats(resolvedStats, { scope: storageScope });
+      }
+    };
+
+    window.addEventListener('focus', syncLocalStats);
+    window.addEventListener('storage', syncLocalStats);
+    window.addEventListener(STORAGE_CHANGE_EVENT, syncLocalStats);
+
+    return () => {
+      window.removeEventListener('focus', syncLocalStats);
+      window.removeEventListener('storage', syncLocalStats);
+      window.removeEventListener(STORAGE_CHANGE_EVENT, syncLocalStats);
+    };
+  }, [user?.uid]);
+
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!user?.uid) return undefined;
 
     const uid = user.uid;
-    let timer;
-    const unsub = useExerciseStore.subscribe((state) => {
+    let timer = null;
+
+    const syncStats = async (stats) => {
+      const normalizedStats = normalizeExerciseStats(stats);
+      if (exerciseStatsEqual(normalizedStats, lastRemoteStatsRef.current)) return;
+
+      try {
+        await updateUserStats(uid, normalizedStats);
+        lastRemoteStatsRef.current = normalizedStats;
+      } catch {
+        // Keep local progress intact; the next sync opportunity will retry.
+      }
+    };
+
+    const flushStats = () => {
       clearTimeout(timer);
-      timer = setTimeout(() => {
-        updateUserStats(uid, {
-          xp: state.xp,
-          streak: state.streak,
-          bestStreak: state.bestStreak,
-          totalCorrect: state.totalCorrect,
-          totalAnswered: state.totalAnswered,
-        }).catch(() => {});
-      }, 1500);
-    });
+      void syncStats(pickExerciseStats(useExerciseStore.getState()));
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        flushStats();
+      }
+    };
+
+    const unsubscribe = useExerciseStore.subscribe(
+      pickExerciseStats,
+      (stats, previousStats) => {
+        if (exerciseStatsEqual(stats, previousStats) || exerciseStatsEqual(stats, lastRemoteStatsRef.current)) {
+          return;
+        }
+
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          void syncStats(stats);
+        }, 700);
+      },
+      { equalityFn: exerciseStatsEqual },
+    );
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', flushStats);
 
     return () => {
       clearTimeout(timer);
-      unsub();
+      unsubscribe();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', flushStats);
     };
-  }, [user]);
+  }, [user?.uid]);
 
   const login = (data) => loginUser(data);
   const register = (data) => registerUser(data);

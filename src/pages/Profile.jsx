@@ -9,7 +9,11 @@ import { useAuth } from '../contexts';
 import useExerciseStore from '../store/exerciseStore';
 import { getUserTestResults } from '../firebase/results';
 import { STORAGE_CHANGE_EVENT, getStorageScope } from '../utils/storage';
-import { readStudyInsights, summarizeStudyInsights } from '../utils/studyInsights';
+import {
+  mergeChapterProgress,
+  readStudyInsights,
+  summarizeStudyInsights,
+} from '../utils/studyInsights';
 import { getLevel, getLevelProgress } from '../utils/xp';
 import styles from './Profile.module.css';
 
@@ -75,7 +79,10 @@ const Profile = () => {
   const level = getLevel(xp);
   const pct = getLevelProgress(xp);
   const accuracy = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0;
-  const progress = useMemo(() => profile?.progress || {}, [profile?.progress]);
+  const progress = useMemo(
+    () => mergeChapterProgress(profile?.progress, studyInsights),
+    [profile?.progress, studyInsights],
+  );
   const studySummary = useMemo(
     () => summarizeStudyInsights(studyInsights, CHAPTERS),
     [studyInsights],

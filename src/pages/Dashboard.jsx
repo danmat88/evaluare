@@ -28,7 +28,11 @@ import {
   readScopedJSON,
   todayStamp,
 } from '../utils/storage';
-import { readStudyInsights, summarizeStudyInsights } from '../utils/studyInsights';
+import {
+  mergeChapterProgress,
+  readStudyInsights,
+  summarizeStudyInsights,
+} from '../utils/studyInsights';
 import styles from './Dashboard.module.css';
 
 const DAILY_GOAL = 12;
@@ -148,7 +152,10 @@ const Dashboard = () => {
     };
   }, [refreshJourney]);
 
-  const progress = useMemo(() => profile?.progress || {}, [profile?.progress]);
+  const progress = useMemo(
+    () => mergeChapterProgress(profile?.progress, studyInsights),
+    [profile?.progress, studyInsights],
+  );
 
   const weakest = useMemo(() => {
     let minPct = 101;
@@ -428,7 +435,7 @@ const Dashboard = () => {
             <TrendingUp size={13} />
             <span className={styles.sectionLabel}>Progres capitole</span>
           </div>
-          <ProgressDashboard profile={profile} xp={xp} />
+          <ProgressDashboard progress={progress} xp={xp} />
         </motion.div>
 
       </motion.div>

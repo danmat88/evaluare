@@ -13,7 +13,6 @@ import Particles from '../ui/Particles';
 import useExerciseStore from '../../store/exerciseStore';
 import { useAuth } from '../../contexts';
 import { saveExerciseResult } from '../../firebase/results';
-import { matchAnswer } from '../../utils/answerMatcher';
 import styles from './ExerciseCard.module.css';
 
 const DIFF_LABEL = ['', '* Usor', '** Mediu', '*** Greu'];
@@ -55,7 +54,8 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
   const boardRef = useRef(null);
   const startedAtRef = useRef(null);
 
-  const { streak } = useExerciseStore();
+  const streak = useExerciseStore((state) => state.streak);
+  const submitExerciseAnswer = useExerciseStore((state) => state.submitExerciseAnswer);
   const { user } = useAuth();
 
   const updateAnswer = useCallback((nextValue) => {
@@ -82,9 +82,12 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
   const handleSubmit = () => {
     if (!answer || submitted) return;
 
-    const isCorrect = matchAnswer(exercise.answer, answer);
     const attemptStartedAt = startedAtRef.current ?? Date.now();
     const timeSpent = Math.max(1, Math.round((Date.now() - attemptStartedAt) / 1000));
+    const result = submitExerciseAnswer({ exercise, answer });
+    if (!result) return;
+
+    const isCorrect = result.correct;
 
     setCorrect(isCorrect);
     setSubmitted(true);
@@ -98,28 +101,8 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
       setTimeout(() => setShowParticles(false), 1200);
     }
 
-    let earnedXp = 0;
-    useExerciseStore.setState((state) => {
-      const newStreak = isCorrect ? state.streak + 1 : 0;
-      let xpGain = isCorrect ? 10 : 0;
-      if (newStreak === 3) xpGain += 5;
-      if (newStreak === 5) xpGain += 10;
-      if (newStreak > 5 && newStreak % 5 === 0) xpGain += 10;
-      earnedXp = xpGain;
-      return {
-        answered: true,
-        correct: isCorrect,
-        streak: newStreak,
-        bestStreak: Math.max(state.bestStreak, newStreak),
-        xp: state.xp + xpGain,
-        lastXpGain: xpGain,
-        totalCorrect: isCorrect ? state.totalCorrect + 1 : state.totalCorrect,
-        totalAnswered: state.totalAnswered + 1,
-      };
-    });
-
-    if (isCorrect && earnedXp > 0) {
-      setXpFloat(earnedXp);
+    if (isCorrect && result.xpGain > 0) {
+      setXpFloat(result.xpGain);
       setTimeout(() => setXpFloat(null), 1100);
     }
 
@@ -144,6 +127,9 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
     setCorrect(null);
     setShowSolution(false);
     setFlash(null);
+    setFeedbackMsg('');
+    setShowParticles(false);
+    setXpFloat(null);
   };
 
   const diff = exercise.difficulty || 1;

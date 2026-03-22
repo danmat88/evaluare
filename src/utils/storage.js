@@ -1,4 +1,5 @@
 export const STORAGE_KEYS = {
+  exerciseStats: 'enmath:exercise-stats:v1',
   favorites: 'enmath:favorites:v1',
   solved: 'enmath:solved:v1',
   lastExercise: 'enmath:last-exercise:v1',

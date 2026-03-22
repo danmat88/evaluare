@@ -6,14 +6,14 @@ const normalizeText = (value) =>
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[−–—]/g, '-')
-    .replace(/[×·]/g, '*')
-    .replace(/÷/g, '/')
-    .replace(/≤/g, '<=')
-    .replace(/≥/g, '>=')
-    .replace(/≠/g, '!=')
-    .replace(/π/g, 'pi')
-    .replace(/√/g, 'sqrt')
+    .replace(/[\u2212\u2013\u2014]/g, '-')
+    .replace(/[\u00d7\u00b7]/g, '*')
+    .replace(/\u00f7/g, '/')
+    .replace(/\u2264/g, '<=')
+    .replace(/\u2265/g, '>=')
+    .replace(/\u2260/g, '!=')
+    .replace(/\u03c0/g, 'pi')
+    .replace(/\u221a/g, 'sqrt')
     .replace(/(?<=\d),(?=\d)/g, '.')
     .replace(/\s+/g, ' ')
     .trim();
@@ -245,7 +245,9 @@ const matchUnorderedValues = (expectedValues, actualValues, matcher) => {
 
   const used = new Set();
   return expectedValues.every((expectedValue) => {
-    const matchIndex = actualValues.findIndex((actualValue, index) => !used.has(index) && matcher(expectedValue, actualValue));
+    const matchIndex = actualValues.findIndex(
+      (actualValue, index) => !used.has(index) && matcher(expectedValue, actualValue),
+    );
     if (matchIndex === -1) return false;
     used.add(matchIndex);
     return true;

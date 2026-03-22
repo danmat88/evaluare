@@ -21,7 +21,8 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly([
              'name', 'email', 'createdAt', 'progress',
              'testsCompleted', 'totalScore',
-             'xp', 'streak', 'bestStreak', 'totalCorrect', 'totalAnswered'
+             'xp', 'streak', 'bestStreak', 'totalCorrect', 'totalAnswered',
+             'statsUpdatedAt'
            ]);
     }
 

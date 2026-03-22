@@ -25,14 +25,29 @@ export const registerUser = async ({ name, email, password }) => {
     bestStreak: 0,
     totalCorrect: 0,
     totalAnswered: 0,
+    statsUpdatedAt: 0,
   });
 
   return credential.user;
 };
 
 /** Persist gamification stats back to Firestore (called on every exercise answer). */
-export const updateUserStats = (uid, { xp, streak, bestStreak, totalCorrect, totalAnswered }) =>
-  updateDoc(doc(db, 'users', uid), { xp, streak, bestStreak, totalCorrect, totalAnswered });
+export const updateUserStats = (uid, {
+  xp,
+  streak,
+  bestStreak,
+  totalCorrect,
+  totalAnswered,
+  statsUpdatedAt,
+}) =>
+  updateDoc(doc(db, 'users', uid), {
+    xp,
+    streak,
+    bestStreak,
+    totalCorrect,
+    totalAnswered,
+    statsUpdatedAt: Number.isFinite(statsUpdatedAt) ? Math.max(0, Math.round(statsUpdatedAt)) : Date.now(),
+  });
 
 export const loginUser = ({ email, password }) =>
   signInWithEmailAndPassword(auth, email, password);

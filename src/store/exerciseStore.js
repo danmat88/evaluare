@@ -1,12 +1,17 @@
 import { create } from 'zustand';
-import { getExercisesByChapter, getAllExercises } from '../firebase/exercises';
+import { subscribeWithSelector } from 'zustand/middleware';
+import { getAllExercises, getExercisesByChapter } from '../firebase/exercises';
 import { matchAnswer } from '../utils/answerMatcher';
+import { getStorageScope } from '../utils/storage';
+import {
+  computeExerciseAnswerStats,
+  emptyExerciseStats,
+  normalizeExerciseStats,
+  readExerciseStats,
+  writeExerciseStats,
+} from '../utils/exerciseStats';
 
-const XP_CORRECT   = 10;
-const XP_STREAK_3  = 5;   // bonus at 3 streak
-const XP_STREAK_5  = 10;  // bonus at 5 streak
-
-const useExerciseStore = create((set, get) => ({
+const initialState = {
   exercises: [],
   currentExercise: null,
   currentChapter: null,
@@ -15,25 +20,88 @@ const useExerciseStore = create((set, get) => ({
   answered: false,
   correct: null,
   loading: false,
+  storageScope: 'guest',
+  ...emptyExerciseStats(),
+};
 
-  // Gamification
-  xp: 0,
-  streak: 0,
-  bestStreak: 0,
-  totalCorrect: 0,
-  totalAnswered: 0,
-  lastXpGain: 0,
+const persistStats = (storageScope, stats) =>
+  writeExerciseStats(getStorageScope(storageScope), stats);
+
+const useExerciseStore = create(subscribeWithSelector((set, get) => ({
+  ...initialState,
 
   loadChapter: async (chapter) => {
     set({ loading: true, currentChapter: chapter, currentExercise: null, answered: false });
-    const exercises = await getExercisesByChapter(chapter);
-    set({ exercises, loading: false });
+
+    try {
+      const exercises = await getExercisesByChapter(chapter);
+      set({ exercises, loading: false });
+    } catch {
+      set({ exercises: [], loading: false });
+    }
   },
 
   loadAll: async () => {
     set({ loading: true });
-    const exercises = await getAllExercises();
-    set({ exercises, loading: false });
+
+    try {
+      const exercises = await getAllExercises();
+      set({ exercises, loading: false });
+    } catch {
+      set({ exercises: [], loading: false });
+    }
+  },
+
+  setStorageScope: (scope, options = {}) => {
+    const storageScope = getStorageScope(scope);
+    const nextStats = options.hydrate === false
+      ? normalizeExerciseStats(get())
+      : readExerciseStats(storageScope);
+
+    set({
+      storageScope,
+      ...nextStats,
+      lastXpGain: options.resetXpGain === false ? nextStats.lastXpGain : 0,
+    });
+
+    if (options.persist) {
+      persistStats(storageScope, nextStats);
+    }
+
+    return nextStats;
+  },
+
+  hydrateStats: (stats, options = {}) => {
+    const storageScope = getStorageScope(options.scope ?? get().storageScope);
+    const nextStats = normalizeExerciseStats(stats);
+
+    set({
+      storageScope,
+      ...nextStats,
+      lastXpGain: options.resetXpGain === false ? nextStats.lastXpGain : 0,
+    });
+
+    if (options.persist !== false) {
+      persistStats(storageScope, nextStats);
+    }
+
+    return nextStats;
+  },
+
+  resetStats: (options = {}) => {
+    const storageScope = getStorageScope(options.scope ?? get().storageScope);
+    const nextStats = emptyExerciseStats();
+
+    set({
+      storageScope,
+      ...nextStats,
+    });
+
+    if (options.persist) {
+      persistStats(storageScope, nextStats);
+    }
+
+    return nextStats;
   },
 
   setCurrentExercise: (exercise) =>
@@ -42,36 +110,63 @@ const useExerciseStore = create((set, get) => ({
   setUserAnswer: (answer) => set({ userAnswer: answer }),
 
   submitAnswer: () => {
-    const { currentExercise, userAnswer, streak, bestStreak, xp, totalCorrect, totalAnswered } = get();
-    if (!currentExercise) return;
+    const { currentExercise, userAnswer, storageScope } = get();
+    if (!currentExercise) return null;
 
     const correct = matchAnswer(currentExercise.answer, userAnswer);
-    let xpGain = 0;
-    let newStreak = correct ? streak + 1 : 0;
-
-    if (correct) {
-      xpGain += XP_CORRECT;
-      if (newStreak === 3) xpGain += XP_STREAK_3;
-      if (newStreak === 5) xpGain += XP_STREAK_5;
-      if (newStreak > 0 && newStreak % 5 === 0 && newStreak > 5) xpGain += XP_STREAK_5;
-    }
+    const nextStats = computeExerciseAnswerStats(get(), correct);
 
     set({
       answered: true,
       correct,
-      streak: newStreak,
-      bestStreak: Math.max(bestStreak, newStreak),
-      xp: xp + xpGain,
-      lastXpGain: xpGain,
-      totalCorrect: correct ? totalCorrect + 1 : totalCorrect,
-      totalAnswered: totalAnswered + 1,
+      ...nextStats,
     });
+
+    persistStats(storageScope, nextStats);
+
+    return {
+      correct,
+      xpGain: nextStats.lastXpGain,
+      xp: nextStats.xp,
+      streak: nextStats.streak,
+      bestStreak: nextStats.bestStreak,
+      totalCorrect: nextStats.totalCorrect,
+      totalAnswered: nextStats.totalAnswered,
+      statsUpdatedAt: nextStats.statsUpdatedAt,
+    };
+  },
+
+  submitExerciseAnswer: ({ exercise, answer }) => {
+    if (!exercise) return null;
+
+    const correct = matchAnswer(exercise.answer, answer);
+    const nextStats = computeExerciseAnswerStats(get(), correct);
+    const storageScope = get().storageScope;
+
+    set({
+      answered: true,
+      correct,
+      ...nextStats,
+    });
+
+    persistStats(storageScope, nextStats);
+
+    return {
+      correct,
+      xpGain: nextStats.lastXpGain,
+      xp: nextStats.xp,
+      streak: nextStats.streak,
+      bestStreak: nextStats.bestStreak,
+      totalCorrect: nextStats.totalCorrect,
+      totalAnswered: nextStats.totalAnswered,
+      statsUpdatedAt: nextStats.statsUpdatedAt,
+    };
   },
 
   revealSolution: () => set({ showSolution: true }),
-  hideSolution:   () => set({ showSolution: false }),
+  hideSolution: () => set({ showSolution: false }),
 
   reset: () => set({ userAnswer: '', answered: false, correct: null, showSolution: false }),
-}));
+})));
 
 export default useExerciseStore;

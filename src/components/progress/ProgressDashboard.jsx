@@ -48,9 +48,8 @@ const ChapterBar = ({ label, solved, total, color, delay }) => {
   );
 };
 
-const ProgressDashboard = ({ profile, xp = 0 }) => {
-  const progress = profile?.progress || {};
-  const totalSolved = Object.values(progress).reduce((sum, value) => sum + value, 0);
+const ProgressDashboard = ({ progress = {}, xp = 0 }) => {
+  const totalSolved = Object.values(progress).reduce((sum, value) => sum + Number(value || 0), 0);
   const totalAll = CHAPTERS.reduce((sum, chapter) => sum + chapter.total, 0);
   const overall = totalAll > 0 ? Math.round((totalSolved / totalAll) * 100) : 0;
   const level = getLevel(xp);

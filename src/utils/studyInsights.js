@@ -34,6 +34,28 @@ export const getReviewExerciseIds = (insights) =>
     .filter(exerciseNeedsReview)
     .map((record) => record.exerciseId);
 
+export const getSolvedProgressByChapter = (insights) =>
+  Object.values(normalizeInsights(insights).exercises).reduce((progress, record) => {
+    if (!record?.solved || !record.chapter) return progress;
+
+    return {
+      ...progress,
+      [record.chapter]: (progress[record.chapter] || 0) + 1,
+    };
+  }, {});
+
+export const mergeChapterProgress = (remoteProgress = {}, insights) => {
+  const normalizedRemote = remoteProgress && typeof remoteProgress === 'object' ? remoteProgress : {};
+  const localProgress = getSolvedProgressByChapter(insights);
+  const mergedProgress = { ...normalizedRemote };
+
+  Object.entries(localProgress).forEach(([chapter, solvedCount]) => {
+    mergedProgress[chapter] = Math.max(Number(normalizedRemote[chapter] || 0), Number(solvedCount || 0));
+  });
+
+  return mergedProgress;
+};
+
 export const recordExerciseAttempt = ({ exerciseId, chapter, correct, timeSpent }, scope = null) => {
   const insights = readStudyInsights(scope);
   const previous = insights.exercises[exerciseId] || {
