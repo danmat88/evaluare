@@ -1,6 +1,6 @@
-﻿import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Award, CircleGauge, ClipboardCheck, Home, RotateCcw, Target, Trophy } from 'lucide-react';
+import { Award, CircleGauge, ClipboardCheck, Clock3, Home, RotateCcw, Target, Trophy } from 'lucide-react';
 import Blackboard from '../blackboard/Blackboard';
 import ChalkText from '../blackboard/ChalkText';
 import Button from '../ui/Button';
@@ -24,6 +24,27 @@ const badge = (pct) => {
   return { Icon: ClipboardCheck, cls: styles.medalBase };
 };
 
+const formatDuration = (seconds) => {
+  const totalSeconds = Math.max(0, Number(seconds) || 0);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  if (hours > 0) return `${hours}h ${minutes.toString().padStart(2, '0')}m`;
+  return `${minutes} min`;
+};
+
+const buildNextStep = ({ percentage, unansweredCount, autoSubmitted }) => {
+  if (autoSubmitted && unansweredCount > 0) {
+    return 'Reia un test si lasa ultimele 10 minute doar pentru verificarea intrebarilor ramase.';
+  }
+  if (percentage >= 80) {
+    return 'Poti urca nivelul: continua cu o varianta noua sau revino la capitolul cel mai slab pentru finetisare.';
+  }
+  if (percentage >= 60) {
+    return 'Baza este buna. Revino pe exercitii pentru capitolele in care pierzi timp sau puncte.';
+  }
+  return 'Consolideaza materia pe capitole, apoi incearca din nou un test complet cu ritm mai calm.';
+};
+
 const STAT = ({ label, value, color, delay, icon }) => (
   <motion.div
     className={styles.stat}
@@ -40,17 +61,29 @@ const STAT = ({ label, value, color, delay, icon }) => (
 );
 
 const TestResults = () => {
-  const results = useTestStore((s) => s.results);
-  const resetTest = useTestStore((s) => s.resetTest);
+  const results = useTestStore((state) => state.results);
+  const resetTest = useTestStore((state) => state.resetTest);
   const navigate = useNavigate();
 
   if (!results) return null;
 
-  const { score, totalPoints, percentage } = results;
+  const {
+    score,
+    totalPoints,
+    percentage,
+    answeredCount,
+    totalQuestions,
+    unansweredCount,
+    timeSpent,
+    autoSubmitted,
+    subjectSummary = [],
+  } = results;
+
   const { g, color } = grade(percentage);
   const badgeInfo = badge(percentage);
   const BadgeIcon = badgeInfo.Icon;
   const great = percentage >= 70;
+  const nextStep = buildNextStep(results);
 
   return (
     <div className={styles.page}>
@@ -72,9 +105,14 @@ const TestResults = () => {
             <BadgeIcon size={34} strokeWidth={2.2} />
           </motion.div>
 
-          <ChalkText color="yellow" size="2xl" glow animated>
-            {great ? 'Rezultat excelent!' : 'Test finalizat!'}
-          </ChalkText>
+          <div className={styles.heading}>
+            <ChalkText color="yellow" size="2xl" glow animated>
+              {great ? 'Rezultat excelent!' : 'Test finalizat!'}
+            </ChalkText>
+            <span className={styles.subhead}>
+              {autoSubmitted ? 'Timpul s-a incheiat, iar testul a fost predat automat.' : 'Rezultatul a fost salvat in profilul tau.'}
+            </span>
+          </div>
 
           <div className={styles.stats}>
             <STAT
@@ -84,7 +122,6 @@ const TestResults = () => {
               delay={0.3}
               icon={<ClipboardCheck size={14} />}
             />
-            <div className={styles.divider} />
             <STAT
               label="Nota estimata"
               value={g}
@@ -92,7 +129,6 @@ const TestResults = () => {
               delay={0.4}
               icon={<Award size={14} />}
             />
-            <div className={styles.divider} />
             <STAT
               label="Corectitudine"
               value={`${percentage}%`}
@@ -111,12 +147,42 @@ const TestResults = () => {
             />
           </div>
 
+          <div className={styles.metaRow}>
+            <span className={styles.metaChip}><Clock3 size={13} /> {formatDuration(timeSpent)}</span>
+            <span className={styles.metaChip}><ClipboardCheck size={13} /> {answeredCount}/{totalQuestions} raspunsuri completate</span>
+            <span className={styles.metaChip}><Target size={13} /> {unansweredCount} ramase goale</span>
+          </div>
+
+          {subjectSummary.length > 0 && (
+            <div className={styles.subjectList}>
+              {subjectSummary.map((subject) => (
+                <div key={subject.id} className={styles.subjectRow}>
+                  <span className={styles.subjectLabel}>{subject.label}</span>
+                  <span className={styles.subjectMeta}>
+                    {subject.answered}/{subject.total} raspunsuri
+                  </span>
+                  <span className={styles.subjectScore}>
+                    {subject.score}/{subject.totalPoints}p
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className={styles.coachNote}>
+            <span className={styles.coachTitle}>Urmatorul pas recomandat</span>
+            <span className={styles.coachText}>{nextStep}</span>
+          </div>
+
           <div className={styles.actions}>
             <Button variant="ghost" size="sm" icon={<RotateCcw size={13} />} onClick={() => { resetTest(); navigate('/teste'); }}>
               Alt test
             </Button>
+            <Button variant="outline" size="sm" icon={<Target size={13} />} onClick={() => { resetTest(); navigate('/exercitii'); }}>
+              Revino la exercitii
+            </Button>
             <Button variant="primary" size="md" icon={<Home size={14} />} onClick={() => { resetTest(); navigate('/dashboard'); }}>
-              Inapoi acasa
+              Inapoi la dashboard
             </Button>
           </div>
         </motion.div>

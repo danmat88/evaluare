@@ -24,7 +24,13 @@ import {
 } from 'lucide-react';
 import ExerciseCard from './ExerciseCard';
 import useExerciseStore from '../../store/exerciseStore';
-import { STORAGE_KEYS, safeReadJSON, safeWriteJSON, todayStamp } from '../../utils/storage';
+import {
+  STORAGE_CHANGE_EVENT,
+  STORAGE_KEYS,
+  safeReadJSON,
+  safeWriteJSON,
+  todayStamp,
+} from '../../utils/storage';
 import styles from './ExerciseList.module.css';
 
 const CHAPTERS = [
@@ -105,6 +111,30 @@ const ExerciseList = ({ exercises = [], loading }) => {
   const current = filtered[idx] ?? null;
   const isFavorite = current ? favoriteIds.has(current.id) : false;
   const draftsCount = useMemo(() => Object.keys(draftAnswers || {}).length, [draftAnswers]);
+  const activeChapterLabel = chapter ? CHAPTERS.find((item) => item.id === chapter)?.label || 'Capitol selectat' : 'Toate capitolele';
+  const filteredSolvedCount = useMemo(
+    () => filtered.filter((exercise) => solvedIds.has(exercise.id)).length,
+    [filtered, solvedIds],
+  );
+  const filteredPendingCount = Math.max(filtered.length - filteredSolvedCount, 0);
+  const filteredMasteryPct = filtered.length > 0 ? Math.round((filteredSolvedCount / filtered.length) * 100) : 0;
+  const studyMessage = useMemo(() => {
+    if (focusMode) {
+      return 'Modul focus este activ. Lucreaza un exercitiu pe rand si foloseste Enter sau tastele sageata pentru ritm constant.';
+    }
+
+    if (viewMode === 'favorites') {
+      return filteredPendingCount > 0
+        ? `Ai ${filteredPendingCount} exercitii favorite pe care inca le poti inchide.`
+        : 'Toate exercitiile favorite din selectie sunt deja rezolvate.';
+    }
+
+    if (chapter) {
+      return `${activeChapterLabel}: ${filteredMasteryPct}% din selectia curenta este deja rezolvata.`;
+    }
+
+    return 'Alege un capitol sau foloseste Aleatoriu pentru o sesiune scurta, concentrata si usor de reluat.';
+  }, [activeChapterLabel, chapter, filteredMasteryPct, filteredPendingCount, focusMode, viewMode]);
 
   useEffect(() => {
     safeWriteJSON(STORAGE_KEYS.favorites, Array.from(favoriteIds));
@@ -121,6 +151,26 @@ const ExerciseList = ({ exercises = [], loading }) => {
   useEffect(() => {
     safeWriteJSON(STORAGE_KEYS.drafts, draftAnswers);
   }, [draftAnswers]);
+
+  useEffect(() => {
+    const syncWorkspaceState = () => {
+      setFavoriteIds(toSet(safeReadJSON(STORAGE_KEYS.favorites, [])));
+      setSolvedIds(toSet(safeReadJSON(STORAGE_KEYS.solved, [])));
+      setLastExercise(safeReadJSON(STORAGE_KEYS.lastExercise, null));
+      setFocusMode(Boolean(safeReadJSON(STORAGE_KEYS.focusMode, false)));
+      setDraftAnswers(safeReadJSON(STORAGE_KEYS.drafts, {}));
+    };
+
+    window.addEventListener('focus', syncWorkspaceState);
+    window.addEventListener('storage', syncWorkspaceState);
+    window.addEventListener(STORAGE_CHANGE_EVENT, syncWorkspaceState);
+
+    return () => {
+      window.removeEventListener('focus', syncWorkspaceState);
+      window.removeEventListener('storage', syncWorkspaceState);
+      window.removeEventListener(STORAGE_CHANGE_EVENT, syncWorkspaceState);
+    };
+  }, []);
 
   useEffect(() => {
     if (!current) return;
@@ -403,6 +453,19 @@ const ExerciseList = ({ exercises = [], loading }) => {
               >
                 {focusMode ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
               </button>
+            </div>
+          </div>
+
+          <div className={styles.studyStrip}>
+            <div className={styles.studyLead}>
+              <span className={styles.studyTitle}>Plan de lucru</span>
+              <span className={styles.studyText}>{studyMessage}</span>
+            </div>
+
+            <div className={styles.studyStats}>
+              <span className={styles.studyChip}>Rezolvate {filteredSolvedCount}</span>
+              <span className={styles.studyChip}>Ramase {filteredPendingCount}</span>
+              <span className={styles.studyChip}>Mastery {filteredMasteryPct}%</span>
             </div>
           </div>
 

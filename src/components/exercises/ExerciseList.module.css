@@ -297,6 +297,63 @@
   align-items: center;
 }
 
+.studyStrip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  padding: var(--sp-3);
+  border-radius: var(--r-lg);
+  border: var(--border-dim);
+  background: color-mix(in srgb, var(--bg-surface) 74%, transparent);
+}
+
+.studyLead {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.studyTitle {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.studyText {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.studyStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.studyChip {
+  min-height: 28px;
+  padding: 6px 10px;
+  border-radius: var(--r-full);
+  border: var(--border-dim);
+  background: color-mix(in srgb, var(--bg-card-soft) 78%, transparent);
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+}
+
 .searchBox {
   display: flex;
   align-items: center;
@@ -469,6 +526,10 @@
       'diff diff diff';
   }
 
+  .studyStrip {
+    align-items: flex-start;
+  }
+
   .searchBox {
     grid-area: search;
   }
@@ -535,6 +596,10 @@
   }
 
   .exerciseArea {
+    padding: var(--sp-3);
+  }
+
+  .studyStrip {
     padding: var(--sp-3);
   }
 

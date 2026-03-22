@@ -8,6 +8,14 @@ export const STORAGE_KEYS = {
   drafts: 'enmath:answer-drafts:v1',
   commandRecent: 'enmath:command-recent:v1',
   reduceMotion: 'enmath:reduce-motion:v1',
+  testSession: 'enmath:test-session:v1',
+};
+
+export const STORAGE_CHANGE_EVENT = 'enmath:storage-change';
+
+const emitStorageChange = (key, value) => {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent(STORAGE_CHANGE_EVENT, { detail: { key, value } }));
 };
 
 export const safeReadJSON = (key, fallback) => {
@@ -26,9 +34,27 @@ export const safeWriteJSON = (key, value) => {
   if (typeof window === 'undefined') return;
   try {
     window.localStorage.setItem(key, JSON.stringify(value));
+    emitStorageChange(key, value);
   } catch {
     // Ignore quota/serialization errors; UX features should fail gracefully.
   }
 };
 
-export const todayStamp = () => new Date().toISOString().slice(0, 10);
+export const safeRemoveJSON = (key) => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem(key);
+    emitStorageChange(key, null);
+  } catch {
+    // Ignore quota errors; cleanup should fail gracefully.
+  }
+};
+
+export const dateStamp = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+export const todayStamp = () => dateStamp(new Date());

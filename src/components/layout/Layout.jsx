@@ -15,7 +15,7 @@ import { motion } from 'framer-motion';
 import { useAuth, useTheme } from '../../contexts';
 import XPBar from '../ui/XPBar';
 import CommandPalette from './CommandPalette';
-import { STORAGE_KEYS, safeReadJSON } from '../../utils/storage';
+import { STORAGE_CHANGE_EVENT, STORAGE_KEYS, safeReadJSON } from '../../utils/storage';
 import styles from './Layout.module.css';
 
 const NAV = [
@@ -59,9 +59,11 @@ const Layout = ({ children }) => {
     applyMotion();
     window.addEventListener('focus', applyMotion);
     window.addEventListener('storage', applyMotion);
+    window.addEventListener(STORAGE_CHANGE_EVENT, applyMotion);
     return () => {
       window.removeEventListener('focus', applyMotion);
       window.removeEventListener('storage', applyMotion);
+      window.removeEventListener(STORAGE_CHANGE_EVENT, applyMotion);
     };
   }, []);
 

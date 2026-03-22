@@ -65,6 +65,9 @@
 .footer {
   text-align: center;
   margin-top: 2px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .switchBtn {
@@ -72,4 +75,9 @@
   background: none;
   border: 0;
   display: inline;
+  transition: opacity var(--t-fast);
+}
+
+.switchBtn:hover {
+  opacity: 0.88;
 }

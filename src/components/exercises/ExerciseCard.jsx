@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { BlockMath } from 'react-katex';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, CheckCircle2, Eye, Flame, RotateCcw, XCircle } from 'lucide-react';
@@ -12,6 +12,7 @@ import Particles from '../ui/Particles';
 import useExerciseStore from '../../store/exerciseStore';
 import { useAuth } from '../../contexts';
 import { saveExerciseResult } from '../../firebase/results';
+import { matchAnswer } from '../../utils/answerMatcher';
 import styles from './ExerciseCard.module.css';
 
 const DIFF_LABEL = ['', '* Usor', '** Mediu', '*** Greu'];
@@ -51,6 +52,7 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
   const [feedbackMsg, setFeedbackMsg] = useState('');
   const [xpFloat, setXpFloat] = useState(null);
   const boardRef = useRef(null);
+  const startedAtRef = useRef(null);
 
   const { streak } = useExerciseStore();
   const { user } = useAuth();
@@ -61,6 +63,7 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
   }, [exercise.id, onAnswerChange]);
 
   useEffect(() => {
+    startedAtRef.current = Date.now();
     setAnswer(initialAnswer || '');
     setSubmitted(false);
     setCorrect(null);
@@ -71,13 +74,16 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
     setXpFloat(null);
   }, [exercise.id, initialAnswer]);
 
-  const handleKey = (v) => !submitted && updateAnswer(`${answer}${v}`);
+  const handleKey = (value) => !submitted && updateAnswer(`${answer}${value}`);
   const handleBackspace = () => !submitted && updateAnswer(answer.slice(0, -1));
   const handleClear = () => !submitted && updateAnswer('');
 
   const handleSubmit = () => {
     if (!answer || submitted) return;
-    const isCorrect = answer.trim() === String(exercise.answer).trim();
+
+    const isCorrect = matchAnswer(exercise.answer, answer);
+    const attemptStartedAt = startedAtRef.current ?? Date.now();
+    const timeSpent = Math.max(1, Math.round((Date.now() - attemptStartedAt) / 1000));
 
     setCorrect(isCorrect);
     setSubmitted(true);
@@ -92,8 +98,8 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
     }
 
     let earnedXp = 0;
-    useExerciseStore.setState((s) => {
-      const newStreak = isCorrect ? s.streak + 1 : 0;
+    useExerciseStore.setState((state) => {
+      const newStreak = isCorrect ? state.streak + 1 : 0;
       let xpGain = isCorrect ? 10 : 0;
       if (newStreak === 3) xpGain += 5;
       if (newStreak === 5) xpGain += 10;
@@ -103,11 +109,11 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
         answered: true,
         correct: isCorrect,
         streak: newStreak,
-        bestStreak: Math.max(s.bestStreak, newStreak),
-        xp: s.xp + xpGain,
+        bestStreak: Math.max(state.bestStreak, newStreak),
+        xp: state.xp + xpGain,
         lastXpGain: xpGain,
-        totalCorrect: isCorrect ? s.totalCorrect + 1 : s.totalCorrect,
-        totalAnswered: s.totalAnswered + 1,
+        totalCorrect: isCorrect ? state.totalCorrect + 1 : state.totalCorrect,
+        totalAnswered: state.totalAnswered + 1,
       };
     });
 
@@ -123,14 +129,15 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
         exerciseId: exercise.id,
         chapter: exercise.chapter,
         correct: isCorrect,
-        timeSpent: 0,
+        timeSpent,
       }).catch(() => {});
     }
 
-    onResult?.({ exerciseId: exercise.id, correct: isCorrect });
+    onResult?.({ exerciseId: exercise.id, correct: isCorrect, timeSpent });
   };
 
   const handleReset = () => {
+    startedAtRef.current = Date.now();
     updateAnswer('');
     setSubmitted(false);
     setCorrect(null);

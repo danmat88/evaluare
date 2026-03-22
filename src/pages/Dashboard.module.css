@@ -412,6 +412,64 @@
   background: linear-gradient(90deg, var(--neon-mint), var(--neon-cyan), var(--neon-yellow));
 }
 
+.coachGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+
+.coachStep {
+  border-radius: var(--r-lg);
+  border: var(--border-dim);
+  background: color-mix(in srgb, var(--bg-surface) 74%, transparent);
+  padding: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.coachEyebrow {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.coachTitle {
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.coachSub {
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.coachAction {
+  margin-top: auto;
+  width: fit-content;
+  min-height: 28px;
+  padding: 6px 10px;
+  border-radius: var(--r-full);
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 35%, transparent);
+  background: color-mix(in srgb, var(--neon-cyan) 10%, transparent);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .momentumBlock {
   border-radius: var(--r-lg);
   border: var(--border-dim);
@@ -717,5 +775,9 @@
 
   .tipAction {
     margin-left: 0;
+  }
+
+  .coachGrid {
+    grid-template-columns: 1fr;
   }
 }

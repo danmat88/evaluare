@@ -1,15 +1,28 @@
-﻿import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Sigma } from 'lucide-react';
 import { ToastProvider } from './components/ui/Toast';
 import { useAuth } from './contexts';
 
-import Home from './pages/Home';
-import Dashboard from './pages/Dashboard';
-import Exercises from './pages/Exercises';
-import TestPage from './pages/TestSimulator';
-import Profile from './pages/Profile';
+const Home = lazy(() => import('./pages/Home'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Exercises = lazy(() => import('./pages/Exercises'));
+const TestPage = lazy(() => import('./pages/TestSimulator'));
+const Profile = lazy(() => import('./pages/Profile'));
 
-const Loading = () => (
+const srOnly = {
+  position: 'absolute',
+  width: '1px',
+  height: '1px',
+  padding: 0,
+  margin: '-1px',
+  overflow: 'hidden',
+  clip: 'rect(0, 0, 0, 0)',
+  whiteSpace: 'nowrap',
+  border: 0,
+};
+
+const Loading = ({ label = 'Se incarca pagina...' }) => (
   <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
     <span
       style={{
@@ -24,22 +37,24 @@ const Loading = () => (
         color: 'var(--neon-cyan)',
         boxShadow: 'var(--shadow-glow-cyan)',
       }}
+      aria-hidden="true"
     >
       <Sigma size={28} />
     </span>
+    <span style={srOnly}>{label}</span>
   </div>
 );
 
 const Public = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   if (loading) return <Loading />;
-  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : <Suspense fallback={<Loading />}>{children}</Suspense>;
 };
 
 const Private = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   if (loading) return <Loading />;
-  return isAuthenticated ? children : <Navigate to="/" replace />;
+  return isAuthenticated ? <Suspense fallback={<Loading />}>{children}</Suspense> : <Navigate to="/" replace />;
 };
 
 const App = () => (

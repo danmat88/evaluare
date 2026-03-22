@@ -1,12 +1,10 @@
-﻿import { useState } from 'react';
+import { useId, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MoonStar,
   Sun,
   BookOpen,
-  FlaskConical,
   Target,
-  Trophy,
   Sigma,
   Layers,
   ClipboardCheck,
@@ -17,11 +15,22 @@ import RegisterForm from '../components/auth/RegisterForm';
 import { useTheme } from '../contexts';
 import styles from './Home.module.css';
 
-const FEATURES = [
-  { icon: <BookOpen size={18} />, title: 'Toate capitolele', sub: 'Algebra + Geometrie EN', color: 'cyan' },
-  { icon: <FlaskConical size={18} />, title: 'Teste simulate', sub: '2 ore - 100 puncte', color: 'violet' },
-  { icon: <Target size={18} />, title: 'Solutii animate', sub: 'Pas cu pas pe tabla', color: 'yellow' },
-  { icon: <Trophy size={18} />, title: 'Sistem XP', sub: 'Niveluri + realizari', color: 'mint' },
+const SUPPORT_STEPS = [
+  {
+    icon: <BookOpen size={18} />,
+    title: 'Exersezi pe capitole',
+    sub: 'Algebra, geometrie si cerinte tip Evaluarea Nationala.',
+  },
+  {
+    icon: <Target size={18} />,
+    title: 'Intelegi fiecare pas',
+    sub: 'Rezolvari clare, fara salturi in logica sau explicatii lipsa.',
+  },
+  {
+    icon: <ClipboardCheck size={18} />,
+    title: 'Simulezi examenul complet',
+    sub: '120 de minute, 100 de puncte si rezultate salvate in cont.',
+  },
 ];
 
 const STATS = [
@@ -29,6 +38,8 @@ const STATS = [
   { num: '20+', label: 'Teste', icon: <ClipboardCheck size={13} /> },
   { num: '10', label: 'Capitole', icon: <Layers size={13} /> },
 ];
+
+const AUTH_FACTS = ['Cont gratuit', 'Progres salvat automat', 'Acces instant'];
 
 const stagger = { animate: { transition: { staggerChildren: 0.07 } } };
 const up = {
@@ -39,6 +50,14 @@ const up = {
 const Home = () => {
   const [tab, setTab] = useState('login');
   const { isDark, toggle } = useTheme();
+  const tabBaseId = useId();
+
+  const loginTabId = `${tabBaseId}-login-tab`;
+  const registerTabId = `${tabBaseId}-register-tab`;
+  const loginPanelId = `${tabBaseId}-login-panel`;
+  const registerPanelId = `${tabBaseId}-register-panel`;
+  const activeTabId = tab === 'login' ? loginTabId : registerTabId;
+  const activePanelId = tab === 'login' ? loginPanelId : registerPanelId;
 
   return (
     <div className={styles.page}>
@@ -72,8 +91,8 @@ const Home = () => {
           </motion.h1>
 
           <motion.p className={styles.tagline} variants={up}>
-            Exerseaza exercitii interactive, urmareste rezolvari pas cu pas si testeaza-te
-            cu simulari complete de examen in conditii reale.
+            Exerseaza pe capitole, urmareste rezolvari pas cu pas si intra in simulare
+            cu un ritm de lucru apropiat de examenul real.
           </motion.p>
 
           <motion.div className={styles.statRow} variants={up}>
@@ -86,13 +105,14 @@ const Home = () => {
             ))}
           </motion.div>
 
-          <motion.div className={styles.features} variants={stagger}>
-            {FEATURES.map((f) => (
-              <motion.div key={f.title} className={`${styles.feat} ${styles[`feat_${f.color}`]}`} variants={up}>
-                <span className={`${styles.featIcon} ${styles[`featIcon_${f.color}`]}`}>{f.icon}</span>
-                <div className={styles.featText}>
-                  <span className={styles.featTitle}>{f.title}</span>
-                  <span className={styles.featSub}>{f.sub}</span>
+          <motion.div className={styles.supportList} variants={stagger}>
+            {SUPPORT_STEPS.map((step, index) => (
+              <motion.div key={step.title} className={styles.supportItem} variants={up}>
+                <span className={styles.supportIndex}>0{index + 1}</span>
+                <span className={styles.supportIcon}>{step.icon}</span>
+                <div className={styles.supportText}>
+                  <span className={styles.supportTitle}>{step.title}</span>
+                  <span className={styles.supportSub}>{step.sub}</span>
                 </div>
               </motion.div>
             ))}
@@ -114,18 +134,40 @@ const Home = () => {
             <span className={styles.authBrandName}>EN.Math</span>
           </div>
 
-          <div className={styles.tabBar} role="tablist">
+          <div className={styles.authHeading}>
+            <span className={styles.authEyebrow}>Intri in mai putin de un minut</span>
+            <p className={styles.authIntro}>
+              Autentificarea iti pastreaza progresul, rezultatele si obiectivele zilnice
+              la fiecare sesiune de studiu.
+            </p>
+          </div>
+
+          <div className={styles.authFacts} aria-label="Avantaje">
+            {AUTH_FACTS.map((fact) => (
+              <span key={fact} className={styles.authFact}>{fact}</span>
+            ))}
+          </div>
+
+          <div className={styles.tabBar} role="tablist" aria-label="Alege formularul de autentificare">
             <button
+              id={loginTabId}
+              type="button"
               role="tab"
               aria-selected={tab === 'login'}
+              aria-controls={loginPanelId}
+              tabIndex={tab === 'login' ? 0 : -1}
               className={`${styles.tab} ${tab === 'login' ? styles.tabActive : ''}`}
               onClick={() => setTab('login')}
             >
               Autentificare
             </button>
             <button
+              id={registerTabId}
+              type="button"
               role="tab"
               aria-selected={tab === 'register'}
+              aria-controls={registerPanelId}
+              tabIndex={tab === 'register' ? 0 : -1}
               className={`${styles.tab} ${tab === 'register' ? styles.tabActive : ''}`}
               onClick={() => setTab('register')}
             >
@@ -133,7 +175,7 @@ const Home = () => {
             </button>
           </div>
 
-          <div className={styles.formWrap}>
+          <div className={styles.formWrap} role="tabpanel" id={activePanelId} aria-labelledby={activeTabId}>
             <AnimatePresence mode="wait">
               {tab === 'login'
                 ? <LoginForm key="login" onSwitch={() => setTab('register')} />

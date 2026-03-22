@@ -17,6 +17,15 @@
       ]
     },
     {
+      "collectionGroup": "results",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "uid", "order": "ASCENDING" },
+        { "fieldPath": "exerciseId", "order": "ASCENDING" },
+        { "fieldPath": "correct", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "testResults",
       "queryScope": "COLLECTION",
       "fields": [

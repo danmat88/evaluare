@@ -1,4 +1,4 @@
-﻿import { useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
@@ -14,16 +14,47 @@ const schema = z.object({
   email: z.string().email('Email invalid'),
   password: z.string().min(6, 'Minim 6 caractere'),
   confirmPassword: z.string(),
-}).refine((d) => d.password === d.confirmPassword, {
+}).refine((data) => data.password === data.confirmPassword, {
   message: 'Parolele nu se potrivesc',
   path: ['confirmPassword'],
 });
 
 const FIELDS = [
-  { name: 'name', type: 'text', label: 'NUME', ph: 'Prenume si Nume' },
-  { name: 'email', type: 'email', label: 'EMAIL', ph: 'adresa@email.ro' },
-  { name: 'password', type: 'password', label: 'PAROLA', ph: '********' },
-  { name: 'confirmPassword', type: 'password', label: 'CONFIRMA PAROLA', ph: '********' },
+  {
+    name: 'name',
+    id: 'register-name',
+    type: 'text',
+    label: 'NUME',
+    placeholder: 'Prenume si nume',
+    autoComplete: 'name',
+  },
+  {
+    name: 'email',
+    id: 'register-email',
+    type: 'email',
+    label: 'EMAIL',
+    placeholder: 'adresa@email.ro',
+    autoComplete: 'email',
+    inputMode: 'email',
+    autoCapitalize: 'none',
+    spellCheck: false,
+  },
+  {
+    name: 'password',
+    id: 'register-password',
+    type: 'password',
+    label: 'PAROLA',
+    placeholder: 'Minimum 6 caractere',
+    autoComplete: 'new-password',
+  },
+  {
+    name: 'confirmPassword',
+    id: 'register-confirm-password',
+    type: 'password',
+    label: 'CONFIRMA PAROLA',
+    placeholder: 'Repeta parola',
+    autoComplete: 'new-password',
+  },
 ];
 
 const RegisterForm = ({ onSwitch }) => {
@@ -34,6 +65,9 @@ const RegisterForm = ({ onSwitch }) => {
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(schema),
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
+    shouldFocusError: true,
   });
 
   const onSubmit = async (data) => {
@@ -41,7 +75,7 @@ const RegisterForm = ({ onSwitch }) => {
       await registerUser(data);
       /* AuthContext.register sets user+profile -> isAuthenticated -> Public guard redirects */
     } catch {
-      notify.error('Inregistrarea a esuat. Incearca din nou.');
+      notify.error('Inregistrarea a esuat. Verifica datele si incearca din nou.');
     }
   };
 
@@ -61,23 +95,36 @@ const RegisterForm = ({ onSwitch }) => {
       </div>
 
       <div className={styles.fields}>
-        {FIELDS.map((f) => (
-          <div key={f.name} className={styles.field}>
-            <label className={styles.label}>
-              <ChalkText size="xs" color="muted">{f.label}</ChalkText>
-            </label>
-            <input
-              className={`${styles.input} ${errors[f.name] ? styles.inputErr : ''}`}
-              type={f.type}
-              placeholder={f.ph}
-              autoComplete="on"
-              {...register(f.name)}
-            />
-            {errors[f.name] && (
-              <ChalkText size="xs" color="coral">{errors[f.name].message}</ChalkText>
-            )}
-          </div>
-        ))}
+        {FIELDS.map((field) => {
+          const error = errors[field.name];
+          const errorId = `${field.id}-error`;
+
+          return (
+            <div key={field.name} className={styles.field}>
+              <label className={styles.label} htmlFor={field.id}>
+                <ChalkText size="xs" color="muted">{field.label}</ChalkText>
+              </label>
+              <input
+                id={field.id}
+                className={`${styles.input} ${error ? styles.inputErr : ''}`}
+                type={field.type}
+                placeholder={field.placeholder}
+                autoComplete={field.autoComplete}
+                inputMode={field.inputMode}
+                autoCapitalize={field.autoCapitalize}
+                spellCheck={field.spellCheck}
+                aria-invalid={Boolean(error)}
+                aria-describedby={error ? errorId : undefined}
+                {...register(field.name)}
+              />
+              {error && (
+                <ChalkText as="span" id={errorId} size="xs" color="coral">
+                  {error.message}
+                </ChalkText>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <Button type="submit" variant="primary" size="lg" fullWidth loading={isSubmitting} icon={<UserPlus size={14} />}>

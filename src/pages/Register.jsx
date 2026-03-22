@@ -1,15 +1,15 @@
+import { Sigma } from 'lucide-react';
 import RegisterForm from '../components/auth/RegisterForm';
 import styles from './Auth.module.css';
 
 const BULLETS = [
-  'Exerciții interactive pe toate capitolele EN',
-  'Teste simulate · 2 ore · 100 puncte',
-  'Sistem XP, niveluri și realizări',
+  'Exercitii interactive pe toate capitolele EN',
+  'Teste simulate - 2 ore - 100 puncte',
+  'Sistem XP, niveluri si realizari',
 ];
 
 const Register = () => (
   <div className={styles.page}>
-    {/* Left branding panel */}
     <div className={styles.left}>
       <div className={styles.leftOrb1} />
       <div className={styles.leftOrb2} />
@@ -17,23 +17,22 @@ const Register = () => (
       <div className={styles.leftGrid} />
       <div className={styles.leftContent}>
         <div className={styles.brand}>
-          <span className={styles.sigma}>∑</span>
-          <span className={styles.brandName}>EN·Math</span>
+          <span className={styles.sigma}><Sigma size={40} /></span>
+          <span className={styles.brandName}>EN.Math</span>
         </div>
-        <p className={styles.tagline}>Pregătire completă pentru Evaluarea Națională</p>
+        <p className={styles.tagline}>Pregatire completa pentru Evaluarea Nationala</p>
         <div className={styles.bullets}>
-          {BULLETS.map((b) => (
-            <div key={b} className={styles.bullet}>
+          {BULLETS.map((bullet) => (
+            <div key={bullet} className={styles.bullet}>
               <span className={styles.bulletDot} />
-              <span>{b}</span>
+              <span>{bullet}</span>
             </div>
           ))}
         </div>
-        <span className={styles.leftFooter}>CLASA A VIII-A · MATEMATICĂ</span>
+        <span className={styles.leftFooter}>CLASA A VIII-A - MATEMATICA</span>
       </div>
     </div>
 
-    {/* Right form panel */}
     <div className={styles.right}>
       <div className={styles.grid} />
       <div className={styles.formWrap}>

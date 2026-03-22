@@ -1,7 +1,7 @@
-﻿import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { BlockMath } from 'react-katex';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, CheckSquare, Send, SkipForward, CircleAlert } from 'lucide-react';
+import { Check, CheckSquare, Save, Send, SkipForward, CircleAlert } from 'lucide-react';
 import Blackboard from '../blackboard/Blackboard';
 import ChalkText from '../blackboard/ChalkText';
 import MathKeyboard from '../keyboard/MathKeyboard';
@@ -13,46 +13,84 @@ import { useAuth } from '../../contexts';
 import styles from './TestSimulator.module.css';
 
 const TestSimulator = () => {
-  const { currentTest, started, finished, answers, setAnswer, startTest, finishTest } = useTestStore();
+  const {
+    currentTest,
+    started,
+    finished,
+    answers,
+    setAnswer,
+    startTest,
+    finishTest,
+    subjectIdx,
+    exerciseIdx,
+    setSubjectIdx,
+    setExerciseIdx,
+  } = useTestStore();
   const { user } = useAuth();
-  const [subjectIdx, setSubjectIdx] = useState(0);
-  const [exIdx, setExIdx] = useState(0);
 
-  const subjects = currentTest?.subjects || [];
+  const subjects = useMemo(() => currentTest?.subjects || [], [currentTest]);
   const subject = subjects[subjectIdx];
   const exercises = subject?.exercises || [];
-  const exercise = exercises[exIdx];
-  const curr = exercise ? (answers[exercise.id] || '') : '';
+  const exercise = exercises[exerciseIdx];
+  const currentAnswer = exercise ? (answers[exercise.id] || '') : '';
+
+  const flattenedExercises = useMemo(
+    () => subjects.flatMap((sub, subIndex) => (sub.exercises || []).map((item, itemIndex) => ({
+      id: item.id,
+      subjectIndex: subIndex,
+      exerciseIndex: itemIndex,
+      exercise: item,
+    }))),
+    [subjects],
+  );
+
+  const totalQuestions = flattenedExercises.length;
+  const answeredCount = flattenedExercises.filter((item) => String(answers[item.id] ?? '').trim()).length;
+  const currentPosition = flattenedExercises.findIndex(
+    (item) => item.subjectIndex === subjectIdx && item.exerciseIndex === exerciseIdx,
+  );
+  const unansweredInCurrent = exercises.filter((item) => !String(answers[item.id] ?? '').trim()).length;
+  const answeredInCurrent = exercises.filter((item) => String(answers[item.id] ?? '').trim()).length;
+
+  const goToExercise = useCallback((nextSubjectIdx, nextExerciseIdx) => {
+    setSubjectIdx(nextSubjectIdx);
+    setExerciseIdx(nextExerciseIdx);
+  }, [setExerciseIdx, setSubjectIdx]);
+
+  const advanceToNextExercise = useCallback(() => {
+    if (!flattenedExercises.length || currentPosition === -1) return;
+    const next = flattenedExercises[currentPosition + 1];
+    if (!next) return;
+    goToExercise(next.subjectIndex, next.exerciseIndex);
+  }, [currentPosition, flattenedExercises, goToExercise]);
 
   useEffect(() => {
-    const fn = (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        if (exIdx < exercises.length - 1) setExIdx((i) => i + 1);
+    const onKey = (event) => {
+      if (!started || !exercise) return;
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        advanceToNextExercise();
       }
     };
 
-    window.addEventListener('keydown', fn);
-    return () => window.removeEventListener('keydown', fn);
-  }, [exIdx, exercises.length]);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [advanceToNextExercise, exercise, started]);
 
   if (!currentTest) return null;
   if (finished) return <TestResults />;
 
-  const handleKey = (v) => started && exercise && setAnswer(exercise.id, curr + v);
-  const handleBack = () => started && exercise && setAnswer(exercise.id, curr.slice(0, -1));
+  const handleKey = (value) => started && exercise && setAnswer(exercise.id, currentAnswer + value);
+  const handleBack = () => started && exercise && setAnswer(exercise.id, currentAnswer.slice(0, -1));
   const handleClr = () => started && exercise && setAnswer(exercise.id, '');
 
-  const answered = Object.keys(answers).length;
-  const total = subjects.reduce((sum, sub) => sum + (sub.exercises?.length || 0), 0);
-  const unansweredInCurrent = exercises.filter((ex) => !answers[ex.id]).length;
-
   const goToNextUnanswered = () => {
-    if (!exercises.length) return;
+    if (!flattenedExercises.length) return;
 
-    for (let step = 1; step <= exercises.length; step += 1) {
-      const nextIdx = (exIdx + step) % exercises.length;
-      if (!answers[exercises[nextIdx].id]) {
-        setExIdx(nextIdx);
+    for (let step = 1; step <= flattenedExercises.length; step += 1) {
+      const next = flattenedExercises[(currentPosition + step + flattenedExercises.length) % flattenedExercises.length];
+      if (!String(answers[next.id] ?? '').trim()) {
+        goToExercise(next.subjectIndex, next.exerciseIndex);
         return;
       }
     }
@@ -64,16 +102,13 @@ const TestSimulator = () => {
         <ChalkText size="xs" color="muted" className={styles.title}>{currentTest.title}</ChalkText>
 
         <div className={styles.subjectTabs}>
-          {subjects.map((sub, i) => (
+          {subjects.map((sub, index) => (
             <button
-              key={sub.name || i}
-              className={`${styles.subTab} ${subjectIdx === i ? styles.subTabActive : ''}`}
-              onClick={() => {
-                setSubjectIdx(i);
-                setExIdx(0);
-              }}
+              key={sub.name || index}
+              className={`${styles.subTab} ${subjectIdx === index ? styles.subTabActive : ''}`}
+              onClick={() => goToExercise(index, 0)}
             >
-              Subiectul {i + 1}
+              Subiectul {index + 1}
             </button>
           ))}
         </div>
@@ -81,19 +116,24 @@ const TestSimulator = () => {
         <div className={styles.topRight}>
           <span className={styles.answered}>
             <CheckSquare size={13} />
-            <ChalkText size="xs" color="muted">{answered}/{total}</ChalkText>
+            <ChalkText size="xs" color="muted">{answeredCount}/{totalQuestions}</ChalkText>
           </span>
 
           <button
             className={styles.nextUnanswered}
             onClick={goToNextUnanswered}
-            disabled={!started || unansweredInCurrent === 0}
+            disabled={!started || answeredCount === totalQuestions}
             title="Mergi la urmatorul exercitiu necompletat"
           >
             <SkipForward size={12} />
             <span>Necompletat</span>
-            <strong>{unansweredInCurrent}</strong>
+            <strong>{Math.max(totalQuestions - answeredCount, 0)}</strong>
           </button>
+
+          <span className={styles.autosaveBadge}>
+            <Save size={12} />
+            <span>Autosave</span>
+          </span>
 
           <TestTimer />
 
@@ -105,16 +145,16 @@ const TestSimulator = () => {
 
       <div className={styles.body}>
         <div className={styles.exSidebar}>
-          {exercises.map((ex, i) => {
-            const done = !!answers[ex.id];
+          {exercises.map((item, index) => {
+            const done = !!String(answers[item.id] ?? '').trim();
             return (
               <button
-                key={ex.id}
-                className={`${styles.exItem} ${exIdx === i ? styles.exActive : ''} ${done ? styles.exDone : ''}`}
-                onClick={() => setExIdx(i)}
+                key={item.id}
+                className={`${styles.exItem} ${exerciseIdx === index ? styles.exActive : ''} ${done ? styles.exDone : ''}`}
+                onClick={() => setExerciseIdx(index)}
               >
-                <span className={styles.exNum}>{i + 1}</span>
-                {ex.points && <span className={styles.exPts}>{ex.points}p</span>}
+                <span className={styles.exNum}>{index + 1}</span>
+                {item.points && <span className={styles.exPts}>{item.points}p</span>}
                 {done && (
                   <span className={styles.exCheck}>
                     <Check size={11} strokeWidth={2.6} />
@@ -128,7 +168,7 @@ const TestSimulator = () => {
         {exercise && (
           <AnimatePresence mode="wait">
             <motion.div
-              key={`${subjectIdx}-${exIdx}`}
+              key={`${subjectIdx}-${exerciseIdx}`}
               className={styles.exArea}
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
@@ -139,11 +179,17 @@ const TestSimulator = () => {
                 <div className={styles.boardInner}>
                   <div className={styles.exMeta}>
                     <ChalkText size="xs" color="yellow">
-                      Subiectul {subjectIdx + 1} - Exercitiul {exIdx + 1}
+                      Subiectul {subjectIdx + 1} - Exercitiul {exerciseIdx + 1}
                     </ChalkText>
                     {exercise.points && (
                       <ChalkText size="xs" color="muted">{exercise.points} puncte</ChalkText>
                     )}
+                  </div>
+
+                  <div className={styles.progressStrip}>
+                    <span className={styles.progressChip}>Subiect: {answeredInCurrent}/{exercises.length}</span>
+                    <span className={styles.progressChip}>Test: {answeredCount}/{totalQuestions}</span>
+                    <span className={styles.progressChip}>Ramase: {Math.max(totalQuestions - answeredCount, 0)}</span>
                   </div>
 
                   <div className={styles.question}>
@@ -153,21 +199,31 @@ const TestSimulator = () => {
 
                   <div className={styles.ansSection}>
                     <ChalkText size="xs" color="muted">RASPUNS</ChalkText>
-                    <div className={`${styles.ansBox} ${curr ? styles.ansFilled : ''}`}>
-                      <span className={styles.ansText}>{curr || <span className={styles.cursor} />}</span>
+                    <div className={`${styles.ansBox} ${currentAnswer ? styles.ansFilled : ''}`}>
+                      <span className={styles.ansText}>{currentAnswer || <span className={styles.cursor} />}</span>
                     </div>
                   </div>
 
                   {!started && (
                     <div className={styles.startPrompt}>
-                      <ChalkText size="sm" color="muted">Apasa "Incepe testul" pentru a activa tastatura.</ChalkText>
+                      <ChalkText size="sm" color="muted">Apasa "Incepe testul" pentru a activa tastatura si cronometrul.</ChalkText>
                     </div>
                   )}
 
-                  {started && !curr && (
+                  {started && (
+                    <div className={styles.statusPrompt}>
+                      <Save size={13} />
+                      <span>Raspunsurile se salveaza local automat. Poti reveni daca inchizi pagina.</span>
+                    </div>
+                  )}
+
+                  {started && !currentAnswer && (
                     <div className={styles.hintPrompt}>
                       <CircleAlert size={14} />
-                      <span>Lasa un raspuns, apoi continua cu Enter sau din lista din stanga.</span>
+                      <span>
+                        Scrie raspunsul, apoi continua cu Enter sau sari direct la un alt exercitiu.
+                        {unansweredInCurrent > 0 ? ` Mai sunt ${unansweredInCurrent} necompletate in acest subiect.` : ''}
+                      </span>
                     </div>
                   )}
                 </div>

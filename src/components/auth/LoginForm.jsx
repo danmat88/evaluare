@@ -1,4 +1,4 @@
-﻿import { useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
@@ -14,6 +14,28 @@ const schema = z.object({
   password: z.string().min(6, 'Minim 6 caractere'),
 });
 
+const FIELDS = [
+  {
+    name: 'email',
+    id: 'login-email',
+    type: 'email',
+    label: 'EMAIL',
+    placeholder: 'adresa@email.ro',
+    autoComplete: 'email',
+    inputMode: 'email',
+    autoCapitalize: 'none',
+    spellCheck: false,
+  },
+  {
+    name: 'password',
+    id: 'login-password',
+    type: 'password',
+    label: 'PAROLA',
+    placeholder: '********',
+    autoComplete: 'current-password',
+  },
+];
+
 const LoginForm = ({ onSwitch }) => {
   const { login } = useAuth();
   const {
@@ -22,6 +44,9 @@ const LoginForm = ({ onSwitch }) => {
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(schema),
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
+    shouldFocusError: true,
   });
 
   const onSubmit = async (data) => {
@@ -29,7 +54,7 @@ const LoginForm = ({ onSwitch }) => {
       await login(data);
       /* Auth listener -> isAuthenticated -> Public guard redirects to /dashboard */
     } catch {
-      notify.error('Email sau parola incorecta.');
+      notify.error('Verifica emailul si parola, apoi incearca din nou.');
     }
   };
 
@@ -49,26 +74,36 @@ const LoginForm = ({ onSwitch }) => {
       </div>
 
       <div className={styles.fields}>
-        {[
-          { name: 'email', type: 'email', label: 'EMAIL', ph: 'adresa@email.ro' },
-          { name: 'password', type: 'password', label: 'PAROLA', ph: '********' },
-        ].map((f) => (
-          <div key={f.name} className={styles.field}>
-            <label className={styles.label}>
-              <ChalkText size="xs" color="muted">{f.label}</ChalkText>
-            </label>
-            <input
-              className={`${styles.input} ${errors[f.name] ? styles.inputErr : ''}`}
-              type={f.type}
-              placeholder={f.ph}
-              autoComplete="on"
-              {...register(f.name)}
-            />
-            {errors[f.name] && (
-              <ChalkText size="xs" color="coral">{errors[f.name].message}</ChalkText>
-            )}
-          </div>
-        ))}
+        {FIELDS.map((field) => {
+          const error = errors[field.name];
+          const errorId = `${field.id}-error`;
+
+          return (
+            <div key={field.name} className={styles.field}>
+              <label className={styles.label} htmlFor={field.id}>
+                <ChalkText size="xs" color="muted">{field.label}</ChalkText>
+              </label>
+              <input
+                id={field.id}
+                className={`${styles.input} ${error ? styles.inputErr : ''}`}
+                type={field.type}
+                placeholder={field.placeholder}
+                autoComplete={field.autoComplete}
+                inputMode={field.inputMode}
+                autoCapitalize={field.autoCapitalize}
+                spellCheck={field.spellCheck}
+                aria-invalid={Boolean(error)}
+                aria-describedby={error ? errorId : undefined}
+                {...register(field.name)}
+              />
+              {error && (
+                <ChalkText as="span" id={errorId} size="xs" color="coral">
+                  {error.message}
+                </ChalkText>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <Button type="submit" variant="primary" size="lg" fullWidth loading={isSubmitting} icon={<LogIn size={14} />}>

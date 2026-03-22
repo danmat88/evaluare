@@ -20,7 +20,7 @@ import AnimatedCounter from '../components/ui/AnimatedCounter';
 import Layout from '../components/layout/Layout';
 import { useAuth } from '../contexts';
 import useExerciseStore from '../store/exerciseStore';
-import { STORAGE_KEYS, safeReadJSON, todayStamp } from '../utils/storage';
+import { STORAGE_CHANGE_EVENT, STORAGE_KEYS, dateStamp, safeReadJSON, todayStamp } from '../utils/storage';
 import styles from './Dashboard.module.css';
 
 const DAILY_GOAL = 12;
@@ -124,9 +124,11 @@ const Dashboard = () => {
     refreshJourney();
     window.addEventListener('focus', refreshJourney);
     window.addEventListener('storage', refreshJourney);
+    window.addEventListener(STORAGE_CHANGE_EVENT, refreshJourney);
     return () => {
       window.removeEventListener('focus', refreshJourney);
       window.removeEventListener('storage', refreshJourney);
+      window.removeEventListener(STORAGE_CHANGE_EVENT, refreshJourney);
     };
   }, [refreshJourney]);
 
@@ -150,6 +152,9 @@ const Dashboard = () => {
   const goalPct = Math.min(Math.round((dailyCorrect / DAILY_GOAL) * 100), 100);
   const remaining = Math.max(DAILY_GOAL - dailyCorrect, 0);
   const resumeLink = lastExercise?.chapter ? `/exercitii?capitol=${lastExercise.chapter}` : '/exercitii';
+  const lastChapterLabel = lastExercise?.chapter
+    ? CHAPTERS.find((chapterItem) => chapterItem.id === lastExercise.chapter)?.label || lastExercise.chapter
+    : null;
 
   const weekSeries = useMemo(() => {
     const now = new Date();
@@ -158,7 +163,7 @@ const Dashboard = () => {
     for (let i = 6; i >= 0; i -= 1) {
       const d = new Date(now);
       d.setDate(now.getDate() - i);
-      const key = d.toISOString().slice(0, 10);
+      const key = dateStamp(d);
       const rec = activityHistory?.[key] || {};
       rows.push({
         key,
@@ -179,6 +184,53 @@ const Dashboard = () => {
     : weekActiveDays >= 3
       ? 'Ritm bun. Mai adauga 1-2 sesiuni.'
       : 'Porneste cu sesiuni scurte in fiecare zi.';
+  const coachSteps = [
+    lastExercise
+      ? {
+        label: 'Continua',
+        title: 'Revino la ultimul exercitiu',
+        sub: lastChapterLabel ? `Ultima oprire: ${lastChapterLabel}.` : 'Reintra in sesiunea precedenta.',
+        to: resumeLink,
+        action: 'Continua',
+      }
+      : {
+        label: 'Pornire',
+        title: 'Incepe o sesiune noua',
+        sub: 'Alege un capitol si intra rapid in ritm.',
+        to: '/exercitii',
+        action: 'Deschide exercitii',
+      },
+    weakest
+      ? {
+        label: 'Recuperare',
+        title: `Lucreaza ${weakest.label}`,
+        sub: `${progress[weakest.id] || 0}/${weakest.total} exercitii completate in acest capitol.`,
+        to: `/exercitii?capitol=${weakest.id}`,
+        action: 'Exerseaza',
+      }
+      : {
+        label: 'Progres',
+        title: 'Continua pe capitole',
+        sub: 'Construieste progres stabil in fiecare zona.',
+        to: '/exercitii',
+        action: 'Vezi capitolele',
+      },
+    remaining > 0
+      ? {
+        label: 'Obiectiv',
+        title: `Mai ai ${remaining} corecte azi`,
+        sub: 'Un sprint scurt acum iti inchide planul zilnic.',
+        to: resumeLink,
+        action: 'Termina obiectivul',
+      }
+      : {
+        label: 'Simulare',
+        title: 'Obiectivul zilnic este gata',
+        sub: 'Poti trece pe o varianta completa de test.',
+        to: '/teste',
+        action: 'Incepe testul',
+      },
+  ];
 
   return (
     <Layout>
@@ -258,6 +310,17 @@ const Dashboard = () => {
               animate={{ width: `${goalPct}%` }}
               transition={{ duration: 0.6, ease: 'easeOut' }}
             />
+          </div>
+
+          <div className={styles.coachGrid}>
+            {coachSteps.map((step) => (
+              <div key={step.label} className={styles.coachStep}>
+                <span className={styles.coachEyebrow}>{step.label}</span>
+                <span className={styles.coachTitle}>{step.title}</span>
+                <span className={styles.coachSub}>{step.sub}</span>
+                <Link to={step.to} className={styles.coachAction}>{step.action}</Link>
+              </div>
+            ))}
           </div>
 
           <div className={styles.momentumBlock}>

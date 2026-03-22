@@ -7,12 +7,27 @@ import {
   query,
   where,
   orderBy,
+  limit,
   serverTimestamp,
   increment,
 } from 'firebase/firestore';
 import { db } from './config';
 
 export const saveExerciseResult = async (uid, { exerciseId, chapter, correct, timeSpent }) => {
+  let shouldIncrementProgress = Boolean(correct && chapter);
+
+  if (shouldIncrementProgress) {
+    const existingCorrect = await getDocs(query(
+      collection(db, 'results'),
+      where('uid', '==', uid),
+      where('exerciseId', '==', exerciseId),
+      where('correct', '==', true),
+      limit(1),
+    ));
+
+    shouldIncrementProgress = existingCorrect.empty;
+  }
+
   await addDoc(collection(db, 'results'), {
     uid,
     exerciseId,
@@ -22,10 +37,12 @@ export const saveExerciseResult = async (uid, { exerciseId, chapter, correct, ti
     createdAt: serverTimestamp(),
   });
 
-  const progressKey = `progress.${chapter}`;
-  await updateDoc(doc(db, 'users', uid), {
-    [progressKey]: increment(correct ? 1 : 0),
-  });
+  if (shouldIncrementProgress) {
+    const progressKey = `progress.${chapter}`;
+    await updateDoc(doc(db, 'users', uid), {
+      [progressKey]: increment(1),
+    });
+  }
 };
 
 export const saveTestResult = async (uid, { testId, title, score, totalPoints, answers, timeSpent }) => {

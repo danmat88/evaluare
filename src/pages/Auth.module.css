@@ -1,4 +1,4 @@
-/* ── Split layout ── */
+/* Split layout */
 .page {
   height: 100%;
   display: grid;
@@ -6,9 +6,7 @@
   overflow: hidden;
 }
 
-/* ────────────────────────────
-   LEFT — Branding Panel  ----
-──────────────────────────── */
+/* Left branding panel */
 .left {
   position: relative;
   background: linear-gradient(145deg, #090b14 0%, #0e1024 50%, #111230 100%);
@@ -21,38 +19,46 @@
 
 .leftOrb1 {
   position: absolute;
-  width: 450px; height: 450px;
-  background: radial-gradient(circle, rgba(0,229,255,0.1) 0%, transparent 65%);
-  top: -120px; left: -120px;
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(0, 229, 255, 0.1) 0%, transparent 65%);
+  top: -120px;
+  left: -120px;
   pointer-events: none;
   animation: orb-float 14s ease-in-out infinite;
 }
+
 .leftOrb2 {
   position: absolute;
-  width: 380px; height: 380px;
-  background: radial-gradient(circle, rgba(168,85,247,0.1) 0%, transparent 65%);
-  bottom: -80px; right: -80px;
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 65%);
+  bottom: -80px;
+  right: -80px;
   pointer-events: none;
   animation: orb-float 18s ease-in-out infinite reverse;
   animation-delay: -6s;
 }
+
 .leftOrb3 {
   position: absolute;
-  width: 200px; height: 200px;
-  background: radial-gradient(circle, rgba(251,191,36,0.05) 0%, transparent 65%);
-  top: 50%; left: 50%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.05) 0%, transparent 65%);
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
   animation: orb-float 10s ease-in-out infinite;
   animation-delay: -3s;
 }
 
-/* subtle grid on left */
 .leftGrid {
-  position: absolute; inset: 0;
+  position: absolute;
+  inset: 0;
   background-image:
-    linear-gradient(rgba(241,245,249,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(241,245,249,0.02) 1px, transparent 1px);
+    linear-gradient(rgba(241, 245, 249, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(241, 245, 249, 0.02) 1px, transparent 1px);
   background-size: 52px 52px;
   pointer-events: none;
   mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 40%, transparent 100%);
@@ -76,14 +82,11 @@
 }
 
 .sigma {
-  font-family: var(--font-mono);
-  font-size: var(--fs-4xl);
-  font-weight: 700;
-  background: var(--grad-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 0 20px rgba(0,229,255,0.5));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  filter: drop-shadow(0 0 20px rgba(0, 229, 255, 0.5));
   animation: float 6s ease-in-out infinite;
   line-height: 1;
 }
@@ -122,11 +125,12 @@
 }
 
 .bulletDot {
-  width: 8px; height: 8px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--grad-primary);
   flex-shrink: 0;
-  box-shadow: 0 0 8px rgba(0,229,255,0.6);
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
 }
 
 .leftFooter {
@@ -136,9 +140,7 @@
   letter-spacing: 0.04em;
 }
 
-/* ────────────────────────────
-   RIGHT — Form Panel
-──────────────────────────── */
+/* Right form panel */
 .right {
   position: relative;
   background: var(--bg-void);
@@ -150,10 +152,11 @@
 }
 
 .grid {
-  position: absolute; inset: 0;
+  position: absolute;
+  inset: 0;
   background-image:
-    linear-gradient(rgba(241,245,249,0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(241,245,249,0.015) 1px, transparent 1px);
+    linear-gradient(rgba(241, 245, 249, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(241, 245, 249, 0.015) 1px, transparent 1px);
   background-size: 44px 44px;
   pointer-events: none;
   mask-image: radial-gradient(ellipse 60% 70% at 50% 50%, black 40%, transparent 100%);
@@ -169,9 +172,17 @@
   justify-content: center;
 }
 
-/* ── Responsive ── */
+/* Responsive */
 @media (max-width: 700px) {
-  .page { grid-template-columns: 1fr; }
-  .left { display: none; }
-  .right { padding: var(--sp-6) var(--sp-4); }
+  .page {
+    grid-template-columns: 1fr;
+  }
+
+  .left {
+    display: none;
+  }
+
+  .right {
+    padding: var(--sp-6) var(--sp-4);
+  }
 }

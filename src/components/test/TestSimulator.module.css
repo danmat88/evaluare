@@ -68,6 +68,23 @@
   justify-self: end;
 }
 
+.autosaveBadge {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: var(--r-full);
+  border: var(--border-dim);
+  background: color-mix(in srgb, var(--neon-mint) 10%, transparent);
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .answered {
   display: inline-flex;
   align-items: center;
@@ -224,6 +241,25 @@
   overflow-y: auto;
 }
 
+.progressStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.progressChip {
+  min-height: 26px;
+  padding: 4px 9px;
+  border-radius: var(--r-full);
+  border: var(--border-dim);
+  background: color-mix(in srgb, var(--bg-surface) 74%, transparent);
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+}
+
 .math {
   padding: var(--sp-2) 0;
 }
@@ -265,6 +301,7 @@
 }
 
 .startPrompt,
+.statusPrompt,
 .hintPrompt {
   border-radius: var(--r-md);
   border: var(--border-dim);
@@ -272,6 +309,7 @@
   padding: var(--sp-3) var(--sp-4);
 }
 
+.statusPrompt,
 .hintPrompt {
   display: inline-flex;
   align-items: center;
@@ -312,6 +350,10 @@
     flex-wrap: wrap;
   }
 
+  .autosaveBadge {
+    order: 3;
+  }
+
   .exArea {
     grid-template-columns: 1fr;
     overflow-y: auto;
@@ -338,6 +380,10 @@
   }
 
   .nextUnanswered span {
+    display: none;
+  }
+
+  .autosaveBadge span {
     display: none;
   }
 }
