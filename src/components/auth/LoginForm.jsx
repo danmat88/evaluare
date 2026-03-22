@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,6 +32,7 @@ export default function LoginForm({ onSwitch }) {
   const { login }         = useAuth();
   const [arataPw, setAr]  = useState(false);
   const [tremura, setTr]  = useState(false);
+  const passwordInputRef  = useRef(null);
 
   const {
     register,
@@ -54,8 +55,35 @@ export default function LoginForm({ onSwitch }) {
     }
   };
 
+  const keepInputFocus = (event) => {
+    event.preventDefault();
+  };
+
+  const togglePassword = () => {
+    const input = passwordInputRef.current;
+    const selectionStart = input?.selectionStart ?? null;
+    const selectionEnd = input?.selectionEnd ?? null;
+
+    setAr((value) => !value);
+
+    requestAnimationFrame(() => {
+      if (!input) return;
+
+      input.focus({ preventScroll: true });
+
+      if (typeof selectionStart === 'number' && typeof selectionEnd === 'number') {
+        try {
+          input.setSelectionRange(selectionStart, selectionEnd);
+        } catch {
+          // Some mobile browsers do not allow selection updates here.
+        }
+      }
+    });
+  };
+
   const emailOk = dirtyFields.email    && !errors.email;
   const parolaOk = dirtyFields.password && !errors.password;
+  const passwordField = register('password');
 
   return (
     <motion.form
@@ -139,13 +167,18 @@ export default function LoginForm({ onSwitch }) {
               autoComplete="current-password"
               aria-invalid={Boolean(errors.password)}
               aria-describedby="l-pw-err"
-              {...register('password')}
+              {...passwordField}
+              ref={(node) => {
+                passwordInputRef.current = node;
+                passwordField.ref(node);
+              }}
             />
             <button
               type="button"
               className={styles.pwToggle}
               tabIndex={-1}
-              onClick={() => setAr((v) => !v)}
+              onPointerDown={keepInputFocus}
+              onClick={togglePassword}
               aria-label={arataPw ? 'Ascunde parola' : 'Arată parola'}>
               {arataPw ? <EyeOff size={13} /> : <Eye size={13} />}
             </button>

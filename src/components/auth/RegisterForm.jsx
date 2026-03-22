@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -79,6 +79,7 @@ const err = {
 export default function RegisterForm({ onSwitch }) {
   const { register: inregistreaza } = useAuth();
   const [vizibil, setViz] = useState({ pw: false, cpw: false });
+  const passwordInputRefs = useRef({});
 
   const {
     register,
@@ -103,6 +104,32 @@ export default function RegisterForm({ onSwitch }) {
     }
   };
 
+  const keepInputFocus = (event) => {
+    event.preventDefault();
+  };
+
+  const togglePassword = (fieldKey) => {
+    const input = passwordInputRefs.current[fieldKey];
+    const selectionStart = input?.selectionStart ?? null;
+    const selectionEnd = input?.selectionEnd ?? null;
+
+    setViz((value) => ({ ...value, [fieldKey]: !value[fieldKey] }));
+
+    requestAnimationFrame(() => {
+      if (!input) return;
+
+      input.focus({ preventScroll: true });
+
+      if (typeof selectionStart === 'number' && typeof selectionEnd === 'number') {
+        try {
+          input.setSelectionRange(selectionStart, selectionEnd);
+        } catch {
+          // Some mobile browsers do not allow selection updates here.
+        }
+      }
+    });
+  };
+
   return (
     <motion.form
       className={`${styles.form} ${styles.formRegister}`}
@@ -118,6 +145,7 @@ export default function RegisterForm({ onSwitch }) {
           const eroare  = errors[c.nume];
           const eOk     = dirtyFields[c.nume] && !eroare;
           const tipReal = c.esteParola ? (vizibil[c.cheieViz] ? 'text' : 'password') : c.tip;
+          const fieldRegistration = register(c.nume);
 
           return (
             <motion.div key={c.nume} className={styles.field} variants={rand}>
@@ -147,13 +175,18 @@ export default function RegisterForm({ onSwitch }) {
                     autoComplete={c.autoComplete}
                     aria-invalid={Boolean(eroare)}
                     aria-describedby={`${c.id}-err`}
-                    {...register(c.nume)}
+                    {...fieldRegistration}
+                    ref={(node) => {
+                      passwordInputRefs.current[c.cheieViz] = node;
+                      fieldRegistration.ref(node);
+                    }}
                   />
                   <button
                     type="button"
                     className={styles.pwToggle}
                     tabIndex={-1}
-                    onClick={() => setViz((v) => ({ ...v, [c.cheieViz]: !v[c.cheieViz] }))}
+                    onPointerDown={keepInputFocus}
+                    onClick={() => togglePassword(c.cheieViz)}
                     aria-label={vizibil[c.cheieViz] ? 'Ascunde parola' : 'Arată parola'}>
                     {vizibil[c.cheieViz] ? <EyeOff size={13} /> : <Eye size={13} />}
                   </button>
@@ -170,7 +203,7 @@ export default function RegisterForm({ onSwitch }) {
                   spellCheck={c.spellCheck}
                   aria-invalid={Boolean(eroare)}
                   aria-describedby={`${c.id}-err`}
-                  {...register(c.nume)}
+                  {...fieldRegistration}
                 />
               )}
 
