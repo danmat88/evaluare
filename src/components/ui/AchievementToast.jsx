@@ -1,51 +1,110 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, GraduationCap, Rocket, Star, Target, Trophy, Zap } from 'lucide-react';
+import { useAuth } from '../../contexts';
 import useExerciseStore from '../../store/exerciseStore';
+import {
+  ACHIEVEMENTS,
+  getNewAchievements,
+  readAchievementState,
+  writeAchievementState,
+} from '../../utils/achievements';
+import { STORAGE_CHANGE_EVENT, getStorageScope } from '../../utils/storage';
 import styles from './AchievementToast.module.css';
 
-const ACHIEVEMENTS = [
-  { id: 'first', condition: (s) => s.totalCorrect === 1, icon: Star, title: 'Primul pas!', desc: 'Primul raspuns corect' },
-  { id: 'streak3', condition: (s) => s.streak === 3, icon: Flame, title: 'Trio de foc!', desc: '3 raspunsuri corecte la rand' },
-  { id: 'streak5', condition: (s) => s.streak === 5, icon: Zap, title: 'Super serie!', desc: '5 raspunsuri corecte la rand' },
-  { id: 'streak10', condition: (s) => s.streak === 10, icon: Rocket, title: 'Imbatabil!', desc: '10 la rand - esti fantastic!' },
-  { id: 'ten', condition: (s) => s.totalCorrect === 10, icon: Target, title: '10 rezolvate!', desc: 'Zece exercitii corecte' },
-  { id: 'fifty', condition: (s) => s.totalCorrect === 50, icon: Trophy, title: 'Campion!', desc: 'Cincizeci de exercitii corecte' },
-  { id: 'level2', condition: (s) => s.xp >= 50, icon: GraduationCap, title: 'Nivel 2!', desc: 'Ai urcat la nivelul Elev' },
-];
-
-let shownIds = new Set();
+const ICONS = {
+  Flame,
+  GraduationCap,
+  Rocket,
+  Star,
+  Target,
+  Trophy,
+  Zap,
+};
 
 const AchievementToast = () => {
-  const totalCorrect = useExerciseStore((s) => s.totalCorrect);
-  const streak = useExerciseStore((s) => s.streak);
-  const xp = useExerciseStore((s) => s.xp);
+  const { user } = useAuth();
+  const storageScope = getStorageScope(user?.uid);
+  const totalCorrect = useExerciseStore((state) => state.totalCorrect);
+  const streak = useExerciseStore((state) => state.streak);
+  const xp = useExerciseStore((state) => state.xp);
+
   const [queue, setQueue] = useState([]);
+  const [unlockedIds, setUnlockedIds] = useState(() => readAchievementState(storageScope).unlockedIds);
+  const unlockedIdsRef = useRef(new Set(unlockedIds));
+  const initialSyncRef = useRef(true);
+
+  const stats = useMemo(() => ({ totalCorrect, streak, xp }), [totalCorrect, streak, xp]);
 
   useEffect(() => {
-    const state = { totalCorrect, streak, xp };
-    const newOnes = ACHIEVEMENTS.filter((a) => !shownIds.has(a.id) && a.condition(state));
-    if (newOnes.length) {
-      newOnes.forEach((a) => shownIds.add(a.id));
-      setQueue((q) => [...q, ...newOnes]);
+    unlockedIdsRef.current = new Set(unlockedIds);
+  }, [unlockedIds]);
+
+  useEffect(() => {
+    const storedIds = readAchievementState(storageScope).unlockedIds;
+    unlockedIdsRef.current = new Set(storedIds);
+    setUnlockedIds(storedIds);
+    setQueue([]);
+    initialSyncRef.current = true;
+  }, [storageScope]);
+
+  useEffect(() => {
+    const syncAchievements = () => {
+      const storedIds = readAchievementState(storageScope).unlockedIds;
+      unlockedIdsRef.current = new Set(storedIds);
+      setUnlockedIds(storedIds);
+    };
+
+    window.addEventListener('storage', syncAchievements);
+    window.addEventListener(STORAGE_CHANGE_EVENT, syncAchievements);
+
+    return () => {
+      window.removeEventListener('storage', syncAchievements);
+      window.removeEventListener(STORAGE_CHANGE_EVENT, syncAchievements);
+    };
+  }, [storageScope]);
+
+  useEffect(() => {
+    const newAchievements = getNewAchievements(stats, unlockedIdsRef.current);
+    if (!newAchievements.length) {
+      initialSyncRef.current = false;
+      return;
     }
-  }, [totalCorrect, streak, xp]);
+
+    const nextUnlockedIds = [
+      ...unlockedIdsRef.current,
+      ...newAchievements.map((achievement) => achievement.id),
+    ];
+    const uniqueUnlockedIds = Array.from(new Set(nextUnlockedIds));
+
+    unlockedIdsRef.current = new Set(uniqueUnlockedIds);
+    setUnlockedIds(uniqueUnlockedIds);
+    writeAchievementState(storageScope, { unlockedIds: uniqueUnlockedIds });
+
+    if (initialSyncRef.current) {
+      initialSyncRef.current = false;
+      return;
+    }
+
+    setQueue((currentQueue) => [...currentQueue, ...newAchievements]);
+  }, [stats, storageScope]);
 
   useEffect(() => {
-    if (!queue.length) return;
-    const t = setTimeout(() => setQueue((q) => q.slice(1)), 3500);
-    return () => clearTimeout(t);
+    if (!queue.length) return undefined;
+    const timeoutId = setTimeout(() => setQueue((currentQueue) => currentQueue.slice(1)), 3500);
+    return () => clearTimeout(timeoutId);
   }, [queue]);
 
-  const current = queue[0];
-  const Icon = current?.icon;
+  const current = queue[0] || null;
+  const achievement = current ? ACHIEVEMENTS.find((item) => item.id === current.id) || current : null;
+  const Icon = achievement ? ICONS[achievement.icon] : null;
 
   return (
     <div className={styles.wrapper}>
       <AnimatePresence>
-        {current && (
+        {achievement && (
           <motion.div
-            key={current.id}
+            key={achievement.id}
             className={styles.toast}
             initial={{ opacity: 0, y: 40, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -63,8 +122,8 @@ const AchievementToast = () => {
 
             <div className={styles.text}>
               <span className={styles.title}>Realizare deblocata!</span>
-              <span className={styles.name}>{current.title}</span>
-              <span className={styles.desc}>{current.desc}</span>
+              <span className={styles.name}>{achievement.title}</span>
+              <span className={styles.desc}>{achievement.desc}</span>
             </div>
 
             <div className={styles.shimmer} />
