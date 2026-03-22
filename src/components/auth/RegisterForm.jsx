@@ -23,7 +23,7 @@ const FIELDS = [
     name: 'name',
     id: 'register-name',
     type: 'text',
-    label: 'NUME',
+    label: 'Nume elev',
     placeholder: 'Prenume si nume',
     autoComplete: 'name',
   },
@@ -31,7 +31,7 @@ const FIELDS = [
     name: 'email',
     id: 'register-email',
     type: 'email',
-    label: 'EMAIL',
+    label: 'Email',
     placeholder: 'adresa@email.ro',
     autoComplete: 'email',
     inputMode: 'email',
@@ -42,7 +42,7 @@ const FIELDS = [
     name: 'password',
     id: 'register-password',
     type: 'password',
-    label: 'PAROLA',
+    label: 'Parola',
     placeholder: 'Minimum 6 caractere',
     autoComplete: 'new-password',
   },
@@ -50,7 +50,7 @@ const FIELDS = [
     name: 'confirmPassword',
     id: 'register-confirm-password',
     type: 'password',
-    label: 'CONFIRMA PAROLA',
+    label: 'Confirma parola',
     placeholder: 'Repeta parola',
     autoComplete: 'new-password',
   },
@@ -80,7 +80,7 @@ const RegisterForm = ({ onSwitch }) => {
 
   return (
     <motion.form
-      className={styles.form}
+      className={`${styles.form} ${styles.formRegister}`}
       onSubmit={handleSubmit(onSubmit)}
       noValidate
       initial={{ opacity: 0, x: -10 }}
@@ -88,14 +88,7 @@ const RegisterForm = ({ onSwitch }) => {
       exit={{ opacity: 0, x: 10 }}
       transition={{ duration: 0.22 }}
     >
-      <div className={styles.header}>
-        <span className={styles.kicker}>Pornire noua</span>
-        <p className={styles.subline}>
-          Creezi contul o singura data, apoi progresul si rezultatele raman salvate.
-        </p>
-      </div>
-
-      <div className={styles.fields}>
+      <div className={`${styles.fields} ${styles.fieldsGrid}`}>
         {FIELDS.map((field) => {
           const error = errors[field.name];
           const errorId = `${field.id}-error`;
@@ -124,7 +117,15 @@ const RegisterForm = ({ onSwitch }) => {
         })}
       </div>
 
-      <Button type="submit" variant="primary" size="lg" fullWidth loading={isSubmitting} icon={<UserPlus size={14} />}>
+      <Button
+        type="submit"
+        variant="primary"
+        size="lg"
+        fullWidth
+        loading={isSubmitting}
+        icon={<UserPlus size={14} />}
+        className={styles.submit}
+      >
         Creeaza cont
       </Button>
 

@@ -1,87 +1,60 @@
 import { useId } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  MoonStar,
-  Sun,
-  BookOpen,
-  Target,
-  Layers,
-  ClipboardCheck,
-  Grid2x2,
-  Clock3,
-} from 'lucide-react';
+import { MoonStar, Sun, BookOpen, Target, ClipboardCheck } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import LoginForm from '../components/auth/LoginForm';
 import RegisterForm from '../components/auth/RegisterForm';
 import { useTheme } from '../contexts';
 import styles from './Home.module.css';
 
-const SUPPORT_STEPS = [
+const AUTH_FACTS = ['Capitole ordonate', 'Review ghidat', 'Simulare reala'];
+
+const STUDY_POINTS = [
   {
-    icon: <BookOpen size={18} />,
-    title: 'Capitole clare',
-    sub: 'Algebra, geometrie si exercitii construite pentru formatul Evaluarii Nationale.',
+    icon: <BookOpen size={16} />,
+    title: 'Materie asezata clar',
+    sub: 'Lucrezi algebra si geometria in ordinea buna pentru EN.',
   },
   {
-    icon: <Target size={18} />,
-    title: 'Logica fara goluri',
-    sub: 'Vezi pasii importanti, nu doar raspunsul final, ca sa intelegi metoda.',
+    icon: <Target size={16} />,
+    title: 'Focus pe punctele slabe',
+    sub: 'Revii direct la exercitiile unde pierzi puncte.',
   },
   {
-    icon: <ClipboardCheck size={18} />,
-    title: 'Simulare reala',
-    sub: 'Teste cronometrate, rezultate salvate si reluare rapida unde ai ramas.',
+    icon: <ClipboardCheck size={16} />,
+    title: 'Teste ca la examen',
+    sub: 'Intri in simulare cu timp, rezultat si progres salvat.',
   },
 ];
-
-const STATS = [
-  { num: '500+', label: 'Exercitii', icon: <Grid2x2 size={13} /> },
-  { num: '20+', label: 'Simulari', icon: <Clock3 size={13} /> },
-  { num: '10+', label: 'Capitole', icon: <Layers size={13} /> },
-];
-
-const EXAM_PANELS = [
-  {
-    label: 'Subiect I',
-    title: 'Ritm bun de inceput',
-    sub: 'Intri rapid in calcul, atentie si raspunsuri scurte.',
-  },
-  {
-    label: 'Subiect II',
-    title: 'Metoda pas cu pas',
-    sub: 'Construiesti rezolvari curate pentru cerintele de lucru.',
-  },
-  {
-    label: 'Subiect III',
-    title: 'Simulare completa',
-    sub: 'Antrenezi examenul cu timp, punctaj si feedback clar.',
-  },
-];
-
-const AUTH_FACTS = ['Progres salvat', 'Review automat', 'Teste cronometrate'];
 
 const MODE_CONTENT = {
   login: {
-    badge: 'Autentificare',
-    title: 'Reia exact de unde ai ramas',
-    intro: 'Intri direct in dashboard cu progresul, testele si exercitiile pe care le ai de revizuit.',
-    support: 'Foloseste acelasi email la fiecare sesiune ca sa-ti pastrezi istoricul complet de invatare.',
+    badge: 'Acces elev',
+    title: 'Intra in contul tau',
+    intro: 'Continui exact din capitolul, testul sau lista de review unde ai ramas.',
+    support: 'Istoricul tau de invatare ramane salvat pe acelasi email.',
   },
   register: {
     badge: 'Cont nou',
-    title: 'Creeaza-ti spatiul de studiu',
-    intro: 'Iti facem contul in cateva secunde, apoi poti exersa pe capitole si intra in simularea completa.',
-    support: 'Dupa inregistrare, rezultatele si progresul se salveaza automat dupa fiecare sesiune.',
+    title: 'Creeaza-ti contul de pregatire',
+    intro: 'Iti deschidem un spatiu personal pentru exercitii, teste si progres salvat automat.',
+    support: 'Dupa inregistrare intri direct in platforma si incepi lucrul imediat.',
   },
 };
 
-const stagger = { animate: { transition: { staggerChildren: 0.07 } } };
-const up = {
-  initial: { opacity: 0, y: 18 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.21, 1.11, 0.81, 0.99] } },
-};
-
 const getTabFromPath = (pathname) => (pathname === '/register' ? 'register' : 'login');
+
+const BrandMark = () => (
+  <div className={styles.logoMark} aria-hidden="true">
+    <span className={styles.logoBand}>
+      <span />
+      <span />
+      <span />
+    </span>
+    <span className={styles.logoPrimary}>EN</span>
+    <span className={styles.logoSecondary}>MAT VIII</span>
+  </div>
+);
 
 const Home = () => {
   const { isDark, toggle } = useTheme();
@@ -112,125 +85,86 @@ const Home = () => {
         <span>{isDark ? 'Light' : 'Dark'}</span>
       </button>
 
-      <section className={styles.hero}>
-        <div className={styles.heroGlowA} />
-        <div className={styles.heroGlowB} />
-        <div className={styles.heroMesh} />
+      <motion.section
+        className={styles.authCard}
+        initial={{ opacity: 0, y: 18, scale: 0.985 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.26, ease: [0.21, 1.11, 0.81, 0.99] }}
+      >
+        <div className={styles.brandPanel}>
+          <div className={styles.brandTop}>
+            <div className={styles.brandLockup}>
+              <BrandMark />
 
-        <motion.div className={styles.heroContent} variants={stagger} initial="initial" animate="animate">
-          <div className={styles.heroTop}>
-            <motion.div className={styles.brandLockup} variants={up}>
-              <div className={styles.logoMark} aria-hidden="true">
-                <span className={styles.logoPrimary}>EN</span>
-                <span className={styles.logoSecondary}>VIII</span>
-              </div>
-
-              <div className={styles.brandCopy}>
-                <span className={styles.brandKicker}>Platforma pentru elevii de clasa a VIII-a</span>
-                <h1 className={styles.brandTitle}>Evaluare Nationala</h1>
-                <p className={styles.brandSubtitle}>
-                  Matematica, organizata clar pentru pregatire zilnica, revizuire si simulare reala.
-                </p>
-              </div>
-            </motion.div>
-
-            <motion.div className={styles.heroLead} variants={up}>
-              <span className={styles.heroBadge}>Pregatire clara pentru examenul real</span>
-              <p className={styles.heroText}>
-                Inveti capitol cu capitol, vezi unde gresesti si revii exact in punctele
-                care conteaza inainte de simulare.
-              </p>
-            </motion.div>
-          </div>
-
-          <motion.div className={styles.examGrid} variants={up}>
-            {EXAM_PANELS.map((panel) => (
-              <div key={panel.label} className={styles.examCard}>
-                <span className={styles.examLabel}>{panel.label}</span>
-                <span className={styles.examTitle}>{panel.title}</span>
-                <span className={styles.examSub}>{panel.sub}</span>
-              </div>
-            ))}
-          </motion.div>
-
-          <motion.div className={styles.supportGrid} variants={stagger}>
-            {SUPPORT_STEPS.map((step) => (
-              <motion.div key={step.title} className={styles.supportItem} variants={up}>
-                <span className={styles.supportIcon}>{step.icon}</span>
-                <div className={styles.supportText}>
-                  <span className={styles.supportTitle}>{step.title}</span>
-                  <span className={styles.supportSub}>{step.sub}</span>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          <motion.div className={styles.statRow} variants={up}>
-            {STATS.map((stat) => (
-              <span key={stat.label} className={styles.statChip}>
-                <span className={styles.statIcon}>{stat.icon}</span>
-                <span className={styles.statNum}>{stat.num}</span>
-                <span className={styles.statLabel}>{stat.label}</span>
-              </span>
-            ))}
-          </motion.div>
-        </motion.div>
-      </section>
-
-      <section className={styles.authSide}>
-        <motion.div
-          className={styles.authCard}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.15 }}
-        >
-          <div className={styles.authTop}>
-            <div className={styles.authBrand}>
-              <span className={styles.authLogo}>EN</span>
-              <div className={styles.authBrandCopy}>
-                <span className={styles.authBrandName}>Evaluare Nationala</span>
-                <span className={styles.authBrandSub}>Contul tau de studiu</span>
+              <div className={styles.brandMeta}>
+                <span className={styles.brandKicker}>Platforma pentru clasa a VIII-a</span>
+                <span className={styles.brandName}>Evaluare Nationala</span>
               </div>
             </div>
-            <span className={styles.modeBadge}>{modeContent.badge}</span>
+
+            <span className={styles.surfaceBadge}>Matematica EN</span>
           </div>
 
-          <div className={styles.authHeading}>
+          <div className={styles.heroBlock}>
+            <h1 className={styles.heroTitle}>Invata clar. Intra pregatit.</h1>
+            <p className={styles.heroText}>
+              Un spatiu de studiu simplu si serios, facut pentru elevii care vor un flow clar de lucru inainte de examen.
+            </p>
+          </div>
+
+          <div className={styles.pointList}>
+            {STUDY_POINTS.map((point) => (
+              <article key={point.title} className={styles.pointItem}>
+                <span className={styles.pointIcon}>{point.icon}</span>
+                <div className={styles.pointCopy}>
+                  <span className={styles.pointTitle}>{point.title}</span>
+                  <span className={styles.pointSub}>{point.sub}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className={styles.factRow} aria-label="Avantaje">
+            {AUTH_FACTS.map((fact) => (
+              <span key={fact} className={styles.factChip}>{fact}</span>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.authPanel}>
+          <div className={styles.panelHeader}>
+            <span className={styles.modeBadge}>{modeContent.badge}</span>
             <h2 className={styles.authTitle}>{modeContent.title}</h2>
             <p className={styles.authIntro}>{modeContent.intro}</p>
           </div>
 
-          <div className={styles.authFacts} aria-label="Avantaje">
-            {AUTH_FACTS.map((fact) => (
-              <span key={fact} className={styles.authFact}>{fact}</span>
-            ))}
-          </div>
-
-          <div className={styles.tabBar} role="tablist" aria-label="Alege formularul de autentificare">
-            <button
-              id={loginTabId}
-              type="button"
-              role="tab"
-              aria-selected={tab === 'login'}
-              aria-controls={loginPanelId}
-              tabIndex={tab === 'login' ? 0 : -1}
-              className={`${styles.tab} ${tab === 'login' ? styles.tabActive : ''}`}
-              onClick={() => switchTab('login')}
-            >
-              Autentificare
-            </button>
-            <button
-              id={registerTabId}
-              type="button"
-              role="tab"
-              aria-selected={tab === 'register'}
-              aria-controls={registerPanelId}
-              tabIndex={tab === 'register' ? 0 : -1}
-              className={`${styles.tab} ${tab === 'register' ? styles.tabActive : ''}`}
-              onClick={() => switchTab('register')}
-            >
-              Inregistrare
-            </button>
+          <div className={styles.tabShell}>
+            <div className={styles.tabBar} role="tablist" aria-label="Alege formularul de autentificare">
+              <button
+                id={loginTabId}
+                type="button"
+                role="tab"
+                aria-selected={tab === 'login'}
+                aria-controls={loginPanelId}
+                tabIndex={tab === 'login' ? 0 : -1}
+                className={`${styles.tab} ${tab === 'login' ? styles.tabActive : ''}`}
+                onClick={() => switchTab('login')}
+              >
+                Autentificare
+              </button>
+              <button
+                id={registerTabId}
+                type="button"
+                role="tab"
+                aria-selected={tab === 'register'}
+                aria-controls={registerPanelId}
+                tabIndex={tab === 'register' ? 0 : -1}
+                className={`${styles.tab} ${tab === 'register' ? styles.tabActive : ''}`}
+                onClick={() => switchTab('register')}
+              >
+                Inregistrare
+              </button>
+            </div>
           </div>
 
           <div className={styles.formWrap} role="tabpanel" id={activePanelId} aria-labelledby={activeTabId}>
@@ -242,8 +176,8 @@ const Home = () => {
           </div>
 
           <p className={styles.authNote}>{modeContent.support}</p>
-        </motion.div>
-      </section>
+        </div>
+      </motion.section>
     </div>
   );
 };

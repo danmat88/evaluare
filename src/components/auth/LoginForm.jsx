@@ -18,7 +18,7 @@ const FIELDS = [
     name: 'email',
     id: 'login-email',
     type: 'email',
-    label: 'EMAIL',
+    label: 'Email',
     placeholder: 'adresa@email.ro',
     autoComplete: 'email',
     inputMode: 'email',
@@ -29,8 +29,8 @@ const FIELDS = [
     name: 'password',
     id: 'login-password',
     type: 'password',
-    label: 'PAROLA',
-    placeholder: '********',
+    label: 'Parola',
+    placeholder: 'Introdu parola',
     autoComplete: 'current-password',
   },
 ];
@@ -67,13 +67,6 @@ const LoginForm = ({ onSwitch }) => {
       exit={{ opacity: 0, x: -10 }}
       transition={{ duration: 0.22 }}
     >
-      <div className={styles.header}>
-        <span className={styles.kicker}>Acces rapid</span>
-        <p className={styles.subline}>
-          Intri direct in dashboard si continui pregatirea de unde ai ramas.
-        </p>
-      </div>
-
       <div className={styles.fields}>
         {FIELDS.map((field) => {
           const error = errors[field.name];
@@ -103,7 +96,15 @@ const LoginForm = ({ onSwitch }) => {
         })}
       </div>
 
-      <Button type="submit" variant="primary" size="lg" fullWidth loading={isSubmitting} icon={<LogIn size={14} />}>
+      <Button
+        type="submit"
+        variant="primary"
+        size="lg"
+        fullWidth
+        loading={isSubmitting}
+        icon={<LogIn size={14} />}
+        className={styles.submit}
+      >
         Intra in cont
       </Button>
 
