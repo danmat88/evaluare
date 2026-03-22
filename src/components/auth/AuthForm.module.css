@@ -1,6 +1,7 @@
 /* ══════════════════════════════════════════════════════
-   AuthForm — amândouă formularele se încadrează
-   în panoul formPanel (height: 288px)
+   AuthForm — formular autentificare / înregistrare
+   Desktop : formPanel height:288px (grila 2 col)
+   Mobil   : formPanel height:auto  (grila 1 col, overflow liber)
    ══════════════════════════════════════════════════════ */
 
 .form {
@@ -10,9 +11,7 @@
   gap: 12px;
 }
 
-.formRegister {
-  gap: 9px;
-}
+.formRegister { gap: 9px; }
 
 /* ── Câmpuri ──────────────────────────────────────────────── */
 .fields {
@@ -21,6 +20,7 @@
   gap: 10px;
 }
 
+/* Grila 2 coloane — desktop */
 .fieldsGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -86,6 +86,7 @@
   font-family: var(--font-body);
   font-size: 0.875rem;
   padding: 0 13px;
+  /* fontSize ≥ 16px pe iOS previne zoom-ul la focus */
   transition:
     border-color var(--t-fast),
     box-shadow var(--t-fast),
@@ -121,27 +122,24 @@
 /* Buton arată/ascunde parolă */
 .pwToggle {
   position: absolute;
-  right: 8px;
-  top: 50%;
+  right: 8px; top: 50%;
   transform: translateY(-50%);
-  width: 26px; height: 26px;
-  border: none;
-  background: none;
+  width: 28px; height: 28px;
+  border: none; background: none;
   color: var(--text-dim);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 7px;
   cursor: pointer;
+  /* Zonă de atingere mai mare pe mobil */
+  touch-action: manipulation;
   transition: color var(--t-fast), background var(--t-fast);
-  flex-shrink: 0;
 }
 .pwToggle:hover {
   color: var(--text-secondary);
   background: color-mix(in srgb, var(--chalk-white) 8%, transparent);
 }
 
-/* ── Slot eroare — rezervat mereu ─────────────────────────── */
+/* ── Slot eroare — rezervat mereu (stabilizează înălțimea) ── */
 .errorSlot {
   min-height: 14px;
   overflow: hidden;
@@ -196,16 +194,18 @@
   transition: color 0.3s ease;
 }
 
-/* ── Buton de submit ──────────────────────────────────────── */
+/* ── Submit ────────────────────────────────────────────────── */
 .submit {
   min-height: 40px;
   border-radius: 10px;
   font-weight: 700;
   letter-spacing: 0.01em;
   width: 100%;
+  /* Touch target minim recomandat: 44px */
+  padding: 0 18px;
 }
 
-/* ── Subsol (link schimbare formular) ─────────────────────── */
+/* ── Subsol ────────────────────────────────────────────────── */
 .footer {
   display: flex;
   align-items: center;
@@ -231,6 +231,9 @@
   color: var(--text-primary);
   position: relative;
   transition: color var(--t-fast);
+  /* Touch target */
+  min-height: 28px;
+  touch-action: manipulation;
 }
 .switchBtn::after {
   content: '';
@@ -245,7 +248,7 @@
 .switchBtn:hover { color: var(--neon-cyan); }
 .switchBtn:hover::after { transform: scaleX(1); }
 
-/* ── Tremurat la eroare de autentificare ──────────────────── */
+/* ── Animație tremur la autentificare greșită ─────────────── */
 .fieldShake {
   animation: shake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97);
 }
@@ -265,6 +268,82 @@
   to   { opacity: 1; transform: scale(1); }
 }
 
-@media (max-width: 520px) {
-  .fieldsGrid { grid-template-columns: 1fr; }
+
+/* ════════════════════════════════════════════════════════
+   RESPONSIV
+   Țintă: formularul de înregistrare să nu cauzeze scroll
+   pe niciun telefon. Valori calculate:
+     4 câmpuri × 52px + 3 × 7px gap + submit 40px
+     + footer 19px + 2 × 7px gap ≈ 302px
+   ════════════════════════════════════════════════════════ */
+
+/* ── 640px: grila 2 col → 1 col, inputuri iOS-safe ──────── */
+@media (max-width: 640px) {
+  .fieldsGrid {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  /* 16px previne zoom-ul automat pe iOS */
+  .input { height: 38px; font-size: 16px; border-radius: 9px; }
+  .input::placeholder { font-size: 0.84rem; }
+
+  /* Slotul de putere a parolei dispare — câștigăm 28px */
+  .strengthSlot { display: none; }
+
+  /* errorSlot: nu mai rezervăm spațiu — eroarea apare
+     și împinge conținutul în jos doar când e activă */
+  .errorSlot { min-height: 0; }
+
+  .form         { gap: 10px; }
+  .formRegister { gap: 7px; }
+  .fields       { gap: 7px; }
+  .field        { gap: 3px; }
+  .labelRow     { min-height: 11px; }
+  .label        { font-size: 8.5px; }
+  .forgotBtn    { font-size: 8.5px; }
+
+  .submit { min-height: 40px; font-size: 0.875rem; }
+  .footer { padding-top: 5px; }
+  .footerText { font-size: 10px; }
+  .switchBtn  { font-size: 10px; }
+  .errorText  { font-size: 9px; }
+}
+
+/* ── 479px: compactare suplimentară ─────────────────────── */
+@media (max-width: 479px) {
+  .fieldsGrid { gap: 6px; }
+  .form         { gap: 9px; }
+  .formRegister { gap: 6px; }
+  .fields       { gap: 6px; }
+  .input { height: 38px; }
+  .submit { min-height: 40px; }
+}
+
+/* ── 380px: densitate maximă ────────────────────────────── */
+@media (max-width: 380px) {
+  .fieldsGrid { gap: 5px; }
+  .form         { gap: 8px; }
+  .formRegister { gap: 5px; }
+  .fields       { gap: 5px; }
+  .input  { height: 36px; }
+  .submit { min-height: 38px; }
+  .label  { font-size: 8px; }
+  .footer { padding-top: 4px; }
+  .footerText { font-size: 9.5px; }
+  .switchBtn  { font-size: 9.5px; }
+}
+
+/* ── Landscape pe telefon ────────────────────────────────── */
+@media (max-height: 500px) and (max-width: 860px) {
+  .fieldsGrid { grid-template-columns: repeat(2, 1fr); gap: 6px 8px; }
+  .form         { gap: 7px; }
+  .formRegister { gap: 6px; }
+  .fields       { gap: 6px; }
+  .field        { gap: 2px; }
+  .input  { height: 34px; font-size: 14px; border-radius: 7px; }
+  .submit { min-height: 34px; font-size: 0.82rem; }
+  .footer { padding-top: 5px; }
+  .errorSlot  { min-height: 0; }
+  .errorText  { font-size: 8.5px; }
 }

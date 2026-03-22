@@ -1,9 +1,8 @@
 /* ═══════════════════════════════════════════════════════
-   ZeceLogo
+   ZeceLogo — componentă autonomă de brand
    Variante:  size="sm|md|lg"  ×  variant="full|mark|wordmark"
    ═══════════════════════════════════════════════════════ */
 
-/* ── Rând complet (marcă + text) ──────────────────────────── */
 .root {
   display: inline-flex;
   align-items: center;
@@ -20,28 +19,20 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-
-  /* Fundal: gradient de adâncime navy → albastru-miezul-nopții */
   background: linear-gradient(145deg, #0d1f35 0%, #071628 55%, #040e1c 100%);
-
-  /* Borduri: inel exterior subtil + halou cyan pe top */
-  border: 1px solid rgba(0, 229, 200, 0.18);
+  border: 1px solid rgba(0,229,200,0.18);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.09),   /* highlight top */
-    inset 0 -1px 0 rgba(0,0,0,0.35),         /* umbră jos */
-    0 0 0 1px rgba(0,0,0,0.4),               /* inel exterior */
-    0 4px 20px rgba(0,0,0,0.55),             /* umbră drop */
-    0 0 28px rgba(0,229,200,0.06);           /* glow exterior faint */
-
+    inset 0 1px 0 rgba(255,255,255,0.09),
+    inset 0 -1px 0 rgba(0,0,0,0.35),
+    0 0 0 1px rgba(0,0,0,0.4),
+    0 4px 20px rgba(0,0,0,0.55),
+    0 0 28px rgba(0,229,200,0.06);
   overflow: hidden;
-  transition:
-    box-shadow 0.25s ease,
-    border-color 0.25s ease;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
-/* Hover — glow mai pronunțat */
 .root:hover .mark {
-  border-color: rgba(0, 229, 200, 0.34);
+  border-color: rgba(0,229,200,0.34);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.12),
     inset 0 -1px 0 rgba(0,0,0,0.35),
@@ -50,24 +41,18 @@
     0 0 36px rgba(0,229,200,0.14);
 }
 
-/* Halou interior animat (radial în colțul stânga-sus) */
 .halo {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    circle at 28% 24%,
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 28% 24%,
     rgba(0,229,200,0.22) 0%,
     rgba(0,196,240,0.08) 45%,
-    transparent 72%
-  );
+    transparent 72%);
   animation: haloPuls 4.5s ease-in-out infinite;
   pointer-events: none;
 }
 
-/* Grid interior decorativ — textura de adâncime */
 .grid {
-  position: absolute;
-  inset: 0;
+  position: absolute; inset: 0;
   background-image:
     linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
@@ -76,22 +61,17 @@
   opacity: 0.6;
 }
 
-/* Shimmer — linie de lumină care trece diagonal */
 .shimmer {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    118deg,
+  position: absolute; inset: 0;
+  background: linear-gradient(118deg,
     transparent 30%,
     rgba(255,255,255,0.07) 50%,
-    transparent 70%
-  );
+    transparent 70%);
   background-size: 200% 200%;
   animation: shimmer 5s ease-in-out infinite;
   pointer-events: none;
 }
 
-/* SVG-ul Z */
 .zSvg {
   position: relative;
   z-index: 2;
@@ -99,16 +79,16 @@
   flex-shrink: 0;
 }
 
-/* ── Dimensiuni ────────────────────────────────────────────── */
+/* ── Dimensiuni ─────────────────────────────────────────── */
 .sizeSm .mark { width: 30px;  height: 30px;  border-radius: 8px;  }
 .sizeMd .mark { width: 44px;  height: 44px;  border-radius: 12px; }
 .sizeLg .mark { width: 60px;  height: 60px;  border-radius: 16px; }
 
-/* ── Text (eyebrow + name) ────────────────────────────────── */
+/* ── Text ─────────────────────────────────────────────────── */
 .meta {
   display: flex;
   flex-direction: column;
-  gap: 0px;
+  gap: 0;
   min-width: 0;
 }
 
@@ -136,7 +116,6 @@
   color: color-mix(in srgb, var(--neon-cyan) 25%, var(--text-primary));
 }
 
-/* Dimensiuni text */
 .sizeSm .eyebrow { font-size: 6.5px; letter-spacing: 0.1em; }
 .sizeSm .name    { font-size: 1.05rem; letter-spacing: -0.05em; }
 
@@ -146,7 +125,7 @@
 .sizeLg .eyebrow { font-size: 9.5px; }
 .sizeLg .name    { font-size: 2rem; }
 
-/* ── Varianta wordmark ────────────────────────────────────── */
+/* ── Wordmark ─────────────────────────────────────────────── */
 .wordmarkRoot {
   display: inline-flex;
   flex-direction: column;
@@ -154,7 +133,6 @@
   user-select: none;
   text-decoration: none;
 }
-
 .wordmarkName {
   font-family: var(--font-display);
   font-weight: 800;
@@ -162,24 +140,31 @@
   line-height: 1;
   color: var(--text-primary);
 }
-
 .wordmarkAccent {
   height: 2.5px;
   border-radius: 2px;
   width: 68%;
   background: linear-gradient(90deg,
     var(--neon-cyan) 0%,
-    color-mix(in srgb, var(--neon-cyan) 45%, #f59e0b) 100%
-  );
+    color-mix(in srgb, var(--neon-cyan) 45%, #f59e0b) 100%);
 }
 
-/* ── Keyframes ────────────────────────────────────────────── */
+/* ── Animații ─────────────────────────────────────────────── */
 @keyframes haloPuls {
   0%, 100% { opacity: 1;   transform: scale(1);    }
   50%       { opacity: 0.5; transform: scale(1.08); }
 }
-
 @keyframes shimmer {
   0%        { background-position: 160% 160%; }
   40%, 100% { background-position: -60% -60%; }
+}
+
+/* ── Responsiv — override mărime pe mobil ─────────────────── */
+/* Pe header-ul mobil logo-ul primește clasa .mobileHeader de
+   la părinte, care forțează dimensiunile sm */
+@media (max-width: 479px) {
+  .sizeMd .mark { width: 34px; height: 34px; border-radius: 9px; }
+  .sizeMd .eyebrow { font-size: 6.5px; }
+  .sizeMd .name    { font-size: 1.15rem; }
+  .root.sizeMd { gap: 9px; }
 }
