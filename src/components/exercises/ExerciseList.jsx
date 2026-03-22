@@ -70,6 +70,32 @@ const VIEW_MODES = [
   { id: 'solved', label: 'Rezolvate' },
 ];
 
+const isValidChapter = (value) => CHAPTERS.some((chapter) => chapter.id === value);
+const isValidViewMode = (value) => VIEW_MODES.some((mode) => mode.id === value);
+
+const parseSearchFilters = (search) => {
+  const params = new URLSearchParams(search);
+  const chapterParam = params.get('capitol');
+  const modeParam = params.get('mod');
+
+  return {
+    chapter: isValidChapter(chapterParam) ? chapterParam : null,
+    viewMode: isValidViewMode(modeParam) ? modeParam : 'all',
+  };
+};
+
+const buildSearchFilters = (search, { chapter, viewMode }) => {
+  const params = new URLSearchParams(search);
+
+  if (chapter) params.set('capitol', chapter);
+  else params.delete('capitol');
+
+  if (viewMode !== 'all') params.set('mod', viewMode);
+  else params.delete('mod');
+
+  return params.toString();
+};
+
 const normalize = (value) =>
   String(value || '')
     .toLowerCase()
@@ -84,13 +110,17 @@ const ExerciseList = ({ exercises = [], loading }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const searchRef = useRef(null);
+  const syncingFromLocationRef = useRef(true);
+  const initialSearchFilters = parseSearchFilters(location.search);
 
-  const [chapter, setChapter] = useState(null);
+  const [chapter, setChapter] = useState(() => initialSearchFilters.chapter);
   const [difficulty, setDifficulty] = useState(0);
   const [query, setQuery] = useState('');
-  const [viewMode, setViewMode] = useState('all');
+  const [viewMode, setViewMode] = useState(() => initialSearchFilters.viewMode);
   const [idx, setIdx] = useState(0);
   const [pendingResumeId, setPendingResumeId] = useState(null);
+  const chapterRef = useRef(chapter);
+  const viewModeRef = useRef(viewMode);
 
   const [favoriteIds, setFavoriteIds] = useState(() => toSet(readScopedJSON(STORAGE_KEYS.favorites, storageScope, [])));
   const [solvedIds, setSolvedIds] = useState(() => toSet(readScopedJSON(STORAGE_KEYS.solved, storageScope, [])));
@@ -101,6 +131,14 @@ const ExerciseList = ({ exercises = [], loading }) => {
 
   const { totalCorrect, streak } = useExerciseStore();
   const reviewIds = useMemo(() => new Set(getReviewExerciseIds(studyInsights)), [studyInsights]);
+
+  useEffect(() => {
+    chapterRef.current = chapter;
+  }, [chapter]);
+
+  useEffect(() => {
+    viewModeRef.current = viewMode;
+  }, [viewMode]);
 
   const filtered = useMemo(() => {
     const q = normalize(query.trim());
@@ -343,35 +381,42 @@ const ExerciseList = ({ exercises = [], loading }) => {
   }, [filtered, pendingResumeId]);
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const chapterParam = params.get('capitol');
-    const modeParam = params.get('mod');
-    const nextViewMode = VIEW_MODES.some((mode) => mode.id === modeParam) ? modeParam : 'all';
+    const nextFilters = parseSearchFilters(location.search);
+    const chapterChanged = chapterRef.current !== nextFilters.chapter;
+    const viewModeChanged = viewModeRef.current !== nextFilters.viewMode;
 
-    if (chapterParam && CHAPTERS.some((ch) => ch.id === chapterParam)) {
-      setChapter(chapterParam);
-      setIdx(0);
-    } else if (!chapterParam) {
-      setChapter(null);
+    if (chapterChanged) {
+      syncingFromLocationRef.current = true;
+      setChapter(nextFilters.chapter);
     }
 
-    setViewMode((currentMode) => {
-      if (currentMode !== nextViewMode) {
-        setIdx(0);
-      }
-      return nextViewMode;
-    });
+    if (viewModeChanged) {
+      syncingFromLocationRef.current = true;
+      setViewMode(nextFilters.viewMode);
+    }
+
+    if (chapterChanged || viewModeChanged) {
+      setIdx(0);
+    } else {
+      syncingFromLocationRef.current = false;
+    }
   }, [location.search]);
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    if (chapter) params.set('capitol', chapter);
-    else params.delete('capitol');
-    if (viewMode !== 'all') params.set('mod', viewMode);
-    else params.delete('mod');
+    if (syncingFromLocationRef.current) {
+      const locationFilters = parseSearchFilters(location.search);
+      const stateMatchesLocation = chapter === locationFilters.chapter && viewMode === locationFilters.viewMode;
 
-    const nextSearch = params.toString();
+      if (!stateMatchesLocation) {
+        return;
+      }
+
+      syncingFromLocationRef.current = false;
+    }
+
+    const nextSearch = buildSearchFilters(location.search, { chapter, viewMode });
     const currentSearch = location.search.startsWith('?') ? location.search.slice(1) : location.search;
+
     if (nextSearch !== currentSearch) {
       navigate({ pathname: location.pathname, search: nextSearch ? `?${nextSearch}` : '' }, { replace: true });
     }
