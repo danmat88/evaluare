@@ -1,10 +1,7 @@
 /* ════════════════════════════════════════════════════════
-   HOME  ·  Full-bleed split
-   Left  : flex column, hero flex:1 + min-height:0  ← THE fix
-   Right : auth card with layout-animated height
+   HOME  ·  Split full-bleed
    ════════════════════════════════════════════════════════ */
 
-/* ── Page ────────────────────────────────────────────────── */
 .page {
   width: 100%;
   min-height: 100dvh;
@@ -14,16 +11,18 @@
   position: relative;
 }
 
+/* Granulație fină */
 .noise {
   position: fixed;
   inset: 0;
   z-index: 200;
   pointer-events: none;
-  opacity: 0.024;
+  opacity: 0.022;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 180px 180px;
 }
 
+/* Buton temă */
 .themeToggle {
   position: fixed;
   top: 18px;
@@ -32,14 +31,14 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--chalk-white) 13%, transparent);
+  border: 1px solid color-mix(in srgb, var(--chalk-white) 12%, transparent);
   background: color-mix(in srgb, var(--bg-glass) 80%, transparent);
   backdrop-filter: blur(14px);
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 12px color-mix(in srgb, var(--bg-void) 30%, transparent);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
   transition: border-color var(--t-fast), color var(--t-fast),
               box-shadow var(--t-fast), transform var(--t-fast);
 }
@@ -47,23 +46,21 @@
   color: var(--text-primary);
   border-color: color-mix(in srgb, var(--neon-cyan) 30%, transparent);
   box-shadow:
-    0 2px 14px color-mix(in srgb, var(--bg-void) 30%, transparent),
+    0 2px 14px rgba(0,0,0,0.3),
     0 0 0 4px color-mix(in srgb, var(--neon-cyan) 10%, transparent);
   transform: scale(1.08);
 }
 
 
 /* ════════════════════════════════════════════════════════
-   BRAND STAGE — left
-   KEY: flex column, height 100dvh, overflow hidden.
-   brandHero must have flex:1 AND min-height:0 so it
-   can actually shrink and give space to brandBottom.
+   PANOUL STÂNG
+   Flex column: brandTop(shrink:0) / brandHero(flex:1 + min-h:0)
+                / brandBottom(shrink:0)
    ════════════════════════════════════════════════════════ */
 
 .brandStage {
   position: relative;
   height: 100dvh;
-  /* flex column — the only layout model that works for this */
   display: flex;
   flex-direction: column;
   padding: 28px 32px 0;
@@ -72,41 +69,48 @@
   background: color-mix(in srgb, var(--bg-void) 97%, transparent);
 }
 
-/* Atmosphere */
+/* ── Atmosferă ────────────────────────────────────────────── */
 .aurora1 {
   position: absolute; inset: 0; pointer-events: none;
-  background: radial-gradient(ellipse 85% 65% at 12% 8%,
-    color-mix(in srgb, var(--neon-cyan) 18%, transparent) 0%, transparent 55%);
-  animation: auroraA 13s ease-in-out infinite;
+  background: radial-gradient(ellipse 85% 65% at 10% 6%,
+    color-mix(in srgb, var(--neon-cyan) 16%, transparent) 0%,
+    transparent 55%);
+  animation: auroraA 14s ease-in-out infinite;
 }
 .aurora2 {
   position: absolute; inset: 0; pointer-events: none;
-  background: radial-gradient(ellipse 65% 55% at 86% 86%,
-    color-mix(in srgb, #f59e0b 9%, transparent) 0%, transparent 55%);
-  animation: auroraB 18s ease-in-out infinite;
+  background: radial-gradient(ellipse 65% 55% at 88% 88%,
+    color-mix(in srgb, #f59e0b 8%, transparent) 0%,
+    transparent 55%);
+  animation: auroraB 19s ease-in-out infinite;
 }
 .aurora3 {
   position: absolute; inset: 0; pointer-events: none;
   background: radial-gradient(ellipse 50% 40% at 55% 46%,
-    color-mix(in srgb, #34d399 7%, transparent) 0%, transparent 60%);
-  animation: auroraC 23s ease-in-out infinite;
+    color-mix(in srgb, #34d399 6%, transparent) 0%,
+    transparent 60%);
+  animation: auroraC 25s ease-in-out infinite;
 }
 .stageGrid {
   position: absolute; inset: 0; pointer-events: none;
   background-image: radial-gradient(circle,
-    color-mix(in srgb, var(--chalk-white) 20%, transparent) 1px, transparent 1px);
+    color-mix(in srgb, var(--chalk-white) 18%, transparent) 1px,
+    transparent 1px);
   background-size: 26px 26px;
-  opacity: 0.07;
+  opacity: 0.065;
   mask-image: radial-gradient(ellipse 80% 70% at 40% 50%, black 20%, transparent 78%);
   -webkit-mask-image: radial-gradient(ellipse 80% 70% at 40% 50%, black 20%, transparent 78%);
 }
+
+/* Filigran "10" (Zece = nota 10) */
 .ghostMono {
   position: absolute;
-  right: -20px; bottom: 28px;
+  right: -12px;
+  bottom: 24px;
   font-family: var(--font-display);
-  font-size: clamp(8rem, 16vw, 14rem);
+  font-size: clamp(9rem, 18vw, 16rem);
   font-weight: 800;
-  letter-spacing: -0.1em;
+  letter-spacing: -0.12em;
   line-height: 1;
   color: transparent;
   -webkit-text-stroke: 1.5px color-mix(in srgb, var(--chalk-white) 5%, transparent);
@@ -120,107 +124,57 @@
   font-family: var(--font-display);
   font-size: clamp(1.1rem, 1.9vw, 1.7rem);
   font-weight: 700;
-  color: color-mix(in srgb, var(--neon-cyan) 11%, transparent);
+  color: color-mix(in srgb, var(--neon-cyan) 10%, transparent);
   left: var(--x); top: var(--y);
   transform: rotate(var(--r)) scale(var(--s));
   animation: mathFloat 8s ease-in-out infinite;
   animation-delay: var(--d);
 }
 
-
-/* ── ZONE 1: Logo — never shrinks ────────────────────────── */
+/* ── Zona 1: Logo ─────────────────────────────────────────── */
 .brandTop {
   position: relative;
   z-index: 2;
   flex-shrink: 0;
-  /* padding-bottom creates breathing room before hero */
-  padding-bottom: 4px;
+  padding-bottom: 2px;
 }
 
-.logoRow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.logoMark {
-  width: 46px; height: 46px;
-  border-radius: 13px;
-  border: 1px solid color-mix(in srgb, var(--chalk-white) 14%, transparent);
-  background: color-mix(in srgb, var(--bg-card-strong) 88%, transparent);
-  display: flex; align-items: center; justify-content: center;
-  position: relative; flex-shrink: 0; overflow: hidden;
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--neon-cyan) 8%, transparent),
-    0 4px 16px color-mix(in srgb, var(--bg-void) 36%, transparent);
-}
-.logoHalo {
-  position: absolute; inset: 0;
-  background: radial-gradient(circle at 35% 35%,
-    color-mix(in srgb, var(--neon-cyan) 28%, transparent) 0%, transparent 70%);
-  animation: haloBreath 4s ease-in-out infinite;
-}
-.logoRing {
-  position: absolute; inset: 5px;
-  border-radius: 8px;
-  border: 1px solid color-mix(in srgb, var(--chalk-white) 9%, transparent);
-}
-.logoGlyph {
-  position: relative; z-index: 1;
-  font-family: var(--font-display);
-  font-size: 1.05rem; font-weight: 700; letter-spacing: -0.05em;
-  color: var(--text-primary);
-}
-.logoMeta { display: flex; flex-direction: column; gap: 2px; }
-.logoEyebrow {
-  font-family: var(--font-display);
-  font-size: 8px; font-weight: 600;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--text-muted);
-}
-.logoName {
-  font-family: var(--font-display);
-  font-size: 1.4rem; font-weight: 700;
-  letter-spacing: -0.05em; line-height: 1;
-  color: var(--text-primary);
-}
-
-
-/* ── ZONE 2: Hero — takes all leftover space ─────────────── */
-/* flex:1 means "take remaining space".
-   min-height:0 means "I can shrink below my content height".
-   WITHOUT min-height:0, flex items default to min-height:auto
-   and will push brandBottom out of the container. */
+/* ── Zona 2: Hero ─────────────────────────────────────────── */
 .brandHero {
   position: relative;
   z-index: 2;
   flex: 1;
-  min-height: 0;        /* ← THE critical fix */
-  overflow: hidden;     /* clips if truly too short */
+  min-height: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 14px;
-  padding: 16px 0;
+  gap: 16px;
+  padding: 18px 0;
 }
 
+/* Kicker — mai mare, mai respirat */
 .headlineKicker {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   font-family: var(--font-display);
-  font-size: 9px; font-weight: 700;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  color: color-mix(in srgb, var(--neon-cyan) 70%, var(--text-primary));
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--neon-cyan) 78%, var(--text-primary));
   width: fit-content;
-  padding: 3px 9px 3px 6px;
+  padding: 5px 12px 5px 9px;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--neon-cyan) 16%, transparent);
-  background: color-mix(in srgb, var(--neon-cyan) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 18%, transparent);
+  background: color-mix(in srgb, var(--neon-cyan) 8%, transparent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--neon-cyan) 8%, transparent);
 }
 
 .headlineTitle {
   font-family: var(--font-display);
-  font-size: clamp(2rem, 3.5vw, 3.4rem);
+  font-size: clamp(2.1rem, 3.6vw, 3.5rem);
   font-weight: 800;
   line-height: 0.93;
   letter-spacing: -0.055em;
@@ -238,16 +192,13 @@
 
 .headlineSub {
   font-family: var(--font-body);
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   line-height: 1.65;
   color: var(--text-secondary);
-  max-width: 310px;
+  max-width: 320px;
 }
 
-
-/* ── ZONE 3: Bottom — never shrinks, always visible ─────── */
-/* flex-shrink:0 ensures it stays at its natural height.
-   The hero zone (flex:1, min-height:0) absorbs any shortage. */
+/* ── Zona 3: Jos ──────────────────────────────────────────── */
 .brandBottom {
   position: relative;
   z-index: 2;
@@ -256,20 +207,20 @@
   flex-direction: column;
 }
 
-/* Feature list */
+/* Avantaje */
 .featureList {
   border-top: 1px solid color-mix(in srgb, var(--chalk-white) 7%, transparent);
   display: flex;
   flex-direction: column;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 .featureItem {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 8px 6px 8px 2px;
-  margin: 0 -2px;
-  border-radius: 8px;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 8px 9px 4px;
+  margin: 0 -4px;
+  border-radius: 9px;
   border-bottom: 1px solid color-mix(in srgb, var(--chalk-white) 5%, transparent);
   cursor: default;
   transition: background var(--t-fast);
@@ -280,58 +231,59 @@
 }
 .featureItem:hover .featureIcon {
   background: var(--accent-bg);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent, var(--neon-cyan)) 28%, transparent),
-              0 0 8px color-mix(in srgb, var(--accent, var(--neon-cyan)) 12%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent, var(--neon-cyan)) 32%, transparent),
+    0 0 12px color-mix(in srgb, var(--accent, var(--neon-cyan)) 16%, transparent);
 }
 .featureIcon {
-  width: 26px; height: 26px; border-radius: 7px;
+  width: 28px; height: 28px;
+  border-radius: 8px;
   display: inline-flex; align-items: center; justify-content: center;
   flex-shrink: 0;
   color: var(--accent, var(--neon-cyan));
   background: var(--accent-bg, color-mix(in srgb, var(--neon-cyan) 10%, transparent));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent, var(--neon-cyan)) 18%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent, var(--neon-cyan)) 20%, transparent);
   transition: background var(--t-fast), box-shadow var(--t-fast);
-  margin-top: 1px;
 }
-.featureCopy { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.featureCopy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .featureTitle {
   font-family: var(--font-display);
-  font-size: 0.78rem; font-weight: 600;
+  font-size: 0.8rem; font-weight: 600;
   color: var(--text-primary); line-height: 1.2;
 }
 .featureSub {
   font-family: var(--font-body);
-  font-size: 9px; line-height: 1.45;
+  font-size: 9.5px; line-height: 1.4;
   color: var(--text-muted);
 }
 
-/* Stat cards */
+/* Statistici */
 .statRow {
   display: flex;
   gap: 7px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 .statCard {
   flex: 1;
   display: flex; flex-direction: column; gap: 3px;
-  padding: 9px 11px;
-  border-radius: 11px;
+  padding: 10px 12px;
+  border-radius: 12px;
   border: 1px solid color-mix(in srgb, var(--chalk-white) 9%, transparent);
   background: color-mix(in srgb, var(--bg-card-strong) 58%, transparent);
   backdrop-filter: blur(12px);
   transition: border-color var(--t-fast), transform var(--t-fast);
 }
 .statCard:hover {
-  border-color: color-mix(in srgb, var(--neon-cyan) 20%, transparent);
+  border-color: color-mix(in srgb, var(--neon-cyan) 22%, transparent);
   transform: translateY(-2px);
 }
 .statIcon {
-  color: color-mix(in srgb, var(--neon-cyan) 70%, var(--text-primary));
+  color: color-mix(in srgb, var(--neon-cyan) 72%, var(--text-primary));
   display: inline-flex; margin-bottom: 1px;
 }
 .statValue {
   font-family: var(--font-display);
-  font-size: 1.15rem; font-weight: 800;
+  font-size: 1.2rem; font-weight: 800;
   letter-spacing: -0.05em; line-height: 1;
   color: var(--text-primary);
 }
@@ -341,12 +293,12 @@
   color: var(--text-muted);
 }
 
-/* Marquee */
+/* Bandă derulantă */
 .marqueeWrap {
   overflow: hidden;
   width: calc(100% + 64px);
   margin-left: -32px;
-  padding: 8px 0;
+  padding: 9px 0;
   border-top: 1px solid color-mix(in srgb, var(--chalk-white) 6%, transparent);
   mask-image: linear-gradient(90deg, transparent 0%, black 10%, black 90%, transparent 100%);
   -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 10%, black 90%, transparent 100%);
@@ -354,22 +306,22 @@
 .marqueeTrack {
   display: flex;
   width: max-content;
-  animation: marquee 24s linear infinite;
+  animation: marquee 26s linear infinite;
 }
 .marqueeItem {
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 0 15px;
+  padding: 0 16px;
   font-family: var(--font-display);
   font-size: 9px; font-weight: 700;
-  letter-spacing: 0.08em; text-transform: uppercase;
+  letter-spacing: 0.09em; text-transform: uppercase;
   color: var(--text-dim); white-space: nowrap;
 }
-.marqueeItem:nth-child(3n+1) { color: color-mix(in srgb, var(--neon-cyan) 36%, var(--text-dim)); }
-.marqueeItem:nth-child(3n+2) { color: color-mix(in srgb, #f59e0b 30%, var(--text-dim)); }
+.marqueeItem:nth-child(3n+1) { color: color-mix(in srgb, var(--neon-cyan) 40%, var(--text-dim)); }
+.marqueeItem:nth-child(3n+2) { color: color-mix(in srgb, #f59e0b 34%, var(--text-dim)); }
 
 
 /* ════════════════════════════════════════════════════════
-   AUTH STAGE — right
+   PANOUL DREPT — card autentificare
    ════════════════════════════════════════════════════════ */
 
 .authStage {
@@ -385,13 +337,15 @@
 .authAtmos {
   position: absolute; inset: 0; pointer-events: none;
   background:
-    radial-gradient(ellipse 60% 40% at 75% 12%,
-      color-mix(in srgb, var(--neon-cyan) 6%, transparent) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 75% 10%,
+      color-mix(in srgb, var(--neon-cyan) 7%, transparent) 0%,
+      transparent 60%),
     radial-gradient(ellipse 45% 35% at 22% 88%,
-      color-mix(in srgb, #f59e0b 4%, transparent) 0%, transparent 55%);
+      color-mix(in srgb, #f59e0b 4%, transparent) 0%,
+      transparent 55%);
 }
 
-/* Glow border wrapper */
+/* Wrapper cu bordura conic animată */
 .authCardWrap {
   position: relative;
   width: 100%;
@@ -399,14 +353,14 @@
 }
 .cardGlowBorder {
   position: absolute; inset: -1px;
-  border-radius: 23px;
+  border-radius: 24px;
   background: conic-gradient(
     from var(--ga, 0deg),
     transparent 0deg,
-    color-mix(in srgb, var(--neon-cyan) 42%, transparent) 55deg,
+    color-mix(in srgb, var(--neon-cyan) 45%, transparent) 55deg,
     transparent 110deg,
     transparent 190deg,
-    color-mix(in srgb, #f59e0b 26%, transparent) 240deg,
+    color-mix(in srgb, #f59e0b 28%, transparent) 240deg,
     transparent 295deg,
     transparent 360deg
   );
@@ -417,11 +371,11 @@
 .cardGlowBorder::after {
   content: '';
   position: absolute; inset: 1.5px;
-  border-radius: 21.5px;
-  background: color-mix(in srgb, var(--bg-card-strong) 98%, transparent);
+  border-radius: 22.5px;
+  background: var(--bg-card-strong);
 }
 
-/* ── The auth card itself ─────────────────────────────────── */
+/* Cardul propriu-zis */
 .authCard {
   position: relative;
   z-index: 1;
@@ -431,66 +385,78 @@
   border: 1px solid color-mix(in srgb, var(--chalk-white) 10%, transparent);
   backdrop-filter: blur(24px);
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--chalk-white) 3%, transparent),
-    0 16px 56px color-mix(in srgb, var(--bg-void) 48%, transparent),
-    inset 0 1px 0 color-mix(in srgb, var(--chalk-white) 8%, transparent);
+    inset 0 1px 0 color-mix(in srgb, var(--chalk-white) 9%, transparent),
+    0 20px 60px rgba(0,0,0,0.45);
   overflow: hidden;
 }
 
-/* Top strip: badge + title + intro — has a subtle gradient tint */
+/* ── Antet card ────────────────────────────────────────────── */
 .authCardTop {
-  padding: 28px 28px 22px;
+  padding: 26px 26px 20px;
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  background: linear-gradient(155deg,
-    color-mix(in srgb, var(--neon-cyan) 3%, transparent) 0%,
-    transparent 55%);
-  border-bottom: 1px solid color-mix(in srgb, var(--chalk-white) 6%, transparent);
+  gap: 8px;
   position: relative;
   overflow: hidden;
-}
-/* Decorative top-right corner glow */
-.authCardTop::before {
-  content: '';
-  position: absolute; top: -50px; right: -50px;
-  width: 150px; height: 150px; border-radius: 50%;
-  background: radial-gradient(circle,
-    color-mix(in srgb, var(--neon-cyan) 12%, transparent) 0%, transparent 70%);
-  pointer-events: none;
+  /* Fundal distinct — gradient subtil de atmosferă */
+  background:
+    radial-gradient(ellipse 120% 80% at 90% 0%,
+      color-mix(in srgb, var(--neon-cyan) 9%, transparent) 0%,
+      transparent 55%),
+    color-mix(in srgb, var(--bg-surface) 55%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--chalk-white) 8%, transparent);
 }
 
+/* Linie de lumină în colțul dreapta-sus */
+.authCardTop::before {
+  content: '';
+  position: absolute;
+  top: -1px; right: 20%;
+  width: 30%;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--neon-cyan) 40%, transparent) 50%,
+    transparent 100%);
+}
+
+/* Insigna de stare */
 .modeBadge {
   width: fit-content;
-  min-height: 23px;
+  min-height: 22px;
   padding: 0 10px;
   border-radius: 999px;
-  display: inline-flex; align-items: center;
+  display: inline-flex;
+  align-items: center;
   font-family: var(--font-display);
-  font-size: 8px; font-weight: 700;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  color: color-mix(in srgb, var(--neon-cyan) 86%, var(--text-primary));
-  border: 1px solid color-mix(in srgb, var(--neon-cyan) 22%, transparent);
-  background: color-mix(in srgb, var(--neon-cyan) 8%, transparent);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--neon-cyan) 90%, var(--text-primary));
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 24%, transparent);
+  background: color-mix(in srgb, var(--neon-cyan) 9%, transparent);
 }
+
 .authTitle {
   font-family: var(--font-display);
-  font-size: clamp(1.6rem, 2.4vw, 2rem);
+  font-size: clamp(1.65rem, 2.5vw, 2.05rem);
   font-weight: 800;
   letter-spacing: -0.05em;
-  line-height: 1.04;
+  line-height: 1.05;
   color: var(--text-primary);
 }
+
 .authIntro {
   font-family: var(--font-body);
   font-size: 0.82rem;
-  line-height: 1.58;
+  line-height: 1.6;
   color: var(--text-secondary);
 }
 
-/* Form body */
+/* ── Corp card ─────────────────────────────────────────────── */
 .authCardBody {
-  padding: 20px 28px 24px;
+  padding: 20px 26px 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -500,55 +466,56 @@
 .tabShell {
   padding: 3px;
   border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--chalk-white) 9%, transparent);
-  background: color-mix(in srgb, var(--bg-surface) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--chalk-white) 10%, transparent);
+  background: color-mix(in srgb, var(--bg-void) 60%, transparent);
 }
 .tabBar { display: flex; gap: 3px; }
 .tab {
   flex: 1;
-  min-height: 37px;
+  min-height: 36px;
   border-radius: 9px;
   border: 1px solid transparent;
-  color: var(--text-muted);
+  color: var(--text-dim);
   font-family: var(--font-display);
-  font-size: 0.77rem; font-weight: 600;
+  font-size: 0.77rem;
+  font-weight: 600;
   letter-spacing: 0.02em;
-  position: relative; overflow: hidden;
+  position: relative;
+  overflow: hidden;
   transition: color var(--t-fast);
 }
-.tab:hover:not(.tabActive) { color: var(--text-secondary); }
+.tab:hover:not(.tabActive) { color: var(--text-muted); }
 .tabActive { color: var(--text-primary); }
+
+/* Pilula activă cu glow cyan */
 .tabPill {
   position: absolute; inset: 0;
   border-radius: 9px;
   background: linear-gradient(155deg,
-    color-mix(in srgb, var(--bg-raised) 96%, transparent) 0%,
-    color-mix(in srgb, var(--bg-surface) 96%, transparent) 100%);
-  border: 1px solid color-mix(in srgb, var(--neon-cyan) 22%, transparent);
+    color-mix(in srgb, var(--bg-raised) 94%, transparent) 0%,
+    color-mix(in srgb, var(--bg-surface) 94%, transparent) 100%);
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 24%, transparent);
   box-shadow:
-    0 1px 4px color-mix(in srgb, var(--bg-void) 25%, transparent),
+    0 1px 4px rgba(0,0,0,0.25),
     inset 0 1px 0 color-mix(in srgb, var(--chalk-white) 10%, transparent),
-    0 0 14px color-mix(in srgb, var(--neon-cyan) 7%, transparent);
+    0 0 16px color-mix(in srgb, var(--neon-cyan) 10%, transparent);
 }
 .tabLabel { position: relative; z-index: 1; }
 
-/* Form panel — min-height keeps both tabs visually the same.
-   No fixed height so errors/strength-meter animate in naturally.
-   layout animation on authCardWrap handles smooth resize. */
+/* Panou formular — înălțime fixă (= cel mai mare formular) */
 .formPanel {
   width: 100%;
-  /* Fixed to register form height so the card never resizes on tab switch.
-     Login form (~258px) fits inside with ~30px breathing room at bottom. */
   height: 288px;
   overflow: hidden;
   flex-shrink: 0;
   position: relative;
 }
 
-/* Footer note */
+/* Notă de subsol */
 .authNote {
   font-family: var(--font-body);
-  font-size: 10px; line-height: 1.5;
+  font-size: 10px;
+  line-height: 1.5;
   color: var(--text-muted);
   padding-top: 4px;
   border-top: 1px solid color-mix(in srgb, var(--chalk-white) 6%, transparent);
@@ -572,10 +539,6 @@
   0%,100% { transform:translate(0,0) scale(1); opacity:.6; }
   50%      { transform:translate(7%,-7%) scale(1.1); opacity:.9; }
 }
-@keyframes haloBreath {
-  0%,100% { opacity:1; transform:scale(1); }
-  50%      { opacity:.6; transform:scale(1.12); }
-}
 @keyframes mathFloat {
   0%,100% { transform:rotate(var(--r)) scale(var(--s)) translateY(0); }
   50%      { transform:rotate(var(--r)) scale(var(--s)) translateY(-6px); }
@@ -596,48 +559,40 @@
 
 
 /* ════════════════════════════════════════════════════════
-   RESPONSIVE
+   RESPONSIV
    ════════════════════════════════════════════════════════ */
 
-/* Stack on tablet */
 @media (max-width: 860px) {
   .page { grid-template-columns: 1fr; }
   .brandStage {
-    height: auto;
-    min-height: auto;
+    height: auto; min-height: auto;
     padding: 24px 24px 0;
     border-right: none;
     border-bottom: 1px solid color-mix(in srgb, var(--chalk-white) 7%, transparent);
-    overflow: visible; /* let content flow naturally when stacked */
-  }
-  .brandHero {
     overflow: visible;
-    padding: 16px 0 12px;
-    gap: 12px;
   }
+  .brandHero { overflow: visible; padding: 16px 0 12px; gap: 13px; }
   .headlineTitle { font-size: clamp(1.9rem, 7vw, 2.8rem); }
   .ghostMono { font-size: clamp(5rem, 15vw, 8rem); bottom: 16px; }
   .authStage { min-height: auto; padding: 28px 20px 36px; align-items: flex-start; }
   .authCardWrap { max-width: 100%; }
 }
 
-/* Mobile */
 @media (max-width: 540px) {
   .brandStage { padding: 20px 18px 0; }
-  .headlineTitle { font-size: clamp(1.7rem, 9vw, 2.3rem); }
-  .headlineSub { font-size: 0.79rem; }
+  .headlineTitle { font-size: clamp(1.75rem, 9vw, 2.3rem); }
+  .headlineSub { font-size: 0.8rem; }
   .authStage { padding: 20px 14px 28px; }
-  .authCardTop { padding: 22px 20px 18px; }
-  .authCardBody { padding: 16px 20px 20px; gap: 13px; }
-  .authTitle { font-size: clamp(1.35rem, 6vw, 1.7rem); }
+  .authCardTop { padding: 20px 20px 16px; }
+  .authCardBody { padding: 16px 20px 20px; gap: 14px; }
+  .authTitle { font-size: clamp(1.4rem, 6vw, 1.7rem); }
   .formPanel { height: 288px; }
   .themeToggle { top: 14px; right: 14px; }
 }
 
-/* Short desktop — reduce hero text, never hide bottom zone */
 @media (max-height: 660px) and (min-width: 860px) {
   .brandStage { padding: 20px 28px 0; }
-  .brandHero { padding: 10px 0; gap: 10px; }
+  .brandHero { padding: 10px 0; gap: 11px; }
   .headlineTitle { font-size: clamp(1.7rem, 3vw, 2.6rem); }
   .headlineSub { display: none; }
 }

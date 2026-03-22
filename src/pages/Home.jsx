@@ -7,13 +7,14 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 import LoginForm    from '../components/auth/LoginForm';
 import RegisterForm from '../components/auth/RegisterForm';
+import ZeceLogo     from '../components/ui/ZeceLogo';
 import { useTheme } from '../contexts';
 import styles from './Home.module.css';
 
 /* ─── Count-up ──────────────────────────────────────────────── */
 const useCountUp = (target, ms = 1100, delayMs = 0) => {
-  const [v, setV]   = useState(0);
-  const noMotion    = useReducedMotion();
+  const [v, setV] = useState(0);
+  const noMotion  = useReducedMotion();
   useEffect(() => {
     if (noMotion) { setV(target); return; }
     let raf;
@@ -52,29 +53,29 @@ const StatCard = ({ icon, raw, label, delay }) => {
 };
 
 const STATS = [
-  { icon: <BookOpen size={12} />, raw: '2400+', label: 'exerciții',        delay: 0.6  },
-  { icon: <Users    size={12} />, raw: '98%',   label: 'promovabilitate',  delay: 0.74 },
-  { icon: <Award    size={12} />, raw: '12',    label: 'capitole',         delay: 0.88 },
+  { icon: <BookOpen size={12} />, raw: '2400+', label: 'exerciții',       delay: 0.60 },
+  { icon: <Users    size={12} />, raw: '98%',   label: 'promovabilitate', delay: 0.74 },
+  { icon: <Award    size={12} />, raw: '12',    label: 'capitole',        delay: 0.88 },
 ];
 
-/* ─── Avantaje ─────────────────────────────────────────────── */
+/* ─── Avantaje ──────────────────────────────────────────────── */
 const AVANTAJE = [
   {
-    icon: <BookOpen size={12} />,
+    icon: <BookOpen size={13} />,
     titlu: 'Materie bine organizată',
     descriere: 'Parcurgi totul în ordinea potrivită pentru clasa a VIII-a.',
     accent: 'var(--neon-cyan)',
     accentBg: 'color-mix(in srgb, var(--neon-cyan) 10%, transparent)',
   },
   {
-    icon: <Target size={12} />,
+    icon: <Target size={13} />,
     titlu: 'Recapitulare eficientă',
     descriere: 'Revii rapid la exercițiile care îți scad nota.',
     accent: '#f59e0b',
     accentBg: 'color-mix(in srgb, #f59e0b 10%, transparent)',
   },
   {
-    icon: <ClipboardCheck size={12} />,
+    icon: <ClipboardCheck size={13} />,
     titlu: 'Simulare de examen',
     descriere: 'Test cronometrat cu rezultate și progres salvat.',
     accent: '#34d399',
@@ -82,7 +83,7 @@ const AVANTAJE = [
   },
 ];
 
-/* ─── Bandă derulantă ──────────────────────────────────────── */
+/* ─── Bandă derulantă ───────────────────────────────────────── */
 const SUBIECTE = [
   'Ecuații', 'Inegalități', 'Funcții', 'Geometrie',
   'Trigonometrie', 'Probabilități', 'Mulțimi', 'Algebră',
@@ -101,7 +102,7 @@ const BandaDerulanta = () => {
   );
 };
 
-/* ─── Animație cuvânt cu cuvânt ────────────────────────────── */
+/* ─── Animație cuvânt cu cuvânt ─────────────────────────────── */
 const CW = ({ children, delay, accent }) => (
   <motion.span
     className={accent ? styles.headlineGrad : undefined}
@@ -114,7 +115,7 @@ const CW = ({ children, delay, accent }) => (
   </motion.span>
 );
 
-/* ─── Simboluri matematice decorative ─────────────────────── */
+/* ─── Simboluri matematice ──────────────────────────────────── */
 const SIMBOLURI = [
   { s: '∑', r: '11deg',  x: '6%',  y: '29%', sc: '1',    d: '0s'   },
   { s: '∫', r: '-7deg',  x: '72%', y: '17%', sc: '0.72', d: '1.1s' },
@@ -124,7 +125,7 @@ const SIMBOLURI = [
   { s: '∞', r: '-5deg',  x: '39%', y: '10%', sc: '0.65', d: '1.4s' },
 ];
 
-/* ─── Conținut per tab ─────────────────────────────────────── */
+/* ─── Conținut per tab ──────────────────────────────────────── */
 const CONTINUT = {
   login: {
     eticheta: 'Autentificare',
@@ -147,9 +148,9 @@ const TABURI = [
 
 const getTab = (pathname) => (pathname === '/register' ? 'register' : 'login');
 
-/* ════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
    COMPONENTA PRINCIPALĂ
-   ════════════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════════════ */
 export default function Home() {
   const { isDark, toggle } = useTheme();
   const { pathname }       = useLocation();
@@ -192,7 +193,8 @@ export default function Home() {
         <div className={styles.aurora2}   aria-hidden="true" />
         <div className={styles.aurora3}   aria-hidden="true" />
         <div className={styles.stageGrid} aria-hidden="true" />
-        <div className={styles.ghostMono} aria-hidden="true">m8</div>
+        {/* Filigran "10" — Zece = nota maximă */}
+        <div className={styles.ghostMono} aria-hidden="true">10</div>
         <div className={styles.mathDeco}  aria-hidden="true">
           {SIMBOLURI.map(({ s, r, x, y, sc, d }) => (
             <span key={s} className={styles.mathSym}
@@ -207,17 +209,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0  }}
           transition={{ duration: 0.42, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}>
-          <div className={styles.logoRow}>
-            <div className={styles.logoMark}>
-              <span className={styles.logoHalo} />
-              <span className={styles.logoRing} />
-              <span className={styles.logoGlyph}>m8</span>
-            </div>
-            <div className={styles.logoMeta}>
-              <span className={styles.logoEyebrow}>Pregătire · Matematică</span>
-              <span className={styles.logoName}>Mate8</span>
-            </div>
-          </div>
+          <ZeceLogo size="md" />
         </motion.div>
 
         {/* ZONA 2 — Mesaj principal */}
@@ -225,24 +217,24 @@ export default function Home() {
           <motion.span className={styles.headlineKicker}
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0  }}
-            transition={{ duration: 0.34, delay: 0.2 }}>
-            <TrendingUp size={8} />
+            transition={{ duration: 0.34, delay: 0.22 }}>
+            <TrendingUp size={9} />
             Evaluarea Națională · Clasa a VIII-a
           </motion.span>
 
           <h1 className={styles.headlineTitle} style={{ perspective: '600px' }}>
-            <CW delay={0.26}>Înveți</CW>
-            <CW delay={0.34}>mai</CW><br />
-            <CW delay={0.42} accent>clar.</CW><br />
-            <CW delay={0.50}>Intri</CW>
-            <CW delay={0.58}>mai</CW><br />
-            <CW delay={0.66} accent>sigur.</CW>
+            <CW delay={0.28}>Înveți</CW>
+            <CW delay={0.36}>mai</CW><br />
+            <CW delay={0.44} accent>clar.</CW><br />
+            <CW delay={0.52}>Intri</CW>
+            <CW delay={0.60}>mai</CW><br />
+            <CW delay={0.68} accent>sigur.</CW>
           </h1>
 
           <motion.p className={styles.headlineSub}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.42, delay: 0.76 }}>
+            transition={{ duration: 0.42, delay: 0.78 }}>
             Un spațiu organizat pentru tot ce ai nevoie la examen —
             teorie, exerciții și simulări.
           </motion.p>
@@ -256,7 +248,7 @@ export default function Home() {
                 style={{ '--accent': a.accent, '--accent-bg': a.accentBg }}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0  }}
-                transition={{ delay: 0.84 + i * 0.09, duration: 0.34, ease: [0.22, 1, 0.36, 1] }}>
+                transition={{ delay: 0.86 + i * 0.09, duration: 0.34, ease: [0.22, 1, 0.36, 1] }}>
                 <span className={styles.featureIcon}>{a.icon}</span>
                 <div className={styles.featureCopy}>
                   <span className={styles.featureTitle}>{a.titlu}</span>
@@ -278,19 +270,19 @@ export default function Home() {
       <motion.div className={styles.authStage}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.1 }}>
+        transition={{ duration: 0.5, delay: 0.12 }}>
         <div className={styles.authAtmos} aria-hidden="true" />
 
         <motion.div className={styles.authCardWrap}
           initial={{ opacity: 0, y: 20, scale: 0.97 }}
           animate={{ opacity: 1, y: 0,  scale: 1    }}
-          transition={{ duration: 0.46, delay: 0.26, ease: [0.22, 1, 0.36, 1] }}>
+          transition={{ duration: 0.46, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}>
 
           <div className={styles.cardGlowBorder} aria-hidden="true" />
 
           <div className={styles.authCard}>
 
-            {/* Antet card */}
+            {/* Antet */}
             <div className={styles.authCardTop}>
               <AnimatePresence mode="wait">
                 <motion.span key={tab + '-e'} className={styles.modeBadge}
@@ -323,7 +315,7 @@ export default function Home() {
               </AnimatePresence>
             </div>
 
-            {/* Corp card */}
+            {/* Corp */}
             <div className={styles.authCardBody}>
 
               {/* Taburi */}
@@ -352,7 +344,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Panou formular — înălțime fixă, cardul nu sare niciodată */}
+              {/* Formularul — înălțime fixă */}
               <div className={styles.formPanel}
                 role="tabpanel" id={activePanelId} aria-labelledby={activeTabId}>
                 <AnimatePresence mode="wait" initial={false}>
@@ -362,7 +354,7 @@ export default function Home() {
                 </AnimatePresence>
               </div>
 
-              {/* Notă de subsol */}
+              {/* Notă */}
               <AnimatePresence mode="wait">
                 <motion.p key={tab + '-n'} className={styles.authNote}
                   initial={{ opacity: 0 }}

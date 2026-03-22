@@ -1,8 +1,6 @@
 /* ══════════════════════════════════════════════════════
-   AuthForm — fits inside .formPanel (min-height: 230px).
-   Error slots are pre-reserved (min-height) so the form
-   height doesn't jump when errors appear/disappear.
-   Both Login and Register render at the same height.
+   AuthForm — amândouă formularele se încadrează
+   în panoul formPanel (height: 288px)
    ══════════════════════════════════════════════════════ */
 
 .form {
@@ -13,21 +11,20 @@
 }
 
 .formRegister {
-  gap: 10px;
+  gap: 9px;
 }
 
-/* ── Fields ──────────────────────────────────────────────── */
+/* ── Câmpuri ──────────────────────────────────────────────── */
 .fields {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-/* Register: 4 fields in a 2-column grid = 2 rows (same as login's 2 stacked fields) */
 .fieldsGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 10px;
+  gap: 9px 10px;
 }
 
 .field {
@@ -36,19 +33,19 @@
   gap: 4px;
 }
 
-/* ── Label row (label + valid indicator or forgot link) ───── */
+/* ── Rând etichetă ────────────────────────────────────────── */
 .labelRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 14px;
+  min-height: 13px;
 }
 
 .label {
   font-family: var(--font-display);
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--text-secondary);
 }
@@ -56,7 +53,7 @@
 .validIcon {
   display: inline-flex;
   align-items: center;
-  color: color-mix(in srgb, var(--neon-cyan) 85%, var(--text-primary));
+  color: var(--neon-cyan);
   animation: popIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -65,14 +62,14 @@
   border: 0;
   background: none;
   font-family: var(--font-body);
-  font-size: 9.5px;
+  font-size: 9px;
   color: var(--text-dim);
   cursor: pointer;
   transition: color var(--t-fast);
 }
-.forgotBtn:hover { color: color-mix(in srgb, var(--neon-cyan) 80%, var(--text-primary)); }
+.forgotBtn:hover { color: var(--neon-cyan); }
 
-/* ── Input wrapper (password show/hide) ──────────────────── */
+/* ── Input ────────────────────────────────────────────────── */
 .inputWrap {
   position: relative;
   display: flex;
@@ -81,46 +78,53 @@
 
 .input {
   width: 100%;
-  height: 42px;
-  border-radius: 11px;
-  border: 1px solid color-mix(in srgb, var(--chalk-white) 11%, transparent);
-  background: color-mix(in srgb, var(--bg-raised) 55%, transparent);
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--chalk-white) 12%, transparent);
+  background: color-mix(in srgb, var(--bg-void) 70%, transparent);
   color: var(--text-primary);
   font-family: var(--font-body);
   font-size: 0.875rem;
   padding: 0 13px;
-  transition: border-color var(--t-fast), box-shadow var(--t-fast), background var(--t-fast);
+  transition:
+    border-color var(--t-fast),
+    box-shadow var(--t-fast),
+    background var(--t-fast);
 }
 .inputHasSuffix { padding-right: 40px; }
 
 .input:hover {
-  border-color: color-mix(in srgb, var(--chalk-white) 20%, transparent);
-  background: color-mix(in srgb, var(--bg-raised) 68%, transparent);
+  border-color: color-mix(in srgb, var(--chalk-white) 22%, transparent);
+  background: color-mix(in srgb, var(--bg-raised) 60%, transparent);
 }
-.input::placeholder { color: var(--text-dim); font-size: 0.83rem; }
+.input::placeholder {
+  color: var(--text-dim);
+  font-size: 0.82rem;
+}
 .input:focus {
   outline: none;
-  border-color: color-mix(in srgb, var(--neon-cyan) 38%, transparent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--neon-cyan) 10%, transparent);
-  background: color-mix(in srgb, var(--bg-surface) 85%, transparent);
+  border-color: color-mix(in srgb, var(--neon-cyan) 42%, transparent);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--neon-cyan) 10%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--chalk-white) 5%, transparent);
+  background: color-mix(in srgb, var(--bg-surface) 80%, transparent);
 }
 
 .inputErr {
-  border-color: color-mix(in srgb, var(--neon-coral) 46%, transparent) !important;
+  border-color: color-mix(in srgb, var(--neon-coral) 48%, transparent) !important;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--neon-coral) 10%, transparent) !important;
 }
 .inputOk {
-  border-color: color-mix(in srgb, var(--neon-cyan) 30%, transparent);
+  border-color: color-mix(in srgb, var(--neon-cyan) 32%, transparent);
 }
 
-/* Password show/hide button */
+/* Buton arată/ascunde parolă */
 .pwToggle {
   position: absolute;
-  right: 9px;
+  right: 8px;
   top: 50%;
   transform: translateY(-50%);
-  width: 26px;
-  height: 26px;
+  width: 26px; height: 26px;
   border: none;
   background: none;
   color: var(--text-dim);
@@ -137,31 +141,26 @@
   background: color-mix(in srgb, var(--chalk-white) 8%, transparent);
 }
 
-/* ── Error slot — pre-reserved so height never jumps ─────── */
-/* Always renders at min-height; error text animates in/out */
+/* ── Slot eroare — rezervat mereu ─────────────────────────── */
 .errorSlot {
-  min-height: 15px;
+  min-height: 14px;
   overflow: hidden;
 }
-
 .errorText {
   font-family: var(--font-body);
-  font-size: 10px;
+  font-size: 9.5px;
   line-height: 1.3;
   color: var(--neon-coral);
-  padding-top: 1px;
 }
 
-/* ── Password strength (in register) ────────────────────── */
+/* ── Puterea parolei — rezervat mereu ────────────────────── */
 .strengthSlot {
-  /* Pre-reserve space so layout doesn't jump when meter appears */
-  height: 26px;
+  height: 24px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
 }
-
 .strengthWrap {
   display: flex;
   flex-direction: column;
@@ -173,9 +172,9 @@
 }
 .strengthBar {
   flex: 1;
-  height: 3px;
+  height: 2.5px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--chalk-white) 9%, transparent);
+  background: color-mix(in srgb, var(--chalk-white) 8%, transparent);
   transition: background 0.3s ease;
 }
 .strengthMeta {
@@ -197,16 +196,16 @@
   transition: color 0.3s ease;
 }
 
-/* ── Submit button ───────────────────────────────────────── */
+/* ── Buton de submit ──────────────────────────────────────── */
 .submit {
-  min-height: 42px;
-  border-radius: 11px;
+  min-height: 40px;
+  border-radius: 10px;
   font-weight: 700;
   letter-spacing: 0.01em;
   width: 100%;
 }
 
-/* ── Footer (switch link) ────────────────────────────────── */
+/* ── Subsol (link schimbare formular) ─────────────────────── */
 .footer {
   display: flex;
   align-items: center;
@@ -215,13 +214,11 @@
   padding-top: 8px;
   border-top: 1px solid color-mix(in srgb, var(--chalk-white) 7%, transparent);
 }
-
 .footerText {
   font-family: var(--font-body);
   font-size: 10.5px;
   color: var(--text-muted);
 }
-
 .switchBtn {
   padding: 0;
   border: 0;
@@ -241,33 +238,31 @@
   left: 0; right: 0; bottom: -2px;
   height: 1px;
   background: color-mix(in srgb, var(--neon-cyan) 55%, transparent);
-  transform: scaleX(0.55);
+  transform: scaleX(0.5);
   transform-origin: center;
   transition: transform var(--t-fast);
 }
-.switchBtn:hover {
-  color: color-mix(in srgb, var(--neon-cyan) 80%, var(--text-primary));
-}
+.switchBtn:hover { color: var(--neon-cyan); }
 .switchBtn:hover::after { transform: scaleX(1); }
 
-/* ── Shake on login error ────────────────────────────────── */
+/* ── Tremurat la eroare de autentificare ──────────────────── */
 .fieldShake {
   animation: shake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97);
 }
 
-/* ── Keyframes ───────────────────────────────────────────── */
+/* ── Keyframes ────────────────────────────────────────────── */
 @keyframes shake {
-  0%,100% { transform: translateX(0);   }
+  0%,100% { transform: translateX(0); }
   15%      { transform: translateX(-6px); }
-  30%      { transform: translateX(6px);  }
+  30%      { transform: translateX(6px); }
   45%      { transform: translateX(-4px); }
-  60%      { transform: translateX(4px);  }
+  60%      { transform: translateX(4px); }
   75%      { transform: translateX(-2px); }
-  90%      { transform: translateX(2px);  }
+  90%      { transform: translateX(2px); }
 }
 @keyframes popIn {
   from { opacity: 0; transform: scale(0.4); }
-  to   { opacity: 1; transform: scale(1);   }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 @media (max-width: 520px) {
