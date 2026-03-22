@@ -1,16 +1,30 @@
+/* ═══════════════════════════════════════════════════════════
+   ProgressDashboard — tokens 100% from variables.css
+   Inner panel: --r-md cards, --border-dim, --bg-surface tint
+   ═══════════════════════════════════════════════════════════ */
+
 .container {
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
   min-height: 0;
   overflow-y: auto;
-  padding-right: 2px;
+  padding-right: var(--sp-1);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(248, 250, 252, 0.1) transparent;
+}
+.container::-webkit-scrollbar       { width: 3px; }
+.container::-webkit-scrollbar-track { background: transparent; }
+.container::-webkit-scrollbar-thumb {
+  background: rgba(248, 250, 252, 0.1);
+  border-radius: var(--r-full);
 }
 
+/* Overview ring card — same as .statCard in Dashboard */
 .overview {
-  border-radius: var(--r-lg);
-  border: var(--border-soft);
-  background: color-mix(in srgb, var(--bg-surface) 80%, transparent);
+  border-radius: var(--r-md);
+  border: var(--border-dim);
+  background: color-mix(in srgb, var(--bg-surface) 55%, transparent);
   padding: var(--sp-3) var(--sp-4);
   display: flex;
   align-items: center;
@@ -42,7 +56,7 @@
 .overviewNum {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: var(--sp-1);
 }
 
 .bigNum {
@@ -56,28 +70,28 @@
 .levelRow {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-1);
 }
 
 .levelDot {
   width: 7px;
   height: 7px;
-  border-radius: 50%;
+  border-radius: var(--r-full);
   background: var(--neon-yellow);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--neon-yellow) 45%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--neon-yellow) 40%, transparent);
 }
 
 .bars {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--sp-2);
 }
 
 .barRow {
   display: grid;
-  grid-template-columns: minmax(90px, 112px) 1fr 40px;
+  grid-template-columns: minmax(88px, 108px) 1fr 38px;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 
 .barLabel {
@@ -90,11 +104,11 @@
 }
 
 .barTrack {
-  height: 6px;
+  height: 5px;
   border-radius: var(--r-full);
   overflow: hidden;
-  background: color-mix(in srgb, var(--bg-surface) 78%, transparent);
-  border: 1px solid color-mix(in srgb, var(--text-muted) 20%, transparent);
+  background: color-mix(in srgb, var(--bg-surface) 60%, transparent);
+  border: var(--border-dim);
 }
 
 .barFill {
@@ -106,9 +120,7 @@
 .barFill::after {
   content: '';
   position: absolute;
-  right: 0;
-  top: -2px;
-  bottom: -2px;
+  right: 0; top: -2px; bottom: -2px;
   width: 5px;
   border-radius: var(--r-full);
   background: rgba(255, 255, 255, 0.9);
@@ -120,14 +132,10 @@
   font-size: 10px;
   font-weight: 700;
   text-align: right;
+  color: var(--text-secondary);
 }
 
 @media (max-width: 640px) {
-  .overview {
-    padding: var(--sp-3);
-  }
-
-  .barRow {
-    grid-template-columns: minmax(76px, 95px) 1fr 34px;
-  }
+  .overview { padding: var(--sp-3); }
+  .barRow   { grid-template-columns: minmax(72px, 90px) 1fr 32px; }
 }

@@ -14,6 +14,7 @@ import { motion } from 'framer-motion';
 import { useAuth, useTheme } from '../../contexts';
 import XPBar from '../ui/XPBar';
 import CommandPalette from './CommandPalette';
+import ZeceLogo from '../ui/ZeceLogo';
 import { STORAGE_CHANGE_EVENT, STORAGE_KEYS, safeReadJSON } from '../../utils/storage';
 import styles from './Layout.module.css';
 
@@ -28,7 +29,6 @@ const Layout = ({ children, scrollMode = 'contained' }) => {
   const { profile, logout } = useAuth();
   const { isDark, toggle } = useTheme();
   const navigate = useNavigate();
-
   const [paletteOpen, setPaletteOpen] = useState(false);
 
   const todayLabel = new Intl.DateTimeFormat('ro-RO', {
@@ -38,13 +38,12 @@ const Layout = ({ children, scrollMode = 'contained' }) => {
   }).format(new Date());
 
   useEffect(() => {
-    const onKey = (event) => {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
-        event.preventDefault();
-        setPaletteOpen((open) => !open);
+    const onKey = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setPaletteOpen((o) => !o);
       }
     };
-
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
@@ -54,7 +53,6 @@ const Layout = ({ children, scrollMode = 'contained' }) => {
       const reduced = Boolean(safeReadJSON(STORAGE_KEYS.reduceMotion, false));
       document.documentElement.setAttribute('data-motion', reduced ? 'reduce' : 'full');
     };
-
     applyMotion();
     window.addEventListener('focus', applyMotion);
     window.addEventListener('storage', applyMotion);
@@ -66,25 +64,30 @@ const Layout = ({ children, scrollMode = 'contained' }) => {
     };
   }, []);
 
-  const goTo = (to) => {
-    navigate(to);
-    setPaletteOpen(false);
-  };
+  const goTo = (to) => { navigate(to); setPaletteOpen(false); };
 
   return (
     <div className={styles.shell}>
+
+      {/* ── Same atmospheric layers as Home ── */}
+      <div className={styles.noise}     aria-hidden="true" />
+      <div className={styles.aurora1}   aria-hidden="true" />
+      <div className={styles.aurora2}   aria-hidden="true" />
+      <div className={styles.aurora3}   aria-hidden="true" />
+      <div className={styles.stageGrid} aria-hidden="true" />
+
+      {/* ── Nav ── */}
       <header className={styles.nav}>
-        <div className={styles.brand}>
-          <span className={styles.brandSigma}>EN</span>
-          <span className={styles.brandName}>Evaluare <span className={styles.brandAccent}>Nationala</span></span>
-        </div>
+        <ZeceLogo size="sm" variant="full" as="div" className={styles.brand} />
 
         <nav className={styles.links}>
           {NAV.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
-              className={({ isActive }) => `${styles.link} ${isActive ? styles.linkActive : ''}`}
+              className={({ isActive }) =>
+                `${styles.link} ${isActive ? styles.linkActive : ''}`
+              }
             >
               {n.icon}
               <span>{n.label}</span>
@@ -94,9 +97,7 @@ const Layout = ({ children, scrollMode = 'contained' }) => {
 
         <div className={styles.right}>
           <span className={styles.today}>{todayLabel}</span>
-          <div className={styles.xpWrap}>
-            <XPBar />
-          </div>
+          <div className={styles.xpWrap}><XPBar /></div>
           <div className={styles.divider} />
 
           <button
@@ -113,8 +114,7 @@ const Layout = ({ children, scrollMode = 'contained' }) => {
           <button
             className={styles.themeBtn}
             onClick={toggle}
-            aria-label={isDark ? 'Activeaza tema luminoasa' : 'Activeaza tema intunecata'}
-            title={isDark ? 'Tema luminoasa' : 'Tema intunecata'}
+            aria-label={isDark ? 'Tema luminoasa' : 'Tema intunecata'}
           >
             {isDark ? <Sun size={14} /> : <MoonStar size={14} />}
             <span>{isDark ? 'Light' : 'Dark'}</span>
@@ -124,10 +124,7 @@ const Layout = ({ children, scrollMode = 'contained' }) => {
 
           <button
             className={styles.logoutBtn}
-            onClick={async () => {
-              await logout();
-              navigate('/login');
-            }}
+            onClick={async () => { await logout(); navigate('/login'); }}
             title="Deconectare"
           >
             <LogOut size={14} />
@@ -135,9 +132,16 @@ const Layout = ({ children, scrollMode = 'contained' }) => {
         </div>
       </header>
 
-      <main className={`${styles.content} ${scrollMode === 'page' ? styles.contentPage : styles.contentContained}`}>
+      {/* ── Content ── */}
+      <main
+        className={`${styles.content} ${
+          scrollMode === 'page' ? styles.contentPage : styles.contentContained
+        }`}
+      >
         <motion.div
-          className={`${styles.pageWrap} ${scrollMode === 'page' ? styles.pageWrapPage : styles.pageWrapContained}`}
+          className={`${styles.pageWrap} ${
+            scrollMode === 'page' ? styles.pageWrapPage : styles.pageWrapContained
+          }`}
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
@@ -146,23 +150,23 @@ const Layout = ({ children, scrollMode = 'contained' }) => {
         </motion.div>
       </main>
 
+      {/* ── Mobile dock ── */}
       <nav className={styles.mobileDock} aria-label="Navigare rapida">
         {NAV.map((n) => (
           <NavLink
-            key={`mobile-${n.to}`}
+            key={`m-${n.to}`}
             to={n.to}
-            className={({ isActive }) => `${styles.mobileLink} ${isActive ? styles.mobileLinkActive : ''}`}
+            className={({ isActive }) =>
+              `${styles.mobileLink} ${isActive ? styles.mobileLinkActive : ''}`
+            }
           >
             {n.icon}
             <span>{n.label}</span>
           </NavLink>
         ))}
-
         <button type="button" className={styles.mobileLink} onClick={() => setPaletteOpen(true)}>
-          <Search size={16} />
-          <span>Cauta</span>
+          <Search size={16} /><span>Cauta</span>
         </button>
-
         <button type="button" className={styles.mobileLink} onClick={toggle}>
           {isDark ? <Sun size={16} /> : <MoonStar size={16} />}
           <span>Tema</span>
