@@ -79,12 +79,25 @@ const TestResults = () => {
     autoSubmitted,
     subjectSummary = [],
   } = results;
+  const subjectBreakdown = subjectSummary.map((subject) => ({
+    ...subject,
+    percentage: subject.totalPoints > 0 ? Math.round((subject.score / subject.totalPoints) * 100) : 0,
+    missedPoints: Math.max((subject.totalPoints || 0) - (subject.score || 0), 0),
+    unanswered: Math.max((subject.total || 0) - (subject.answered || 0), 0),
+  }));
 
   const { g, color } = grade(percentage);
   const badgeInfo = badge(percentage);
   const BadgeIcon = badgeInfo.Icon;
   const great = percentage >= 70;
   const nextStep = buildNextStep(results);
+  const weakestSubject = subjectBreakdown.length
+    ? [...subjectBreakdown].sort((left, right) => left.percentage - right.percentage || right.missedPoints - left.missedPoints)[0]
+    : null;
+  const strongestSubject = subjectBreakdown.length
+    ? [...subjectBreakdown].sort((left, right) => right.percentage - left.percentage || right.score - left.score)[0]
+    : null;
+  const coveragePct = totalQuestions > 0 ? Math.round((answeredCount / totalQuestions) * 100) : 0;
   const saveMessage = saveStatus === 'pending'
     ? 'Rezultatul este pastrat local si va fi sincronizat automat cand conexiunea revine.'
     : saveStatus === 'saving'
@@ -162,17 +175,49 @@ const TestResults = () => {
 
           {subjectSummary.length > 0 && (
             <div className={styles.subjectList}>
-              {subjectSummary.map((subject) => (
+              {subjectBreakdown.map((subject) => (
                 <div key={subject.id} className={styles.subjectRow}>
                   <span className={styles.subjectLabel}>{subject.label}</span>
                   <span className={styles.subjectMeta}>
                     {subject.answered}/{subject.total} raspunsuri
                   </span>
                   <span className={styles.subjectScore}>
-                    {subject.score}/{subject.totalPoints}p
+                    {subject.score}/{subject.totalPoints}p · {subject.percentage}%
                   </span>
                 </div>
               ))}
+            </div>
+          )}
+
+          {(weakestSubject || strongestSubject) && (
+            <div className={styles.coachGrid}>
+              {weakestSubject && (
+                <div className={styles.coachCard}>
+                  <span className={styles.coachCardLabel}>Zona cea mai fragila</span>
+                  <span className={styles.coachCardValue}>{weakestSubject.label}</span>
+                  <span className={styles.coachCardSub}>
+                    {weakestSubject.percentage}% si {weakestSubject.missedPoints} puncte pierdute aici.
+                  </span>
+                </div>
+              )}
+
+              {strongestSubject && (
+                <div className={styles.coachCard}>
+                  <span className={styles.coachCardLabel}>Zona cea mai buna</span>
+                  <span className={styles.coachCardValue}>{strongestSubject.label}</span>
+                  <span className={styles.coachCardSub}>
+                    {strongestSubject.percentage}% si {strongestSubject.score} puncte castigate.
+                  </span>
+                </div>
+              )}
+
+              <div className={styles.coachCard}>
+                <span className={styles.coachCardLabel}>Acoperire</span>
+                <span className={styles.coachCardValue}>{coveragePct}%</span>
+                <span className={styles.coachCardSub}>
+                  {answeredCount} din {totalQuestions} raspunsuri completate inainte de predare.
+                </span>
+              </div>
             </div>
           )}
 
@@ -185,8 +230,11 @@ const TestResults = () => {
             <Button variant="ghost" size="sm" icon={<RotateCcw size={13} />} onClick={() => { resetTest(); navigate('/teste'); }}>
               Alt test
             </Button>
-            <Button variant="outline" size="sm" icon={<Target size={13} />} onClick={() => { resetTest(); navigate('/exercitii'); }}>
-              Revino la exercitii
+            <Button variant="outline" size="sm" icon={<Target size={13} />} onClick={() => { resetTest(); navigate('/exercitii?mod=review'); }}>
+              Review prioritar
+            </Button>
+            <Button variant="outline" size="sm" icon={<Target size={13} />} onClick={() => { resetTest(); navigate('/exercitii?mod=smart'); }}>
+              Sesiune smart
             </Button>
             <Button variant="primary" size="md" icon={<Home size={14} />} onClick={() => { resetTest(); navigate('/dashboard'); }}>
               Inapoi la dashboard

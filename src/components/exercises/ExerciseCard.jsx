@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BlockMath } from 'react-katex';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, CheckCircle2, Eye, Flame, RotateCcw, XCircle } from 'lucide-react';
+import { ArrowRight, Bookmark, CheckCircle2, Eye, Flame, RotateCcw, Save, Trash2, XCircle } from 'lucide-react';
 import Blackboard from '../blackboard/Blackboard';
 import ChalkText from '../blackboard/ChalkText';
 import MathKeyboard from '../keyboard/MathKeyboard';
@@ -47,7 +47,15 @@ const REVIEW_MISS_MSG = 'Incercarea este salvata pentru review, dar nu iti rupe 
 
 const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswerChange }) => {
+const ExerciseCard = ({
+  exercise,
+  onResult,
+  onNext,
+  initialAnswer = '',
+  noteText = '',
+  onAnswerChange,
+  onNoteSave,
+}) => {
   const [answer, setAnswer] = useState(initialAnswer);
   const [submitted, setSubmitted] = useState(false);
   const [correct, setCorrect] = useState(null);
@@ -56,6 +64,7 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
   const [showParticles, setShowParticles] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
   const [xpFloat, setXpFloat] = useState(null);
+  const [noteDraft, setNoteDraft] = useState(noteText);
   const boardRef = useRef(null);
   const startedAtRef = useRef(null);
   const submittingRef = useRef(false);
@@ -79,12 +88,29 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
     setFeedbackMsg('');
     setShowParticles(false);
     setXpFloat(null);
+    setNoteDraft(noteText || '');
     submittingRef.current = false;
-  }, [exercise.id, initialAnswer]);
+  }, [exercise.id, initialAnswer, noteText]);
 
   const handleKey = (value) => !submitted && updateAnswer(`${answer}${value}`);
   const handleBackspace = () => !submitted && updateAnswer(answer.slice(0, -1));
   const handleClear = () => !submitted && updateAnswer('');
+
+  const normalizedSavedNote = String(noteText || '').trim();
+  const normalizedDraftNote = String(noteDraft || '').trim();
+  const noteDirty = normalizedDraftNote !== normalizedSavedNote;
+  const hasNote = Boolean(normalizedDraftNote || normalizedSavedNote);
+  const noteStatus = noteDirty ? 'Draft nesalvat' : hasNote ? 'Nota salvata' : 'Adauga o nota privata';
+
+  const handleSaveNote = useCallback(() => {
+    if (!onNoteSave) return;
+    onNoteSave(exercise.id, noteDraft, exercise.chapter);
+  }, [exercise.chapter, exercise.id, noteDraft, onNoteSave]);
+
+  const handleClearNote = useCallback(() => {
+    setNoteDraft('');
+    onNoteSave?.(exercise.id, '', exercise.chapter);
+  }, [exercise.chapter, exercise.id, onNoteSave]);
 
   const handleSubmit = () => {
     if (!answer || submitted || submittingRef.current) return;
@@ -257,6 +283,50 @@ const ExerciseCard = ({ exercise, onResult, onNext, initialAnswer = '', onAnswer
                 </motion.div>
               )}
             </AnimatePresence>
+
+            <div className={styles.notePanel}>
+              <div className={styles.noteHead}>
+                <span className={styles.noteLabel}>
+                  <Bookmark size={12} />
+                  Nota privata
+                </span>
+                <span className={`${styles.noteStatus} ${noteDirty ? styles.noteStatusDirty : ''}`}>
+                  {noteStatus}
+                </span>
+              </div>
+
+              <textarea
+                className={styles.noteInput}
+                value={noteDraft}
+                onChange={(event) => setNoteDraft(event.target.value)}
+                onBlur={() => {
+                  if (noteDirty) handleSaveNote();
+                }}
+                placeholder="Scrie formula pe care vrei s-o retii, capcana din exercitiu sau pasul care te-a ajutat."
+              />
+
+              <div className={styles.noteActions}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  icon={<Save size={13} />}
+                  onClick={handleSaveNote}
+                  disabled={!noteDirty}
+                >
+                  Salveaza nota
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  icon={<Trash2 size={13} />}
+                  onClick={handleClearNote}
+                  disabled={!hasNote}
+                >
+                  Sterge nota
+                </Button>
+              </div>
+            </div>
           </div>
         </Blackboard>
 

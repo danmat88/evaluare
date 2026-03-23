@@ -14,6 +14,11 @@ import {
   readStudyInsights,
   summarizeStudyInsights,
 } from '../utils/studyInsights';
+import {
+  readExerciseNotes,
+  readStudentPreferences,
+  summarizeExerciseNotes,
+} from '../utils/studentToolkit';
 import { getLevel, getLevelProgress } from '../utils/xp';
 import styles from './Profile.module.css';
 
@@ -56,13 +61,19 @@ const Profile = () => {
   const [results, setResults] = useState([]);
   const storageScope = getStorageScope(user?.uid);
   const [studyInsights, setStudyInsights] = useState(() => readStudyInsights(storageScope));
+  const [noteMap, setNoteMap] = useState(() => readExerciseNotes(storageScope));
+  const [preferences, setPreferences] = useState(() => readStudentPreferences(storageScope));
 
   useEffect(() => {
     if (user?.uid) getUserTestResults(user.uid).then(setResults);
   }, [user]);
 
   useEffect(() => {
-    const syncInsights = () => setStudyInsights(readStudyInsights(storageScope));
+    const syncInsights = () => {
+      setStudyInsights(readStudyInsights(storageScope));
+      setNoteMap(readExerciseNotes(storageScope));
+      setPreferences(readStudentPreferences(storageScope));
+    };
 
     syncInsights();
     window.addEventListener('focus', syncInsights);
@@ -87,7 +98,13 @@ const Profile = () => {
     () => summarizeStudyInsights(studyInsights, CHAPTERS),
     [studyInsights],
   );
+  const notesSummary = useMemo(
+    () => summarizeExerciseNotes(noteMap, CHAPTERS),
+    [noteMap],
+  );
   const reviewLink = '/exercitii?mod=review';
+  const smartLink = '/exercitii?mod=smart';
+  const notesLink = '/exercitii?mod=notes';
   const averageExerciseTime = studySummary.averageTimeSpent > 0
     ? `${Math.max(1, Math.round(studySummary.averageTimeSpent / 60))} min/ex.`
     : 'Se calculeaza';
@@ -155,6 +172,61 @@ const Profile = () => {
               <span className={styles.statLbl}>{s.label}</span>
             </motion.div>
           ))}
+        </div>
+
+        <div className={styles.section}>
+          <div className={styles.sectionHead}>
+            <div className={styles.sectionLead}>
+              <BookOpen size={13} className={styles.sectionIcon} />
+              <span className={styles.sectionLabel}>TOOLKIT DE STUDIU</span>
+            </div>
+          </div>
+
+          <div className={styles.analysisGrid}>
+            <div className={styles.analysisCard}>
+              <span className={styles.analysisLabel}>Obiectiv zilnic</span>
+              <span className={styles.analysisValue}>{preferences.dailyGoal} corecte</span>
+              <span className={styles.analysisSub}>
+                Tinta zilnica folosita in dashboard pentru progresul pe ziua curenta.
+              </span>
+            </div>
+
+            <div className={styles.analysisCard}>
+              <span className={styles.analysisLabel}>Sesiune smart</span>
+              <span className={styles.analysisValue}>{preferences.smartSessionSize} exercitii</span>
+              <span className={styles.analysisSub}>
+                Modul smart alege automat review, zone slabe si exercitii cu notite.
+              </span>
+            </div>
+
+            <div className={styles.analysisCard}>
+              <span className={styles.analysisLabel}>Notite personale</span>
+              <span className={styles.analysisValue}>{notesSummary.totalNotes}</span>
+              <span className={styles.analysisSub}>
+                {notesSummary.topChapter
+                  ? `Cele mai multe sunt in ${notesSummary.topChapter.label}.`
+                  : 'Nu ai inca notite salvate pe exercitii.'}
+              </span>
+            </div>
+          </div>
+
+          <div className={styles.analysisActionRow}>
+            <Link to={smartLink} className={styles.analysisLink}>
+              Porneste sesiunea smart
+            </Link>
+            <Link to={notesLink} className={styles.analysisLink}>
+              Deschide notitele
+            </Link>
+            <Link to={reviewLink} className={styles.analysisLink}>
+              Revino la review
+            </Link>
+          </div>
+
+          {notesSummary.lastUpdatedNote && (
+            <span className={styles.toolkitNote}>
+              Ultima nota a fost actualizata pe {new Date(notesSummary.lastUpdatedNote.updatedAt).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short' })}.
+            </span>
+          )}
         </div>
 
         <div className={styles.section}>

@@ -10,7 +10,9 @@ import {
   Clock3,
   Flame,
   FlaskConical,
+  Minus,
   Play,
+  Plus,
   Target,
   TrendingUp,
   Zap,
@@ -33,9 +35,13 @@ import {
   readStudyInsights,
   summarizeStudyInsights,
 } from '../utils/studyInsights';
+import {
+  readExerciseNotes,
+  readStudentPreferences,
+  summarizeExerciseNotes,
+  writeStudentPreferences,
+} from '../utils/studentToolkit';
 import styles from './Dashboard.module.css';
-
-const DAILY_GOAL = 12;
 
 const stagger = { animate: { transition: { staggerChildren: 0.06 } } };
 const up = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
@@ -114,6 +120,8 @@ const Dashboard = () => {
   const [lastExercise, setLastExercise] = useState(null);
   const [activityHistory, setActivityHistory] = useState({});
   const [studyInsights, setStudyInsights] = useState(() => readStudyInsights(storageScope));
+  const [noteMap, setNoteMap] = useState(() => readExerciseNotes(storageScope));
+  const [preferences, setPreferences] = useState(() => readStudentPreferences(storageScope));
 
   const name = profile?.name?.split(' ')[0] || 'elev';
   const hour = new Date().getHours();
@@ -138,6 +146,8 @@ const Dashboard = () => {
     setActivityHistory(history && typeof history === 'object' ? history : {});
 
     setStudyInsights(readStudyInsights(storageScope));
+    setNoteMap(readExerciseNotes(storageScope));
+    setPreferences(readStudentPreferences(storageScope));
   }, [storageScope]);
 
   useEffect(() => {
@@ -171,11 +181,18 @@ const Dashboard = () => {
     () => summarizeStudyInsights(studyInsights, CHAPTERS),
     [studyInsights],
   );
+  const notesSummary = useMemo(
+    () => summarizeExerciseNotes(noteMap, CHAPTERS),
+    [noteMap],
+  );
+  const dailyGoal = preferences.dailyGoal;
 
-  const goalPct = Math.min(Math.round((dailyCorrect / DAILY_GOAL) * 100), 100);
-  const remaining = Math.max(DAILY_GOAL - dailyCorrect, 0);
+  const goalPct = Math.min(Math.round((dailyCorrect / dailyGoal) * 100), 100);
+  const remaining = Math.max(dailyGoal - dailyCorrect, 0);
   const resumeLink = lastExercise?.chapter ? `/exercitii?capitol=${lastExercise.chapter}` : '/exercitii';
   const reviewLink = '/exercitii?mod=review';
+  const smartLink = '/exercitii?mod=smart';
+  const notesLink = '/exercitii?mod=notes';
 
   const lastChapterLabel = lastExercise?.chapter
     ? CHAPTERS.find((c) => c.id === lastExercise.chapter)?.label || lastExercise.chapter
@@ -184,6 +201,7 @@ const Dashboard = () => {
   const reviewChampionChapterLabel = studySummary.reviewChampion?.chapter
     ? CHAPTERS.find((c) => c.id === studySummary.reviewChampion.chapter)?.label || studySummary.reviewChampion.chapter
     : null;
+  const notesChapterLabel = notesSummary.topChapter?.label || null;
 
   const averageSolveMinutes = studySummary.averageTimeSpent > 0
     ? `${Math.max(1, Math.round(studySummary.averageTimeSpent / 60))} min/ex.`
@@ -196,6 +214,13 @@ const Dashboard = () => {
       : studySummary.strongestAccuracyChapter
         ? `${studySummary.strongestAccuracyChapter.label} este in forma buna. Inchide cu o simulare.`
         : 'Continua sa exersezi. Esti pe drumul cel bun.';
+
+  const adjustPreference = useCallback((key, delta) => {
+    setPreferences((current) => writeStudentPreferences(storageScope, {
+      ...current,
+      [key]: Number(current?.[key] || 0) + delta,
+    }));
+  }, [storageScope]);
 
   const weekSeries = useMemo(() => {
     const now = new Date();
@@ -312,10 +337,11 @@ const Dashboard = () => {
           {/* Scrollable body */}
           <div className={styles.journeyScroll}>
             <div className={styles.journeyStats}>
-              <span className={styles.journeyChip}><Target size={11} /> {dailyCorrect}/{DAILY_GOAL} corecte azi</span>
+              <span className={styles.journeyChip}><Target size={11} /> {dailyCorrect}/{dailyGoal} corecte azi</span>
               <span className={styles.journeyChip}><BookOpen size={11} /> {dailyAttempted} incercate</span>
               <span className={styles.journeyChip}><Bookmark size={11} /> {favoritesCount} favorite</span>
               <span className={styles.journeyChip}><TrendingUp size={11} /> {studySummary.reviewCount} review</span>
+              <span className={styles.journeyChip}><Bookmark size={11} /> {notesSummary.totalNotes} notite</span>
               <span className={styles.journeyChip}><Clock3 size={11} /> {averageSolveMinutes}</span>
             </div>
 
@@ -326,6 +352,74 @@ const Dashboard = () => {
                 animate={{ width: `${goalPct}%` }}
                 transition={{ duration: 0.6, ease: 'easeOut' }}
               />
+            </div>
+
+            <div className={styles.planCard}>
+              <div className={styles.planHead}>
+                <span className={styles.planTitle}>Plan personal</span>
+                <span className={styles.planHint}>Seteaza-ti ritmul pentru ziua de azi.</span>
+              </div>
+
+              <div className={styles.planGrid}>
+                <div className={styles.planMetric}>
+                  <span className={styles.planMetricLabel}>Obiectiv zilnic</span>
+                  <span className={styles.planMetricValue}>{dailyGoal} corecte</span>
+                  <div className={styles.planStepper}>
+                    <button
+                      type="button"
+                      className={styles.planStepBtn}
+                      onClick={() => adjustPreference('dailyGoal', -1)}
+                      aria-label="Scade obiectivul zilnic"
+                    >
+                      <Minus size={12} />
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.planStepBtn}
+                      onClick={() => adjustPreference('dailyGoal', 1)}
+                      aria-label="Creste obiectivul zilnic"
+                    >
+                      <Plus size={12} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className={styles.planMetric}>
+                  <span className={styles.planMetricLabel}>Sesiune smart</span>
+                  <span className={styles.planMetricValue}>{preferences.smartSessionSize} exercitii</span>
+                  <div className={styles.planStepper}>
+                    <button
+                      type="button"
+                      className={styles.planStepBtn}
+                      onClick={() => adjustPreference('smartSessionSize', -1)}
+                      aria-label="Scade sesiunea smart"
+                    >
+                      <Minus size={12} />
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.planStepBtn}
+                      onClick={() => adjustPreference('smartSessionSize', 1)}
+                      aria-label="Creste sesiunea smart"
+                    >
+                      <Plus size={12} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className={styles.planMetric}>
+                  <span className={styles.planMetricLabel}>Notite personale</span>
+                  <span className={styles.planMetricValue}>{notesSummary.totalNotes}</span>
+                  <span className={styles.planMetricSub}>
+                    {notesChapterLabel ? `Cele mai multe sunt in ${notesChapterLabel}.` : 'Salveaza formule si idei direct in exercitii.'}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.planActions}>
+                <Link to={smartLink} className={styles.planAction}>Porneste sesiunea smart</Link>
+                <Link to={notesLink} className={styles.planActionAlt}>Deschide notitele</Link>
+              </div>
             </div>
 
             {coachInsightCards.length > 0 && (
@@ -396,6 +490,15 @@ const Dashboard = () => {
                     {reviewChampionChapterLabel ? `, cu prioritate in ${reviewChampionChapterLabel}.` : '.'}
                   </span>
                   <Link className={styles.tipAction} to={reviewLink}>Revizuieste acum</Link>
+                </div>
+              ) : notesSummary.totalNotes > 0 ? (
+                <div className={styles.tipHint}>
+                  <Bookmark size={13} className={styles.tipHintIcon} />
+                  <span className={styles.tipHintText}>
+                    Ai <strong>{notesSummary.totalNotes} notite personale</strong>
+                    {notesChapterLabel ? `, concentrate mai ales in ${notesChapterLabel}.` : '.'}
+                  </span>
+                  <Link className={styles.tipAction} to={notesLink}>Reciteste notitele</Link>
                 </div>
               ) : weakest && (
                 <div className={styles.tipHint}>

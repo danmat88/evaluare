@@ -384,6 +384,7 @@
 .viewPills {
   display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 4px;
   padding: 3px;
   border-radius: var(--r-full);

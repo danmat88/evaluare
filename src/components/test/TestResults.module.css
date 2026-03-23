@@ -152,6 +152,47 @@
   gap: 8px;
 }
 
+.coachGrid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+
+.coachCard {
+  border-radius: var(--r-lg);
+  border: var(--border-dim);
+  background: color-mix(in srgb, var(--bg-surface) 70%, transparent);
+  padding: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-align: left;
+}
+
+.coachCardLabel {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.coachCardValue {
+  font-family: var(--font-display);
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.coachCardSub {
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
 .subjectRow {
   border-radius: var(--r-lg);
   border: var(--border-dim);
@@ -224,6 +265,10 @@
 
   .inner {
     padding: var(--sp-6) var(--sp-4);
+  }
+
+  .coachGrid {
+    grid-template-columns: 1fr;
   }
 
   .subjectRow {

@@ -450,6 +450,147 @@
   background: var(--grad-primary);
 }
 
+.planCard {
+  border-radius: var(--r-md);
+  border: var(--border-dim);
+  background: color-mix(in srgb, var(--bg-surface) 55%, transparent);
+  padding: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.planHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.planTitle {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.planHint {
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+.planGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+
+.planMetric {
+  border-radius: var(--r-md);
+  border: var(--border-dim);
+  background: color-mix(in srgb, var(--bg-deep) 55%, transparent);
+  padding: var(--sp-2) var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.planMetricLabel {
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.planMetricValue {
+  font-family: var(--font-display);
+  font-size: var(--fs-base);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+.planMetricSub {
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.planStepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.planStepBtn {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-sm);
+  border: var(--border-soft);
+  background: color-mix(in srgb, var(--bg-surface) 70%, transparent);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--t-fast), border-color var(--t-fast), background var(--t-fast);
+}
+
+.planStepBtn:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--neon-cyan) 32%, transparent);
+  background: color-mix(in srgb, var(--neon-cyan) 10%, transparent);
+}
+
+.planActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.planAction,
+.planActionAlt {
+  min-height: 28px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--r-full);
+  font-family: var(--font-display);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  transition: all var(--t-fast);
+}
+
+.planAction {
+  border: var(--border-cyan);
+  background: var(--color-primary-bg);
+  color: var(--text-primary);
+}
+
+.planAction:hover {
+  background: color-mix(in srgb, var(--neon-cyan) 16%, transparent);
+  box-shadow: var(--color-primary-glow);
+}
+
+.planActionAlt {
+  border: var(--border-dim);
+  background: color-mix(in srgb, var(--bg-surface) 60%, transparent);
+  color: var(--text-secondary);
+}
+
+.planActionAlt:hover {
+  border-color: color-mix(in srgb, var(--neon-yellow) 32%, transparent);
+  color: var(--text-primary);
+}
+
 /* ── Insight grid — inner card = --r-md, --border-dim (like statCard) ── */
 .insightGrid {
   display: grid;
@@ -832,6 +973,7 @@
   .greetingName { font-size: clamp(1.1rem, 5vw, 1.3rem); }
   .greetingSub  { display: none; }
   .clock        { display: none; }
+  .planGrid     { grid-template-columns: 1fr; }
   .insightGrid  { grid-template-columns: 1fr; }
   .coachGrid    { grid-template-columns: 1fr; }
 }

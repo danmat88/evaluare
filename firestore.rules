@@ -36,6 +36,26 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    match /users/{uid}/preferences/{preferenceId} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && preferenceId == 'study'
+        && request.resource.data.keys().hasOnly([
+             'dailyGoal', 'smartSessionSize', 'updatedAt'
+           ]);
+      allow delete: if false;
+    }
+
+    match /users/{uid}/exerciseNotes/{exerciseId} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly([
+             'exerciseId', 'chapter', 'text', 'updatedAt', 'deletedAt'
+           ])
+        && request.resource.data.exerciseId == exerciseId;
+      allow delete: if false;
+    }
+
     // ── exercises/{exerciseId} ────────────────────────────────────────────
     // Any authenticated user can read exercises. Only admin SDK (seed) can write.
     match /exercises/{exerciseId} {

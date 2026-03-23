@@ -14,6 +14,8 @@ export const STORAGE_KEYS = {
   reduceMotion: 'enmath:reduce-motion:v1',
   testSession: 'enmath:test-session:v1',
   studyInsights: 'enmath:study-insights:v1',
+  studentPreferences: 'enmath:student-preferences:v1',
+  exerciseNotes: 'enmath:exercise-notes:v1',
 };
 
 export const STORAGE_CHANGE_EVENT = 'enmath:storage-change';

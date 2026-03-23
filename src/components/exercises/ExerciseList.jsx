@@ -40,6 +40,14 @@ import {
   readStudyInsights,
   recordExerciseAttempt,
 } from '../../utils/studyInsights';
+import {
+  buildSmartSession,
+  getNotedExerciseIds,
+  readExerciseNotes,
+  readStudentPreferences,
+  saveExerciseNote,
+  summarizeExerciseNotes,
+} from '../../utils/studentToolkit';
 import styles from './ExerciseList.module.css';
 
 const CHAPTERS = [
@@ -66,7 +74,9 @@ const DIFFICULTIES = [
 
 const VIEW_MODES = [
   { id: 'all', label: 'Toate' },
+  { id: 'smart', label: 'Smart' },
   { id: 'review', label: 'Revizuire' },
+  { id: 'notes', label: 'Notite' },
   { id: 'favorites', label: 'Favorite' },
   { id: 'pending', label: 'Nerezolvate' },
   { id: 'solved', label: 'Rezolvate' },
@@ -129,10 +139,17 @@ const ExerciseList = ({ exercises = [], loading }) => {
   const [focusMode, setFocusMode] = useState(() => Boolean(readScopedJSON(STORAGE_KEYS.focusMode, storageScope, false)));
   const [draftAnswers, setDraftAnswers] = useState(() => readScopedJSON(STORAGE_KEYS.drafts, storageScope, {}));
   const [studyInsights, setStudyInsights] = useState(() => readStudyInsights(storageScope));
+  const [noteMap, setNoteMap] = useState(() => readExerciseNotes(storageScope));
+  const [preferences, setPreferences] = useState(() => readStudentPreferences(storageScope));
 
   const { totalCorrect, streak } = useExerciseStore();
   const reviewIds = useMemo(() => new Set(getReviewExerciseIds(studyInsights)), [studyInsights]);
   const solvedIds = useMemo(() => new Set(getSolvedExerciseIds(studyInsights)), [studyInsights]);
+  const noteIds = useMemo(() => new Set(getNotedExerciseIds(noteMap)), [noteMap]);
+  const notesSummary = useMemo(
+    () => summarizeExerciseNotes(noteMap, CHAPTERS.filter((chapter) => chapter.id)),
+    [noteMap],
+  );
 
   useEffect(() => {
     chapterRef.current = chapter;
@@ -145,21 +162,33 @@ const ExerciseList = ({ exercises = [], loading }) => {
   const filtered = useMemo(() => {
     const q = normalize(query.trim());
 
-    return exercises.filter((exercise) => {
+    const baseExercises = exercises.filter((exercise) => {
       if (chapter && exercise.chapter !== chapter) return false;
       if (difficulty && (exercise.difficulty || 1) !== difficulty) return false;
 
-      if (viewMode === 'review' && !reviewIds.has(exercise.id)) return false;
+      if (viewMode === 'review' && !reviewIds.has(String(exercise.id))) return false;
+      if (viewMode === 'notes' && !noteIds.has(String(exercise.id))) return false;
       if (viewMode === 'favorites' && !favoriteIds.has(exercise.id)) return false;
-      if (viewMode === 'solved' && !solvedIds.has(exercise.id)) return false;
-      if (viewMode === 'pending' && solvedIds.has(exercise.id)) return false;
+      if (viewMode === 'solved' && !solvedIds.has(String(exercise.id))) return false;
+      if (viewMode === 'pending' && solvedIds.has(String(exercise.id))) return false;
 
       if (!q) return true;
 
-      const haystack = normalize(`${exercise.text} ${exercise.chapter} ${exercise.answer}`);
+      const haystack = normalize(`${exercise.text} ${exercise.chapter} ${exercise.answer} ${noteMap[String(exercise.id)]?.text || ''}`);
       return haystack.includes(q);
     });
-  }, [chapter, difficulty, exercises, favoriteIds, query, reviewIds, solvedIds, viewMode]);
+
+    if (viewMode === 'smart') {
+      return buildSmartSession({
+        exercises: baseExercises,
+        insights: studyInsights,
+        noteMap,
+        preferences,
+      });
+    }
+
+    return baseExercises;
+  }, [chapter, difficulty, exercises, favoriteIds, noteIds, noteMap, preferences, query, reviewIds, solvedIds, studyInsights, viewMode]);
 
   const current = filtered[idx] ?? null;
   const isFavorite = current ? favoriteIds.has(current.id) : false;
@@ -176,10 +205,22 @@ const ExerciseList = ({ exercises = [], loading }) => {
       return 'Modul focus este activ. Lucreaza un exercitiu pe rand si foloseste Enter sau tastele sageata pentru ritm constant.';
     }
 
+    if (viewMode === 'smart') {
+      return filtered.length > 0
+        ? `Sesiunea smart ti-a ales ${filtered.length} exercitii prioritare din review, zone slabe si notitele personale.`
+        : 'Sesiunea smart nu a gasit exercitii prioritare in filtrul curent. Schimba capitolul sau revino la toate.';
+    }
+
     if (viewMode === 'review') {
       return filtered.length > 0
         ? `Ai ${filtered.length} exercitii in zona de revizuire. Inchide mai intai ce ti-a pus probleme recent.`
         : 'Nu ai exercitii in revizuire acum. Continua cu un capitol nou sau cu un test.';
+    }
+
+    if (viewMode === 'notes') {
+      return filtered.length > 0
+        ? `Ai ${filtered.length} exercitii cu notite proprii. Poti cauta direct in continutul notitelor.`
+        : 'Nu ai inca notite pe exercitii. Salveaza idei, formule sau capcane direct din cardul unui exercitiu.';
     }
 
     if (viewMode === 'favorites') {
@@ -218,6 +259,8 @@ const ExerciseList = ({ exercises = [], loading }) => {
     setFocusMode(Boolean(readScopedJSON(STORAGE_KEYS.focusMode, storageScope, false)));
     setDraftAnswers(readScopedJSON(STORAGE_KEYS.drafts, storageScope, {}));
     setStudyInsights(mergedInsights);
+    setNoteMap(readExerciseNotes(storageScope));
+    setPreferences(readStudentPreferences(storageScope));
   }, [storageScope]);
 
   useEffect(() => {
@@ -232,6 +275,8 @@ const ExerciseList = ({ exercises = [], loading }) => {
       setFocusMode(Boolean(readScopedJSON(STORAGE_KEYS.focusMode, storageScope, false)));
       setDraftAnswers(readScopedJSON(STORAGE_KEYS.drafts, storageScope, {}));
       setStudyInsights(mergedInsights);
+      setNoteMap(readExerciseNotes(storageScope));
+      setPreferences(readStudentPreferences(storageScope));
     };
 
     window.addEventListener('focus', syncWorkspaceState);
@@ -266,6 +311,14 @@ const ExerciseList = ({ exercises = [], loading }) => {
       return next;
     });
   }, []);
+
+  const setExerciseNote = useCallback((exerciseId, value, noteChapter = null) => {
+    setNoteMap(saveExerciseNote({
+      exerciseId,
+      text: value,
+      chapter: noteChapter,
+    }, storageScope));
+  }, [storageScope]);
 
   const changeChapter = (id) => {
     setChapter(id);
@@ -463,12 +516,13 @@ const ExerciseList = ({ exercises = [], loading }) => {
         <div className={styles.sidebarHeader}>
           <span className={styles.sidebarTitle}>Capitole</span>
           <div className={styles.sidebarMeta}>
-            <span className={styles.sidebarMetaChip}>{favoriteIds.size} fav</span>
-            <span className={styles.sidebarMetaChip}>{solvedIds.size} ok</span>
-            <span className={styles.sidebarMetaChip}>{reviewIds.size} review</span>
-            <span className={styles.sidebarMetaChip}>{draftsCount} draft</span>
+              <span className={styles.sidebarMetaChip}>{favoriteIds.size} fav</span>
+              <span className={styles.sidebarMetaChip}>{solvedIds.size} ok</span>
+              <span className={styles.sidebarMetaChip}>{reviewIds.size} review</span>
+              <span className={styles.sidebarMetaChip}>{noteIds.size} notite</span>
+              <span className={styles.sidebarMetaChip}>{draftsCount} draft</span>
+            </div>
           </div>
-        </div>
 
         <div className={styles.chapterList}>
           {CHAPTERS.map((ch) => {
@@ -563,6 +617,10 @@ const ExerciseList = ({ exercises = [], loading }) => {
               <span className={styles.studyChip}>Ramase {filteredPendingCount}</span>
               <span className={styles.studyChip}>Mastery {filteredMasteryPct}%</span>
               <span className={styles.studyChip}>Review {reviewIds.size}</span>
+              <span className={styles.studyChip}>Notite {notesSummary.totalNotes}</span>
+              {viewMode === 'smart' && (
+                <span className={styles.studyChip}>Sesiune {filtered.length}/{preferences.smartSessionSize}</span>
+              )}
             </div>
           </div>
 
@@ -656,7 +714,9 @@ const ExerciseList = ({ exercises = [], loading }) => {
                 <ExerciseCard
                   exercise={current}
                   initialAnswer={draftAnswers?.[current.id] || ''}
+                  noteText={noteMap[String(current.id)]?.text || ''}
                   onAnswerChange={setDraftAnswer}
+                  onNoteSave={setExerciseNote}
                   onResult={onExerciseResult}
                   onNext={idx < filtered.length - 1 ? next : null}
                 />

@@ -21,6 +21,12 @@ import {
   safeWriteJSON,
   writeScopedJSON,
 } from '../../utils/storage';
+import {
+  getNotedExerciseIds,
+  readExerciseNotes,
+  readStudentPreferences,
+  writeStudentPreferences,
+} from '../../utils/studentToolkit';
 import styles from './CommandPalette.module.css';
 
 const RECENT_LIMIT = 6;
@@ -54,6 +60,8 @@ const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) 
     () => (isOpen ? Boolean(safeReadJSON(STORAGE_KEYS.reduceMotion, false)) : false),
     [isOpen],
   );
+  const preferences = readStudentPreferences(storageScope);
+  const noteCount = getNotedExerciseIds(readExerciseNotes(storageScope)).length;
 
   const recordRecent = useCallback((id) => {
     setRecentIds((prev) => {
@@ -81,6 +89,30 @@ const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) 
         hint: 'Rezolva pe capitole',
         tags: 'practice chapter',
         action: () => onNavigate('/exercitii'),
+      },
+      {
+        id: 'smart',
+        icon: <Sparkles size={14} />,
+        label: 'Porneste sesiunea smart',
+        hint: `${preferences.smartSessionSize} exercitii prioritare`,
+        tags: 'smart review practice',
+        action: () => onNavigate('/exercitii?mod=smart'),
+      },
+      {
+        id: 'review',
+        icon: <CheckSquare size={14} />,
+        label: 'Deschide revizuirea',
+        hint: 'Exercitii pentru recapitulare',
+        tags: 'review weak mistakes',
+        action: () => onNavigate('/exercitii?mod=review'),
+      },
+      {
+        id: 'notes',
+        icon: <BookOpen size={14} />,
+        label: 'Deschide notitele',
+        hint: `${noteCount} exercitii cu note`,
+        tags: 'notes personal formulas',
+        action: () => onNavigate('/exercitii?mod=notes'),
       },
       {
         id: 'tests',
@@ -126,6 +158,28 @@ const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) 
           document.documentElement.setAttribute('data-motion', next ? 'reduce' : 'full');
         },
       },
+      {
+        id: 'goal-up',
+        icon: <Sun size={14} />,
+        label: 'Creste obiectivul zilnic',
+        hint: `Acum: ${preferences.dailyGoal} corecte`,
+        tags: 'goal target daily',
+        action: () => writeStudentPreferences(storageScope, {
+          ...preferences,
+          dailyGoal: preferences.dailyGoal + 1,
+        }),
+      },
+      {
+        id: 'goal-down',
+        icon: <MoonStar size={14} />,
+        label: 'Scade obiectivul zilnic',
+        hint: `Acum: ${preferences.dailyGoal} corecte`,
+        tags: 'goal target daily',
+        action: () => writeStudentPreferences(storageScope, {
+          ...preferences,
+          dailyGoal: preferences.dailyGoal - 1,
+        }),
+      },
     ];
 
     if (lastExercise?.id) {
@@ -143,7 +197,7 @@ const CommandPalette = ({ isOpen, onClose, onNavigate, onToggleTheme, isDark }) 
     }
 
     return base;
-  }, [focusMode, isDark, lastExercise, onNavigate, onToggleTheme, reducedMotion, storageScope]);
+  }, [focusMode, isDark, lastExercise, noteCount, onNavigate, onToggleTheme, preferences, reducedMotion, storageScope]);
 
   const visible = useMemo(() => {
     const filtered = filterCommands(commands, query);
